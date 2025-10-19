@@ -20,6 +20,7 @@ CREATE TABLE `songs` (
   `voice_id` int(11) NOT NULL,
   `lyrics` text NOT NULL,
   `file_path` varchar(255) NOT NULL,
+  `title` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),

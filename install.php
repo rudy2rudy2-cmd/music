@@ -31,13 +31,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->select_db($db_name);
     $sql = file_get_contents('database.sql');
     $conn->multi_query($sql);
+    do { if ($res = $conn->store_result()) { $res->free(); } } while ($conn->more_results() && $conn->next_result());
 
-    // Wait for multi_query to finish
-    do {
-        if ($res = $conn->store_result()) {
-            $res->free();
-        }
-    } while ($conn->more_results() && $conn->next_result());
+    // Insert voices
+    $sql_voices = file_get_contents('update_voices.sql');
+    $conn->multi_query($sql_voices);
+    do { if ($res = $conn->store_result()) { $res->free(); } } while ($conn->more_results() && $conn->next_result());
 
     // Create admin user
     $hashed_password = password_hash($admin_password, PASSWORD_DEFAULT);
@@ -59,45 +58,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Installation</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="wrapper">
         <h2>Installation</h2>
-        <p>Please fill in the details to set up your application.</p>
-        <form action="install.php" method="post">
+        <form action="install.php" method="post" class="generator-form">
             <h3>Database Details</h3>
             <div class="form-group">
                 <label>DB Server</label>
-                <input type="text" name="db_server" class="form-control" value="localhost" required>
+                <input type="text" name="db_server" value="127.0.0.1" required>
             </div>
             <div class="form-group">
                 <label>DB Username</label>
-                <input type="text" name="db_username" class="form-control" value="root" required>
+                <input type="text" name="db_username" value="root" required>
             </div>
             <div class="form-group">
                 <label>DB Password</label>
-                <input type="password" name="db_password" class="form-control">
+                <input type="password" name="db_password">
             </div>
             <div class="form-group">
                 <label>DB Name</label>
-                <input type="text" name="db_name" class="form-control" value="ai_music_platform" required>
+                <input type="text" name="db_name" value="ai_music_platform" required>
             </div>
             <h3>Admin User</h3>
             <div class="form-group">
                 <label>Admin Username</label>
-                <input type="text" name="admin_username" class="form-control" value="admin" required>
+                <input type="text" name="admin_username" value="admin" required>
             </div>
             <div class="form-group">
                 <label>Admin Password</label>
-                <input type="password" name="admin_password" class="form-control" required>
+                <input type="password" name="admin_password" required>
             </div>
             <div class="form-group">
                 <label>Admin Email</label>
-                <input type="email" name="admin_email" class="form-control" value="admin@example.com" required>
+                <input type="email" name="admin_email" value="admin@example.com" required>
             </div>
             <div class="form-group">
-                <input type="submit" class="btn btn-primary" value="Install">
+                <input type="submit" class="login-btn" value="Install">
             </div>
         </form>
     </div>
