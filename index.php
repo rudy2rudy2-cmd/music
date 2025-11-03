@@ -1,71 +1,97 @@
-<?php session_start(); ?>
+<?php
+session_start();
+require_once 'config.php'; // DB connection
+
+// Fetch theme settings from the database
+$theme = 'dark'; // default
+$accent_color = 'blue'; // default
+
+$sql = "SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('theme', 'accent_color')";
+$result = mysqli_query($link, $sql);
+
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($row['setting_key'] == 'theme') {
+            $theme = $row['setting_value'];
+        } elseif ($row['setting_key'] == 'accent_color') {
+            $accent_color = $row['setting_value'];
+        }
+    }
+}
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Music Generator</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="animations.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
-<body>
+<body data-theme="<?php echo htmlspecialchars($theme); ?>" data-color="<?php echo htmlspecialchars($accent_color); ?>">
+    <div class="bg-polygon polygon1"></div>
+    <div class="bg-polygon polygon2"></div>
+    <div class="bg-polygon polygon3"></div>
     <header>
-        <div class="logo">AI Music Platform</div>
+        <div class="logo">Mubert</div>
         <nav>
             <a href="#">Products</a>
-            <a href="#">Blog</a>
-            <button class="login-btn">Log In</button>
-            <button class="signup-btn">Sign Up</button>
+            <a href="#">Use cases</a>
+            <a href="#">Pricing</a>
+            <a href="#">For Developers</a>
+            <a href="#">About</a>
+            <a href="login.php" class="login-btn">Log In</a>
+            <a href="register.php" class="signup-btn">Sign Up</a>
         </nav>
     </header>
 
     <main>
         <div class="generator-container">
-            <h1>Human and AI Music Generator</h1>
-            <p>For your video content, podcasts and apps</p>
-            <div class="generator-form">
-                <input type="text" id="prompt" placeholder="Describe your track...">
+            <h1>Generate Music with AI</h1>
+            <p>Describe what you want to hear in a few words, and our AI will create a unique track for you.</p>
 
-                <div class="option-group">
-                    <label>Voice:</label>
-                    <button class="option-btn active" data-group="voice" value="random">Random</button>
-                    <button class="option-btn" data-group="voice" value="male">Male</button>
-                    <button class="option-btn" data-group="voice" value="female">Female</button>
+            <form class="generator-form" action="generate.php" method="post">
+                <input type="text" id="prompt" name="prompt" placeholder="e.g., epic cinematic battle music for a video game...">
+
+                <div class="duration-control">
+                    <label for="duration">Duration: <span id="duration-value">30</span>s</label>
+                    <input type="range" id="duration" name="duration" class="duration-slider" min="5" max="180" value="30">
                 </div>
 
                 <div class="option-group">
-                    <label>Genre:</label>
-                    <button class="option-btn active" data-group="genre" value="any">Any</button>
-                    <button class="option-btn" data-group="genre" value="manele">Manele</button>
-                    <button class="option-btn" data-group="genre" value="pop">Pop</button>
-                    <button class="option-btn" data-group="genre" value="rock">Rock</button>
-                    <button class="option-btn" data-group="genre" value="hiphop">Hip Hop</button>
+                    <button type="button" class="option-btn active" data-type="voice" data-value="Male">Male Voice</button>
+                    <button type="button" class="option-btn" data-type="voice" data-value="Female">Female Voice</button>
+                    <button type="button" class="option-btn" data-type="voice" data-value="Instrumental">Instrumental</button>
                 </div>
-
                 <div class="option-group">
-                    <label>Mood:</label>
-                    <button class="option-btn active" data-group="mood" value="any">Any</button>
-                    <button class="option-btn" data-group="mood" value="happy">Happy</button>
-                    <button class="option-btn" data-group="mood" value="sad">Sad</button>
-                    <button class="option-btn" data-group="mood" value="energetic">Energetic</button>
+                    <button type="button" class="option-btn active" data-type="genre" data-value="Pop">Pop</button>
+                    <button type="button" class="option-btn" data-type="genre" data-value="Rock">Rock</button>
+                    <button type="button" class="option-btn" data-type="genre" data-value="HipHop">Hip Hop</button>
+                </div>
+                <div class="option-group">
+                    <button type="button" class="option-btn active" data-type="mood" data-value="Happy">Happy</button>
+                    <button type="button" class="option-btn" data-type="mood" data-value="Sad">Sad</button>
+                    <button type="button" class="option-btn" data-type="mood" data-value="Energetic">Energetic</button>
                 </div>
 
-                <div class="duration-slider">
-                    <span>1:00</span>
-                    <input type="range" id="duration" min="60" max="300" value="60">
-                    <span id="duration-value">1:00</span>
-                </div>
-                <button id="generate-btn">Generate a track now</button>
-            </div>
+                 <!-- Hidden inputs to store selected values -->
+                <input type="hidden" name="voice" id="voice-input" value="Male">
+                <input type="hidden" name="genre" id="genre-input" value="Pop">
+                <input type="hidden" name="mood" id="mood-input" value="Happy">
 
-            <div id="generated-track-container" style="display: none; margin-top: 2rem;">
-                <h2>Your Track is Ready:</h2>
-                <audio controls id="audio-player" style="width: 100%;"></audio>
+                <button id="generate-btn" type="submit"><span>Generate</span></button>
+            </form>
+            <div id="generation-result" class="hidden">
+                <h2>Your Track is Ready!</h2>
+                <div id="audio-player"></div>
+                <a href="" id="download-link" download>Download Track</a>
             </div>
         </div>
     </main>
 
     <footer>
-        <p>&copy; 2025 AI Music Platform</p>
+        <p>&copy; 2024 AI Music Generator. Toate drepturile rezervate.</p>
     </footer>
 
     <script src="script.js"></script>

@@ -1,60 +1,88 @@
 document.addEventListener('DOMContentLoaded', () => {
     const durationSlider = document.getElementById('duration');
     const durationValue = document.getElementById('duration-value');
-    const generateBtn = document.getElementById('generate-btn');
-    const promptInput = document.getElementById('prompt');
-    const optionBtns = document.querySelectorAll('.option-btn');
-    const trackContainer = document.getElementById('generated-track-container');
-    const audioPlayer = document.getElementById('audio-player');
+    const form = document.querySelector('.generator-form');
 
-    // Handle option button clicks
-    optionBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll(`.option-btn[data-group="${btn.dataset.group}"]`).forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-    });
-
-    // Update duration display
-    durationSlider.addEventListener('input', () => {
-        const minutes = Math.floor(durationSlider.value / 60);
-        const seconds = durationSlider.value % 60;
-        durationValue.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    });
-
-    // Handle song generation
-    generateBtn.addEventListener('click', () => {
-        const prompt = promptInput.value;
-        const duration = durationSlider.value;
-        const voice = document.querySelector('.option-btn[data-group="voice"].active').value;
-        const genre = document.querySelector('.option-btn[data-group="genre"].active').value;
-        const mood = document.querySelector('.option-btn[data-group="mood"].active').value;
-
-        const formData = new FormData();
-        formData.append('prompt', prompt);
-        formData.append('duration', duration);
-        formData.append('voice', voice);
-        formData.append('genre', genre);
-        formData.append('mood', mood);
-
-        fetch('generate.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.file_path) {
-                audioPlayer.src = data.file_path;
-                trackContainer.style.display = 'block';
-                audioPlayer.load();
-                audioPlayer.play();
-            } else {
-                alert(data.message || 'An error occurred.');
+    // Update duration display in real-time
+    if (durationSlider) {
+        durationSlider.addEventListener('input', () => {
+            if (durationValue) {
+                durationValue.textContent = durationSlider.value;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred.');
+        });
+    }
+
+    // Handle clicks on option buttons (voice, genre, mood)
+    const optionButtons = document.querySelectorAll('.option-btn');
+    optionButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const type = button.dataset.type;
+            const value = button.dataset.value;
+
+            // Update the corresponding hidden input
+            const input = document.getElementById(`${type}-input`);
+            if (input) {
+                input.value = value;
+            }
+
+            // Update the active state for buttons in the same group
+            document.querySelectorAll(`.option-btn[data-type="${type}"]`).forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
         });
     });
+
+    // Handle form submission with Fetch API
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent traditional form submission
+
+            const formData = new FormData(this);
+            const generateBtn = document.getElementById('generate-btn');
+            const resultContainer = document.getElementById('generation-result');
+            const audioPlayerContainer = document.getElementById('audio-player');
+            const downloadLink = document.getElementById('download-link');
+
+            // Disable button and show a loading state
+            generateBtn.disabled = true;
+            generateBtn.querySelector('span').textContent = 'Generating...';
+            resultContainer.classList.add('hidden');
+
+
+            fetch('generate.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.file_path) {
+                    // Create audio element
+                    audioPlayerContainer.innerHTML = ''; // Clear previous player
+                    const audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = data.file_path;
+
+                    audioPlayerContainer.appendChild(audio);
+                    downloadLink.href = data.file_path;
+
+                    // Show the result section
+                    resultContainer.classList.remove('hidden');
+                    audio.play();
+
+                } else {
+                    alert(data.message || 'An error occurred during generation.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('A critical error occurred. Please check the console.');
+            })
+            .finally(() => {
+                // Re-enable the button
+                generateBtn.disabled = false;
+                generateBtn.querySelector('span').textContent = 'Generate';
+            });
+        });
+    }
 });

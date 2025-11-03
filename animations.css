@@ -1,0 +1,105 @@
+/* Polygonal Background Animation */
+body::before, body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.bg-polygon {
+    position: fixed;
+    z-index: -1;
+    opacity: 0.1;
+    background: var(--accent-gradient);
+    animation: movePolygon 25s infinite alternate ease-in-out;
+}
+
+.polygon1 {
+    width: 30vw;
+    height: 30vw;
+    top: 10vh;
+    left: 5vw;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    animation-duration: 30s;
+}
+
+.polygon2 {
+    width: 20vw;
+    height: 20vw;
+    top: 50vh;
+    left: 70vw;
+    clip-path: polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%);
+    animation-duration: 40s;
+    animation-delay: -5s;
+}
+
+.polygon3 {
+    width: 40vw;
+    height: 40vw;
+    top: 60vh;
+    left: 10vw;
+    background: linear-gradient(90deg, #3B8BFF, #A83BFF); /* Different color */
+    clip-path: polygon(0% 0%, 100% 30%, 80% 100%, 20% 80%);
+    animation-duration: 35s;
+    animation-delay: -10s;
+}
+
+@keyframes movePolygon {
+    from {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    to {
+        transform: translate(10vw, 15vh) rotate(180deg) scale(1.2);
+    }
+}
+
+/* RGB Border Animation for Generate Button */
+#generate-btn {
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent; /* Start with a transparent border */
+}
+
+#generate-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+        from 0deg,
+        #ff2a00, #ff5e00, #ffae00, #fff700, #adff00, #5eff00, #00ff1e, #00ff73, #00ffc8, #00d0ff, #007bff, #2e00ff, #8300ff, #d700ff, #ff00c8, #ff0073, #ff2a00
+    );
+    animation: rotateBorder 4s linear infinite;
+    z-index: 1;
+}
+
+#generate-btn span {
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    background: var(--card-bg-color); /* Match button inner background */
+    border-radius: 8px; /* Should match the button's border-radius */
+    padding: 15px 30px;
+}
+
+#generate-btn {
+    padding: 0; /* Remove padding from the button itself */
+}
+
+@keyframes rotateBorder {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
