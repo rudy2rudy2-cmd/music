@@ -66,34 +66,28 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     mysqli_close($link);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body>
+<body data-theme="dark" data-color="blue">
+    <header>
+        <div class="logo"><a href="index.php" style="text-decoration:none; color:inherit;">Mubert</a></div>
+    </header>
     <main>
-        <div class="generator-container">
+        <div class="generator-container" style="margin-top:4rem;">
             <h2>Login</h2>
-            <p>Please fill in your credentials to login.</p>
-
-            <?php
-            if(!empty($login_err)){
-                echo '<div style="color:red;">' . $login_err . '</div>';
-            }
-            ?>
-
+            <?php if(!empty($login_err)) echo '<div class="alert error">' . $login_err . '</div>'; ?>
             <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="generator-form">
                 <div>
-                    <input type="text" name="username" placeholder="Username" class="<?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $username; ?>">
-                    <span style="color:red;"><?php echo $username_err; ?></span>
+                    <input type="text" name="username" placeholder="Username">
                 </div>
                 <div>
-                    <input type="password" name="password" placeholder="Password" class="<?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>">
-                    <span style="color:red;"><?php echo $password_err; ?></span>
+                    <input type="password" name="password" placeholder="Password">
                 </div>
                 <div>
                     <button type="submit" class="login-btn">Log In</button>

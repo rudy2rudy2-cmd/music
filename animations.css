@@ -58,6 +58,51 @@ body::before, body::after {
     }
 }
 
+
+/* --- Theme-specific Animations --- */
+
+/* Default "dark" theme uses the polygonal animation */
+
+/* Neon Wave Animation */
+[data-theme="neon"] .bg-polygon {
+    display: none; /* Hide default polygons */
+}
+#particles-js {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    top: 0;
+    left: 0;
+}
+
+
+/* Forest Light Animation */
+[data-theme="forest"] .bg-polygon {
+    display: none; /* Hide default polygons */
+}
+.organic-shape {
+    position: fixed;
+    z-index: -1;
+    opacity: 0.15;
+    background: var(--accent-gradient);
+    animation: moveOrganic 40s infinite alternate ease-in-out;
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+}
+.shape1 { width: 40vw; height: 40vw; top: -10vh; left: -5vw; }
+.shape2 { width: 30vw; height: 30vw; top: 60vh; left: 70vw; animation-duration: 50s; }
+
+
+@keyframes moveOrganic {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: translateY(20vh) rotate(360deg);
+    }
+}
+
+
 /* RGB Border Animation for Generate Button */
 #generate-btn {
     position: relative;

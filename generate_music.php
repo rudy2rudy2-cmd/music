@@ -30,6 +30,8 @@ $prompt_from_home = isset($_GET['prompt']) ? htmlspecialchars($_GET['prompt']) :
     <title>Generator de Muzică - AI Music Generator</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="animations.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body data-theme="<?php echo htmlspecialchars($theme); ?>" data-color="<?php echo htmlspecialchars($accent_color); ?>">
     <div class="bg-polygon polygon1"></div>
@@ -50,12 +52,12 @@ $prompt_from_home = isset($_GET['prompt']) ? htmlspecialchars($_GET['prompt']) :
                     <div class="option-control">
                         <label for="genre">Gen:</label>
                         <select name="genre" id="genre-input">
-                            <option value="Pop">Pop</option>
-                            <option value="Rock">Rock</option>
-                            <option value="HipHop">Hip Hop</option>
-                            <option value="Trap">Trap</option>
-                            <option value="Orchestral">Orchestral</option>
-                            <option value="Ambient">Ambient</option>
+                            <option value="Pop">🎤 Pop</option>
+                            <option value="Rock">🎸 Rock</option>
+                            <option value="HipHop">🎧 Hip Hop</option>
+                            <option value="Trap">🎛️ Trap</option>
+                            <option value="Orchestral">🎻 Orchestral</option>
+                            <option value="Ambient">🌌 Ambient</option>
                         </select>
                     </div>
                      <div class="option-control">
@@ -70,9 +72,9 @@ $prompt_from_home = isset($_GET['prompt']) ? htmlspecialchars($_GET['prompt']) :
 
                 <div class="option-group">
                     <label>Voce:</label>
-                    <button type="button" class="option-btn active" data-type="voice" data-value="Instrumental">Instrumental</button>
-                    <button type="button" class="option-btn" data-type="voice" data-value="Male">Masculină</button>
-                    <button type="button" class="option-btn" data-type="voice" data-value="Female">Feminină</button>
+                    <button type="button" class="option-btn active" data-type="voice" data-value="Instrumental">🎶 Instrumental</button>
+                    <button type="button" class="option-btn" data-type="voice" data-value="Male">👨 Masculină</button>
+                    <button type="button" class="option-btn" data-type="voice" data-value="Female">👩 Feminină</button>
                 </div>
 
                 <input type="hidden" name="voice" id="voice-input" value="Instrumental">

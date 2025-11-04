@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $color = $data['color'];
 
         // Basic validation
-        $allowed_themes = ['dark', 'light'];
+        $allowed_themes = ['dark', 'neon', 'forest', 'light']; // 'light' is kept for legacy
         $allowed_colors = ['blue', 'red', 'yellow', 'green'];
 
         if (in_array($theme, $allowed_themes) && in_array($color, $allowed_colors)) {

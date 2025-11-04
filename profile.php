@@ -34,6 +34,8 @@ $accent_color = 'blue';
     <title>Profilul Meu - AI Music Generator</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="profile.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body data-theme="<?php echo htmlspecialchars($theme); ?>" data-color="<?php echo htmlspecialchars($accent_color); ?>">
     <?php include 'header.php'; ?>

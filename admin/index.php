@@ -47,8 +47,9 @@ if ($result) {
             <div class="generator-form">
                 <div class="option-group">
                     <label>Theme:</label>
-                    <button class="option-btn" data-theme="dark">Dark</button>
-                    <button class="option-btn" data-theme="light">Light</button>
+                    <button class="option-btn" data-theme="dark">Midnight Dark</button>
+                    <button class="option-btn" data-theme="neon">Neon Wave</button>
+                    <button class="option-btn" data-theme="forest">Forest Light</button>
                 </div>
                 <div class="option-group">
                     <label>Accent Color:</label>

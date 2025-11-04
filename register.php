@@ -77,31 +77,34 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     mysqli_close($link);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Sign Up</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body>
+<body data-theme="dark" data-color="blue">
+    <header>
+        <div class="logo"><a href="index.php" style="text-decoration:none; color:inherit;">Mubert</a></div>
+    </header>
     <main>
-        <div class="generator-container">
+        <div class="generator-container" style="margin-top:4rem;">
             <h2>Sign Up</h2>
             <p>Please fill this form to create an account.</p>
             <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="generator-form">
                 <div>
-                    <input type="text" name="username" placeholder="Username" class="<?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $username; ?>">
-                    <span style="color:red;"><?php echo $username_err; ?></span>
+                    <?php if($username_err) echo '<span style="color:red;">'.$username_err.'</span>'; ?>
+                    <input type="text" name="username" placeholder="Username" value="<?php echo $username; ?>">
                 </div>
                 <div>
-                    <input type="email" name="email" placeholder="Email" class="<?php echo (!empty($email_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $email; ?>">
-                    <span style="color:red;"><?php echo $email_err; ?></span>
+                     <?php if($email_err) echo '<span style="color:red;">'.$email_err.'</span>'; ?>
+                    <input type="email" name="email" placeholder="Email" value="<?php echo $email; ?>">
                 </div>
                 <div>
-                    <input type="password" name="password" placeholder="Password" class="<?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $password; ?>">
-                    <span style="color:red;"><?php echo $password_err; ?></span>
+                     <?php if($password_err) echo '<span style="color:red;">'.$password_err.'</span>'; ?>
+                    <input type="password" name="password" placeholder="Password" value="<?php echo $password; ?>">
                 </div>
                 <div>
                     <button type="submit" class="login-btn">Sign Up</button>
