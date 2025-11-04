@@ -1,21 +1,15 @@
 <?php
 session_start();
-require_once 'config.php'; // DB connection
+require_once 'config.php';
 
-// Fetch theme settings from the database
-$theme = 'dark'; // default
-$accent_color = 'blue'; // default
-
+// Fetch theme settings for consistent styling
+$theme = 'dark';
+$accent_color = 'blue';
 $sql = "SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('theme', 'accent_color')";
-$result = mysqli_query($link, $sql);
-
-if ($result) {
+if ($result = mysqli_query($link, $sql)) {
     while ($row = mysqli_fetch_assoc($result)) {
-        if ($row['setting_key'] == 'theme') {
-            $theme = $row['setting_value'];
-        } elseif ($row['setting_key'] == 'accent_color') {
-            $accent_color = $row['setting_value'];
-        }
+        if ($row['setting_key'] == 'theme') $theme = $row['setting_value'];
+        if ($row['setting_key'] == 'accent_color') $accent_color = $row['setting_value'];
     }
 }
 ?>
@@ -27,7 +21,6 @@ if ($result) {
     <title>AI Music Generator</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="animations.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body data-theme="<?php echo htmlspecialchars($theme); ?>" data-color="<?php echo htmlspecialchars($accent_color); ?>">
     <div class="bg-polygon polygon1"></div>
@@ -36,61 +29,24 @@ if ($result) {
     <?php include 'header.php'; ?>
 
     <main>
-        <div class="generator-container">
-            <?php
-            if (isset($_SESSION['payment_success'])) {
-                echo '<div class="alert success">' . $_SESSION['payment_success'] . '</div>';
-                unset($_SESSION['payment_success']);
-            }
-            if (isset($_SESSION['payment_error'])) {
-                echo '<div class="alert error">' . $_SESSION['payment_error'] . '</div>';
-                unset($_SESSION['payment_error']);
-            }
-            ?>
-            <h1>Generate Music with AI</h1>
-            <p>Describe what you want to hear in a few words, and our AI will create a unique track for you.</p>
+        <div class="hero-container">
+            <h1>Scrie o idee. Ascultă magia AI.</h1>
+            <p class="subtitle">Transformă-ți textul în muzică originală în câteva secunde.</p>
 
-            <form class="generator-form" action="generate.php" method="post">
-                <input type="text" id="prompt" name="prompt" placeholder="e.g., epic cinematic battle music for a video game...">
-
-                <div class="duration-control">
-                    <label for="duration">Duration: <span id="duration-value">30</span>s</label>
-                    <input type="range" id="duration" name="duration" class="duration-slider" min="5" max="180" value="30">
-                </div>
-
-                <div class="option-group">
-                    <button type="button" class="option-btn active" data-type="voice" data-value="Male">Male Voice</button>
-                    <button type="button" class="option-btn" data-type="voice" data-value="Female">Female Voice</button>
-                    <button type="button" class="option-btn" data-type="voice" data-value="Instrumental">Instrumental</button>
-                </div>
-                <div class="option-group">
-                    <button type="button" class="option-btn active" data-type="genre" data-value="Pop">Pop</button>
-                    <button type="button" class="option-btn" data-type="genre" data-value="Rock">Rock</button>
-                    <button type="button" class="option-btn" data-type="genre" data-value="HipHop">Hip Hop</button>
-                </div>
-                <div class="option-group">
-                    <button type="button" class="option-btn active" data-type="mood" data-value="Happy">Happy</button>
-                    <button type="button" class="option-btn" data-type="mood" data-value="Sad">Sad</button>
-                    <button type="button" class="option-btn" data-type="mood" data-value="Energetic">Energetic</button>
-                </div>
-
-                 <!-- Hidden inputs to store selected values -->
-                <input type="hidden" name="voice" id="voice-input" value="Male">
-                <input type="hidden" name="genre" id="genre-input" value="Pop">
-                <input type="hidden" name="mood" id="mood-input" value="Happy">
-
-                <button id="generate-btn" type="submit"><span>Generate</span></button>
+            <form action="generate_music.php" method="get" class="hero-form">
+                <input type="text" name="prompt" class="hero-prompt" placeholder="Descrie melodia ta...">
+                <button type="submit" class="hero-generate-btn">Generează Muzică</button>
             </form>
-            <div id="generation-result" class="hidden">
-                <h2>Your Track is Ready!</h2>
-                <div id="audio-player"></div>
-                <a href="" id="download-link" download>Download Track</a>
+
+            <div class="prompt-examples">
+                <p>Încearcă asta:</p>
+                <a href="generate_music.php?prompt=rock epic cu voce feminină">🎸 rock epic cu voce feminină</a>
+                <a href="generate_music.php?prompt=beat trap dark 90 BPM">🎧 beat trap dark 90 BPM</a>
+                <a href="generate_music.php?prompt=muzică orchestrală de film">🎻 muzică orchestrală de film</a>
             </div>
         </div>
     </main>
 
     <?php include 'footer.php'; ?>
-
-    <script src="script.js"></script>
 </body>
 </html>

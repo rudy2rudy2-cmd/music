@@ -1,9 +1,12 @@
 <header>
-    <div class="logo">Mubert</div>
+    <div class.logo">Mubert</div>
     <nav>
-        <a href="index.php">Generator</a>
+        <a href="index.php">Acasă</a>
+        <a href="generate_music.php">Generează</a>
+        <a href="gallery.php">Galerie</a>
         <a href="pricing.php">Prețuri</a>
         <?php if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true): ?>
+            <a href="profile.php">Profil</a>
             <?php
             // Fetch remaining generations to display in header
             $generations_left_header = 0;

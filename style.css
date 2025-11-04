@@ -48,11 +48,118 @@ nav a { color: var(--text-color); }
 }
 
 main { /* ... */ }
+
+/* Hero Section Styles */
+.hero-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    text-align: center;
+    padding: 2rem;
+}
+
+.hero-container h1 {
+    font-size: 3.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.hero-container .subtitle {
+    font-size: 1.2rem;
+    color: #aaa;
+    margin-bottom: 2.5rem;
+}
+
+.hero-form {
+    display: flex;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 2rem;
+}
+
+.hero-prompt {
+    flex-grow: 1;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    border: 1px solid #444;
+    border-radius: 50px 0 0 50px;
+    background-color: var(--card-bg-color);
+    color: var(--text-color);
+    outline: none;
+}
+
+.hero-generate-btn {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 0 50px 50px 0;
+    background: var(--accent-gradient);
+    color: #fff;
+    cursor: pointer;
+}
+
+.prompt-examples {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.prompt-examples p {
+    color: #aaa;
+}
+
+.prompt-examples a {
+    color: var(--text-color);
+    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.prompt-examples a:hover {
+    background-color: var(--accent-color);
+}
+
+
 .generator-container { /* ... */ }
 h1, p { color: var(--text-color); }
 .generator-form, .option-group, #prompt, .duration-slider {
     background-color: var(--card-bg-color);
 }
+
+/* Advanced Options Styling */
+.advanced-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+.option-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.option-control label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+}
+.option-control select {
+    padding: 0.8rem;
+    background-color: #2c2c34;
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: var(--text-color);
+}
+
 #prompt { color: var(--text-color); }
 .option-btn {
     border: 1px solid #444;
