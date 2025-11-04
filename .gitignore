@@ -1,0 +1,9 @@
+# Fișiere de configurare locale
+config.php
+
+# Fișiere de jurnal
+server.log
+*.log
+
+# Fișiere încărcate de utilizatori
+/uploads/*
