@@ -4,6 +4,8 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `email` varchar(100) NOT NULL UNIQUE,
   `is_admin` tinyint(1) NOT NULL DEFAULT 0,
+  `plan` varchar(50) NOT NULL DEFAULT 'personal',
+  `generations_left` int(11) NOT NULL DEFAULT 10,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

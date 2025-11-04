@@ -33,21 +33,20 @@ if ($result) {
     <div class="bg-polygon polygon1"></div>
     <div class="bg-polygon polygon2"></div>
     <div class="bg-polygon polygon3"></div>
-    <header>
-        <div class="logo">Mubert</div>
-        <nav>
-            <a href="#">Products</a>
-            <a href="#">Use cases</a>
-            <a href="#">Pricing</a>
-            <a href="#">For Developers</a>
-            <a href="#">About</a>
-            <a href="login.php" class="login-btn">Log In</a>
-            <a href="register.php" class="signup-btn">Sign Up</a>
-        </nav>
-    </header>
+    <?php include 'header.php'; ?>
 
     <main>
         <div class="generator-container">
+            <?php
+            if (isset($_SESSION['payment_success'])) {
+                echo '<div class="alert success">' . $_SESSION['payment_success'] . '</div>';
+                unset($_SESSION['payment_success']);
+            }
+            if (isset($_SESSION['payment_error'])) {
+                echo '<div class="alert error">' . $_SESSION['payment_error'] . '</div>';
+                unset($_SESSION['payment_error']);
+            }
+            ?>
             <h1>Generate Music with AI</h1>
             <p>Describe what you want to hear in a few words, and our AI will create a unique track for you.</p>
 
@@ -90,9 +89,7 @@ if ($result) {
         </div>
     </main>
 
-    <footer>
-        <p>&copy; 2024 AI Music Generator. Toate drepturile rezervate.</p>
-    </footer>
+    <?php include 'footer.php'; ?>
 
     <script src="script.js"></script>
 </body>

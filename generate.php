@@ -8,6 +8,28 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
+// Check user's remaining generations
+require_once 'config.php';
+$user_id = $_SESSION['id'];
+$generations_left = 0;
+$sql = "SELECT generations_left FROM users WHERE id = ?";
+if($stmt = mysqli_prepare($link, $sql)){
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $generations_left);
+    mysqli_stmt_fetch($stmt);
+    mysqli_stmt_close($stmt);
+}
+
+if ($generations_left <= 0) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Nu mai aveți generări disponibile. <a href="pricing.php">Fă un upgrade acum</a> pentru a continua să creezi.'
+    ]);
+    exit;
+}
+
+
 // Function to generate a silent WAV file
 function createSilentWav($duration, $filename) {
     $sampleRate = 44100;
@@ -67,6 +89,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Simulate music generation
     if (createSilentWav($duration, $filename)) {
+        // Decrement generations_left count
+        $sql_update = "UPDATE users SET generations_left = generations_left - 1 WHERE id = ?";
+        if ($stmt_update = mysqli_prepare($link, $sql_update)) {
+            mysqli_stmt_bind_param($stmt_update, "i", $user_id);
+            mysqli_stmt_execute($stmt_update);
+            mysqli_stmt_close($stmt_update);
+        }
+
         echo json_encode([
             'success' => true,
             'message' => 'Music generated successfully!',
