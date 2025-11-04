@@ -65,7 +65,7 @@ nav a { color: var(--text-color); }
     color: var(--bg-color);
 }
 
-.generations-counter {
+.coin-counter {
     align-self: center;
     margin: 0 1rem;
     font-size: 0.9rem;
@@ -127,6 +127,24 @@ main { /* ... */ }
     background: var(--accent-gradient);
     color: #fff;
     cursor: pointer;
+}
+
+/* Admin Actions */
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+}
+.admin-action-btn {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: var(--accent-color);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
 }
 
 .prompt-examples {

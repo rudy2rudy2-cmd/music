@@ -2,101 +2,91 @@
 session_start();
 require_once 'config.php';
 
-// If user is not logged in, redirect to login page
+// If user is not logged in, redirect
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: login.php?redirect=profile.php");
     exit;
 }
 
-// Fetch user data from database
+// Fetch user data
 $user_id = $_SESSION['id'];
 $user_info = [];
-$sql = "SELECT username, email, plan FROM users WHERE id = ?";
-if($stmt = mysqli_prepare($link, $sql)){
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    if(mysqli_stmt_execute($stmt)){
-        $result = mysqli_stmt_get_result($stmt);
-        $user_info = mysqli_fetch_assoc($result);
+$sql_user = "SELECT username, email, coins FROM users WHERE id = ?";
+if($stmt_user = mysqli_prepare($link, $sql_user)){
+    mysqli_stmt_bind_param($stmt_user, "i", $user_id);
+    if(mysqli_stmt_execute($stmt_user)){
+        $result_user = mysqli_stmt_get_result($stmt_user);
+        $user_info = mysqli_fetch_assoc($result_user);
     }
-    mysqli_stmt_close($stmt);
+    mysqli_stmt_close($stmt_user);
+}
+
+// Fetch user's songs
+$songs = [];
+$sql_songs = "SELECT id, prompt, file_path, cover_art_path, dedication_text, created_at FROM songs WHERE user_id = ? ORDER BY created_at DESC";
+if ($stmt_songs = mysqli_prepare($link, $sql_songs)) {
+    mysqli_stmt_bind_param($stmt_songs, "i", $user_id);
+    if (mysqli_stmt_execute($stmt_songs)) {
+        $result_songs = mysqli_stmt_get_result($stmt_songs);
+        while ($row = mysqli_fetch_assoc($result_songs)) {
+            $songs[] = $row;
+        }
+    }
+    mysqli_stmt_close($stmt_songs);
 }
 
 // Fetch theme settings
-$theme = 'dark';
-$accent_color = 'blue';
-// ... (code to fetch theme settings)
+// ... (code to fetch theme)
 ?>
 <!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profilul Meu - AI Music Generator</title>
+    <title>Portofoliul Meu</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="profile.css">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Font Awesome -->
 </head>
-<body data-theme="<?php echo htmlspecialchars($theme); ?>" data-color="<?php echo htmlspecialchars($accent_color); ?>">
+<body data-theme="dark" data-color="blue">
     <?php include 'header.php'; ?>
+    <main class="profile-container">
+        <h1>Portofoliul Meu</h1>
+        <div class="profile-card" style="margin-bottom: 2rem;">
+            <h2><?php echo htmlspecialchars($user_info['username']); ?></h2>
+            <p>Monede: <i class="fas fa-coins"></i> <?php echo htmlspecialchars($user_info['coins']); ?></p>
+        </div>
 
-    <main>
-        <div class="profile-container">
-            <h1>Profilul Meu</h1>
-            <div class="profile-grid">
-                <div class="profile-card">
-                    <div class="avatar-placeholder">
-                        <span><?php echo strtoupper(substr($user_info['username'], 0, 1)); ?></span>
-                    </div>
-                    <h2><?php echo htmlspecialchars($user_info['username']); ?></h2>
-                    <p><?php echo htmlspecialchars($user_info['email']); ?></p>
-                    <span class="plan-badge"><?php echo ucfirst(htmlspecialchars($user_info['plan'])); ?> Plan</span>
-                </div>
-                <div class="profile-settings">
-                    <h2>Setări Profil</h2>
-                    <form id="profile-form">
-                        <label for="bio">Bio:</label>
-                        <textarea id="bio" placeholder="Descrie-te pe scurt..."></textarea>
-                        <label for="avatar">URL Avatar:</label>
-                        <input type="text" id="avatar" placeholder="https://example.com/avatar.png">
-                        <button type="submit" class="save-btn">Salvează Modificările</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="my-music">
-                <h2>Melodiile Mele</h2>
-                <div class="music-list">
-                    <!-- Placeholder Item 1 -->
-                    <div class="music-item">
-                        <span class="music-title">Cântec de luptă cinematic</span>
-                        <span class="music-details">Rock | 140 BPM | 1:30 min</span>
-                        <div class="music-actions">
-                            <button>▶️</button>
-                            <button>💾</button>
-                            <button>🗑️</button>
+        <div class="my-music">
+            <h2>Melodiile Mele (<?php echo count($songs); ?>)</h2>
+            <div class="music-list">
+                <?php if (empty($songs)): ?>
+                    <p>Nu ai generat nicio melodie încă. <a href="generate_music.php">Creează una acum!</a></p>
+                <?php else: ?>
+                    <?php foreach ($songs as $song): ?>
+                        <div class="music-item-large">
+                            <img src="<?php echo htmlspecialchars($song['cover_art_path']); ?>" alt="Coperta melodiei" class="music-cover">
+                            <div class="music-info">
+                               <h3><?php echo htmlspecialchars($song['prompt']); ?></h3>
+                               <?php if (!empty($song['dedication_text'])): ?>
+                                   <p class="dedication"><em>Dedicație: <?php echo htmlspecialchars($song['dedication_text']); ?></em></p>
+                               <?php endif; ?>
+                               <audio controls src="<?php echo htmlspecialchars($song['file_path']); ?>"></audio>
+                               <div class="music-actions-large">
+                                   <button class="action-btn extend-btn" data-song-id="<?php echo $song['id']; ?>">Extinde Melodia</button>
+                                   <button class="action-btn delete-btn" data-song-id="<?php echo $song['id']; ?>">Șterge</button>
+                               </div>
+                           </div>
                         </div>
-                    </div>
-                    <!-- Placeholder Item 2 -->
-                     <div class="music-item">
-                        <span class="music-title">Beat Lofi pentru relaxare</span>
-                        <span class="music-details">Lofi | 80 BPM | 2:00 min</span>
-                        <div class="music-actions">
-                            <button>▶️</button>
-                            <button>💾</button>
-                            <button>🗑️</button>
-                        </div>
-                    </div>
-                </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </main>
-
     <?php include 'footer.php'; ?>
     <script>
-        document.getElementById('profile-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Funcționalitate în dezvoltare! Setările tale vor putea fi salvate aici.');
+        // Placeholder for extend/delete functionality
+        document.querySelectorAll('.extend-btn, .delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => alert('Funcționalitate în dezvoltare.'));
         });
     </script>
 </body>

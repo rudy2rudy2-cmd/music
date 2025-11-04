@@ -62,7 +62,7 @@ $prompt_from_home = isset($_GET['prompt']) ? htmlspecialchars($_GET['prompt']) :
                     </div>
                      <div class="option-control">
                         <label for="duration">Durată: <span id="duration-value">30</span>s</label>
-                        <input type="range" id="duration" name="duration" class="duration-slider" min="5" max="180" value="30">
+                        <input type="range" id="duration" name="duration" class="duration-slider" min="5" max="480" value="30">
                     </div>
                      <div class="option-control">
                         <label for="tempo">Tempo: <span id="tempo-value">120</span> BPM</label>

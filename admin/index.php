@@ -60,6 +60,16 @@ if ($result) {
                 </div>
             </div>
         </div>
+
+        <div class="generator-container" style="margin-top: 2rem;">
+            <h2>Management</h2>
+            <div class="admin-actions">
+                <a href="manage_users.php" class="admin-action-btn">
+                    <i class="fas fa-users"></i> Manage Users
+                </a>
+                <!-- Other management links can go here -->
+            </div>
+        </div>
     </main>
     <script src="theme.js"></script>
 </body>

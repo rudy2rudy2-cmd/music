@@ -2,35 +2,43 @@
 session_start();
 header('Content-Type: application/json');
 
-// Check if user is logged in (optional, but good practice)
-if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    echo json_encode(['success' => false, 'message' => 'You must be logged in to generate music.']);
-    exit;
-}
-
-// Check user's remaining generations
 require_once 'config.php';
+
+// --- Authorization ---
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    echo json_encode(['success' => false, 'message' => 'Trebuie să fii autentificat pentru a genera muzică.']);
+    exit;
+}
 $user_id = $_SESSION['id'];
-$generations_left = 0;
-$sql = "SELECT generations_left FROM users WHERE id = ?";
-if($stmt = mysqli_prepare($link, $sql)){
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $generations_left);
-    mysqli_stmt_fetch($stmt);
-    mysqli_stmt_close($stmt);
+
+// --- Check Coin Balance ---
+$user_coins = 0;
+$sql_coins = "SELECT coins FROM users WHERE id = ?";
+if($stmt_coins = mysqli_prepare($link, $sql_coins)){
+    mysqli_stmt_bind_param($stmt_coins, "i", $user_id);
+    mysqli_stmt_execute($stmt_coins);
+    mysqli_stmt_bind_result($stmt_coins, $user_coins);
+    mysqli_stmt_fetch($stmt_coins);
+    mysqli_stmt_close($stmt_coins);
 }
 
-if ($generations_left <= 0) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Nu mai aveți generări disponibile. <a href="pricing.php">Fă un upgrade acum</a> pentru a continua să creezi.'
-    ]);
+$song_cost = 5;
+if ($user_coins < $song_cost) {
+    echo json_encode(['success' => false, 'message' => 'Monede insuficiente! O melodie costă ' . $song_cost . ' monede.']);
     exit;
 }
 
+// --- Input Validation ---
+if ($_SERVER["REQUEST_METHOD"] != "POST") {
+    echo json_encode(['success' => false, 'message' => 'Metodă de request invalidă.']);
+    exit;
+}
+$prompt = $_POST['prompt'] ?? 'Fără prompt';
+$duration = (int)($_POST['duration'] ?? 30);
+$genre = $_POST['genre'] ?? 'Pop';
+// ... Add validation for all other inputs if needed
 
-// Function to generate a silent WAV file
+// --- Helper Functions ---
 function createSilentWav($duration, $filename) {
     $sampleRate = 44100;
     $numChannels = 1;
@@ -64,48 +72,50 @@ function createSilentWav($duration, $filename) {
     return false;
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $prompt = $_POST['prompt'] ?? 'No prompt provided';
-    $duration = (int)($_POST['duration'] ?? 30);
-    $voice = $_POST['voice'] ?? 'Instrumental';
-    $genre = $_POST['genre'] ?? 'Pop';
-    $mood = $_POST['mood'] ?? 'Happy';
+function createCoverArt($genre, $mood) {
+    // Simplified cover art simulation without GD library
+    $background_dir = 'covers/backgrounds/';
+    $background_file = strtolower($genre) . '.jpg';
 
-    // Basic validation
-    if (empty($prompt)) {
-        echo json_encode(['success' => false, 'message' => 'Please enter a prompt.']);
-        exit;
-    }
-    if ($duration <= 0 || $duration > 300) { // Max 5 minutes
-        echo json_encode(['success' => false, 'message' => 'Duration must be between 1 and 300 seconds.']);
-        exit;
+    if (file_exists($background_dir . $background_file)) {
+        return $background_dir . $background_file;
     }
 
-    $upload_dir = 'uploads/';
-    if (!is_dir($upload_dir)) {
-        mkdir($upload_dir, 0755, true);
-    }
-    $filename = $upload_dir . 'music_' . time() . '_' . uniqid() . '.wav';
+    return $background_dir . 'default.jpg';
+}
 
-    // Simulate music generation
-    if (createSilentWav($duration, $filename)) {
-        // Decrement generations_left count
-        $sql_update = "UPDATE users SET generations_left = generations_left - 1 WHERE id = ?";
-        if ($stmt_update = mysqli_prepare($link, $sql_update)) {
-            mysqli_stmt_bind_param($stmt_update, "i", $user_id);
-            mysqli_stmt_execute($stmt_update);
-            mysqli_stmt_close($stmt_update);
-        }
+// --- Main Logic ---
+$upload_dir = 'uploads/';
+if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+$audio_filename = $upload_dir . 'music_' . time() . '_' . uniqid() . '.wav';
 
-        echo json_encode([
-            'success' => true,
-            'message' => 'Music generated successfully!',
-            'file_path' => $filename
-        ]);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to generate the audio file.']);
+if (createSilentWav($duration, $audio_filename)) {
+    // 1. Deduct coins
+    $sql_update_coins = "UPDATE users SET coins = coins - ? WHERE id = ?";
+    if ($stmt_update = mysqli_prepare($link, $sql_update_coins)) {
+        mysqli_stmt_bind_param($stmt_update, "ii", $song_cost, $user_id);
+        mysqli_stmt_execute($stmt_update);
+        mysqli_stmt_close($stmt_update);
     }
+
+    // 2. Generate cover art
+    $cover_art_path = createCoverArt($genre, $_POST['mood'] ?? 'Happy');
+
+    // 3. Save song to database
+    $sql_insert_song = "INSERT INTO songs (user_id, prompt, genre, duration, file_path, cover_art_path) VALUES (?, ?, ?, ?, ?, ?)";
+    if ($stmt_insert = mysqli_prepare($link, $sql_insert_song)) {
+        mysqli_stmt_bind_param($stmt_insert, "ississ", $user_id, $prompt, $genre, $duration, $audio_filename, $cover_art_path);
+        mysqli_stmt_execute($stmt_insert);
+        mysqli_stmt_close($stmt_insert);
+    }
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Melodie generată cu succes!',
+        'file_path' => $audio_filename
+    ]);
+
 } else {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
+    echo json_encode(['success' => false, 'message' => 'Eroare la generarea fișierului audio.']);
 }
 ?>
