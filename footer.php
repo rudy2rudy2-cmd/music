@@ -1,3 +1,3 @@
 <footer>
-    <p>&copy; <?php echo date("Y"); ?> AI Music Generator. Toate drepturile rezervate.</p>
+    <p>copyright renul-music 2025</p>
 </footer>
