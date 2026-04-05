@@ -1,1 +1,7 @@
-[Sun Apr  5 00:48:51 2026] Failed to listen on localhost:8000 (reason: Address already in use)
+[Sun Apr  5 01:04:34 2026] PHP 8.3.6 Development Server (http://localhost:8001) started
+[Sun Apr  5 01:04:37 2026] [::1]:37226 Accepted
+[Sun Apr  5 01:04:37 2026] [::1]:37226 [200]: GET /install.php
+[Sun Apr  5 01:04:37 2026] [::1]:37226 Closing
+[Sun Apr  5 01:04:37 2026] [::1]:37238 Accepted
+[Sun Apr  5 01:04:38 2026] [::1]:37238 [200]: POST /install.php
+[Sun Apr  5 01:04:38 2026] [::1]:37238 Closing

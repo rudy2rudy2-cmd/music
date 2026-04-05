@@ -15,13 +15,17 @@ $stmt_chan = $pdo->prepare("SELECT * FROM channels WHERE id = ?");
 $stmt_chan->execute([$channel_id]);
 $channel = $stmt_chan->fetch();
 
+$stmt_all = $pdo->query("SELECT id, name FROM channels ORDER BY name ASC");
+$all_channels = $stmt_all->fetchAll();
+
 header('Content-Type: application/json');
 echo json_encode([
     'media' => $medias,
     'config' => [
-        'name' => $channel['name'],
-        'logo' => $channel['logo_path'],
-        'ticker' => $channel['ticker_text']
-    ]
+        'name' => $channel['name'] ?? 'Canal Necunoscut',
+        'logo' => $channel['logo_path'] ?? null,
+        'ticker' => $channel['ticker_text'] ?? ''
+    ],
+    'all_channels' => $all_channels
 ]);
 ?>
