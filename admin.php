@@ -47,28 +47,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         } elseif ($_POST['action'] == 'update_channel') {
             $channel_id = $_POST['channel_id'] ?? 0;
+            $channel_name = $_POST['channel_name'] ?? '';
             $ticker_text = $_POST['ticker_text'] ?? '';
 
             if ($channel_id) {
-                $logo_path = null;
+                // Get current channel data to handle old logo
+                $stmt = $pdo->prepare("SELECT logo_path FROM channels WHERE id = ?");
+                $stmt->execute([$channel_id]);
+                $chan = $stmt->fetch();
+                $logo_path = $chan['logo_path'] ?? null;
+
                 if (isset($_FILES['logo_file']) && $_FILES['logo_file']['error'] === UPLOAD_ERR_OK) {
                     $file_ext = strtolower(pathinfo($_FILES['logo_file']['name'], PATHINFO_EXTENSION));
                     if (in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif'])) {
-                        $new_logo = 'uploads/logo_' . $channel_id . '.' . $file_ext;
+                        // Delete old logo file if it exists and is different
+                        if ($logo_path && file_exists($logo_path)) {
+                            unlink($logo_path);
+                        }
+
+                        if (!is_dir('uploads')) {
+                            mkdir('uploads', 0755, true);
+                        }
+
+                        $new_logo = 'uploads/logo_' . $channel_id . '_' . uniqid() . '.' . $file_ext;
                         if (move_uploaded_file($_FILES['logo_file']['tmp_name'], $new_logo)) {
                             $logo_path = $new_logo;
                         }
                     }
                 }
 
-                if ($logo_path) {
-                    $stmt = $pdo->prepare("UPDATE channels SET ticker_text = ?, logo_path = ? WHERE id = ?");
-                    $stmt->execute([$ticker_text, $logo_path, $channel_id]);
-                } else {
-                    $stmt = $pdo->prepare("UPDATE channels SET ticker_text = ? WHERE id = ?");
-                    $stmt->execute([$ticker_text, $channel_id]);
-                }
-                $message = "Configurația canalului a fost salvată.";
+                $stmt = $pdo->prepare("UPDATE channels SET name = ?, ticker_text = ?, logo_path = ? WHERE id = ?");
+                $stmt->execute([$channel_name, $ticker_text, $logo_path, $channel_id]);
+                $message = "Canal actualizat cu succes.";
             }
         } elseif ($_POST['action'] == 'upload_media') {
             $channel_id = $_POST['channel_id'] ?? 0;
@@ -87,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         $upload_path = 'uploads/' . $new_filename;
 
                         if (!is_dir('uploads')) {
-                            mkdir('uploads', 0777, true);
+                            mkdir('uploads', 0755, true);
                         }
 
                         if (move_uploaded_file($file['tmp_name'], $upload_path)) {
@@ -143,22 +153,31 @@ $csrf_token = generate_csrf_token();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         .sortable-ghost { opacity: 0.4; }
+        main { flex: 1; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <nav class="bg-blue-600 text-white p-4 shadow-md">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold"><i class="fas fa-tv mr-2"></i>Viziere Digitale - Admin</h1>
-            <div class="flex items-center space-x-4">
-                <span>Salut, <?php echo htmlspecialchars($_SESSION['username'] ?? 'Admin'); ?></span>
-                <a href="logout.php" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm transition duration-300">Logout</a>
+            <div class="flex items-center">
+                <h1 class="text-xl font-bold flex items-center">
+                    <i class="fas fa-tv mr-2"></i> Viziere Digitale
+                </h1>
+                <span class="ml-6 text-xs opacity-75 hidden md:inline">Panou Control v2.0</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span class="text-xs italic hidden lg:inline">© 2025 Viziere Digitale. Toate drepturile rezervate.</span>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-semibold border-r pr-3 border-blue-400">Salut, <?php echo htmlspecialchars($_SESSION['username'] ?? 'Admin'); ?></span>
+                    <a href="logout.php" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm transition duration-300 shadow-sm">Logout</a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto p-6">
+    <main class="container mx-auto p-6">
         <?php if ($message): ?>
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 shadow-sm" role="alert">
                 <span class="block sm:inline"><?php echo $message; ?></span>
@@ -178,16 +197,16 @@ $csrf_token = generate_csrf_token();
                 <input type="hidden" name="action" value="add_channel">
                 <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 <input class="flex-grow shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" type="text" name="channel_name" placeholder="Ex: Canal 1 Scara A" required>
-                <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded transition duration-300" type="submit">
+                <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded transition duration-300 shadow-sm" type="submit">
                     <i class="fas fa-plus mr-2"></i>Adaugă
                 </button>
             </form>
         </div>
 
         <!-- Channels List -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             <?php foreach ($channels as $channel): ?>
-            <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">
+            <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500 flex flex-col">
                 <div class="flex justify-between items-start mb-4">
                     <h3 class="text-xl font-bold text-gray-800"><?php echo htmlspecialchars($channel['name']); ?></h3>
                     <div class="flex space-x-2">
@@ -206,23 +225,40 @@ $csrf_token = generate_csrf_token();
                 </div>
 
                 <!-- Config Channel -->
-                <div class="mb-4 bg-blue-50 p-3 rounded border border-blue-100">
-                    <form method="POST" enctype="multipart/form-data" class="flex flex-col space-y-2">
+                <div class="mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100 shadow-inner">
+                    <form method="POST" enctype="multipart/form-data" class="flex flex-col space-y-4">
                         <input type="hidden" name="action" value="update_channel">
                         <input type="hidden" name="channel_id" value="<?php echo $channel['id']; ?>">
                         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                        <label class="block text-xs font-bold text-blue-700 uppercase">Setări Canal</label>
 
-                        <div class="flex items-center space-x-2">
-                            <?php if ($channel['logo_path']): ?>
-                                <img src="<?php echo htmlspecialchars($channel['logo_path']); ?>" class="w-8 h-8 object-contain rounded border bg-white">
-                            <?php endif; ?>
-                            <input type="file" name="logo_file" class="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-white file:text-blue-700 hover:file:bg-blue-100">
+                        <div class="flex space-x-4 items-start">
+                            <div class="flex-shrink-0">
+                                <label class="text-[9px] text-gray-500 block mb-1 uppercase font-bold">Logo Canal</label>
+                                <div class="w-16 h-16 border-2 border-dashed border-blue-200 bg-white rounded-lg flex items-center justify-center overflow-hidden relative group shadow-inner">
+                                    <?php if ($channel['logo_path']): ?>
+                                        <img src="<?php echo htmlspecialchars($channel['logo_path']); ?>" class="w-full h-full object-contain p-1">
+                                    <?php else: ?>
+                                        <i class="fas fa-camera text-gray-300 text-xl"></i>
+                                    <?php endif; ?>
+                                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                        <i class="fas fa-upload text-white text-xs"></i>
+                                    </div>
+                                    <input type="file" name="logo_file" class="absolute inset-0 opacity-0 cursor-pointer">
+                                </div>
+                            </div>
+                            <div class="flex-grow flex flex-col space-y-3">
+                                <div>
+                                    <label class="text-[9px] text-gray-500 block mb-1 uppercase font-bold">Redenumește Canal</label>
+                                    <input type="text" name="channel_name" value="<?php echo htmlspecialchars($channel['name']); ?>" placeholder="Nume canal" class="w-full text-sm border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400 font-semibold text-gray-700 shadow-sm" required>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] text-gray-500 block mb-1 uppercase font-bold">Text Live (Ticker)</label>
+                                    <input type="text" name="ticker_text" placeholder="Mesaj scrollant..." value="<?php echo htmlspecialchars($channel['ticker_text'] ?? ''); ?>" class="w-full text-xs border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm">
+                                </div>
+                            </div>
                         </div>
 
-                        <input type="text" name="ticker_text" placeholder="Text scrollant live..." value="<?php echo htmlspecialchars($channel['ticker_text'] ?? ''); ?>" class="w-full text-xs border rounded p-1 focus:outline-none focus:ring-1 focus:ring-blue-400">
-
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1 rounded transition duration-300 uppercase">Salvează Configurarea</button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-2 rounded transition duration-300 uppercase shadow-md">Salvează Modificările</button>
                     </form>
                 </div>
 
@@ -238,12 +274,12 @@ $csrf_token = generate_csrf_token();
                             <label class="text-xs text-gray-500">Durată (s):</label>
                             <input type="number" name="duration" value="10" min="1" class="w-16 border rounded text-xs p-1">
                         </div>
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-2 rounded transition duration-300">Încarcă</button>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-2 rounded transition duration-300 shadow-sm">Încarcă Media</button>
                     </form>
                 </div>
 
                 <!-- Media List (Sortable) -->
-                <div class="mt-4">
+                <div class="mt-auto">
                     <div class="flex justify-between items-center mb-2 border-b pb-1">
                         <h4 class="text-sm font-semibold text-gray-600">Media (reordonează):</h4>
                     </div>
@@ -286,7 +322,13 @@ $csrf_token = generate_csrf_token();
             </div>
             <?php endforeach; ?>
         </div>
-    </div>
+    </main>
+
+    <footer class="bg-white border-t p-4 mt-auto">
+        <div class="container mx-auto text-right text-gray-400 text-[10px] uppercase font-bold tracking-widest">
+            &copy; 2025 Viziere Digitale. Toate drepturile rezervate.
+        </div>
+    </footer>
 
     <!-- Hidden form for deleting media -->
     <form id="delete-media-form" method="POST" style="display:none;">
