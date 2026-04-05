@@ -1,0 +1,27 @@
+[Sun Apr  5 03:34:16 2026] Failed to listen on localhost:8003 (reason: Address already i[Sun Apr  5 03:34:21 2026] [::1]:56638 Accepted
+[Sun Apr  5 03:34:21 2026] [::1]:56638 [200]: GET /login.php
+[Sun Apr  5 03:34:21 2026] [::1]:56638 Closing
+[Sun Apr  5 03:34:22 2026] [::1]:53254 Accepted
+[Sun Apr  5 03:34:22 2026] [::1]:53254 [200]: GET /register.php
+[Sun Apr  5 03:34:22 2026] [::1]:53254 Closing
+[Sun Apr  5 03:34:22 2026] [::1]:53262 Accepted
+[Sun Apr  5 03:34:22 2026] [::1]:53262 [200]: POST /register.php
+[Sun Apr  5 03:34:22 2026] [::1]:53262 Closing
+[Sun Apr  5 03:34:22 2026] [::1]:53270 Accepted
+[Sun Apr  5 03:34:22 2026] [::1]:53270 [200]: GET /login.php
+[Sun Apr  5 03:34:22 2026] [::1]:53270 Closing
+[Sun Apr  5 03:34:23 2026] [::1]:53278 Accepted
+[Sun Apr  5 03:34:23 2026] [::1]:53278 [302]: POST /login.php
+[Sun Apr  5 03:34:23 2026] [::1]:53278 Closing
+[Sun Apr  5 03:34:23 2026] [::1]:53294 Accepted
+[Sun Apr  5 03:34:23 2026] PHP Parse error:  syntax error, unexpected token "elseif" in /app/admin.php on line 691
+[Sun Apr  5 03:34:23 2026] [::1]:53294 [500]: GET /admin.php - syntax error, unexpected token "elseif" in /app/admin.php on line 691
+[Sun Apr  5 03:34:23 2026] [::1]:53294 Closing
+[Sun Apr  5 03:34:23 2026] [::1]:53304 Accepted
+[Sun Apr  5 03:34:23 2026] PHP Parse error:  syntax error, unexpected token "elseif" in /app/admin.php on line 691
+[Sun Apr  5 03:34:23 2026] [::1]:53304 [500]: GET /admin.php?view=stats - syntax error, unexpected token "elseif" in /app/admin.php on line 691
+[Sun Apr  5 03:34:23 2026] [::1]:53304 Closing
+[Sun Apr  5 03:34:23 2026] [::1]:53320 Accepted
+[Sun Apr  5 03:34:23 2026] PHP Parse error:  syntax error, unexpected token "elseif" in /app/admin.php on line 691
+[Sun Apr  5 03:34:23 2026] [::1]:53320 [500]: GET /admin.php?view=settings - syntax error, unexpected token "elseif" in /app/admin.php on line 691
+[Sun Apr  5 03:34:23 2026] [::1]:53320 Closing

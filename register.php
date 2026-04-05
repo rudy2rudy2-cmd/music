@@ -107,9 +107,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="w-full max-w-md glass rounded-[2.5rem] shadow-2xl overflow-hidden transition-all duration-500" style="color: rgb(var(--text-main))">
         <div class="p-10">
             <div class="flex flex-col items-center mb-10">
-                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-xl mb-6 transform -rotate-3 transition-colors duration-500" style="background: rgb(var(--primary)); color: var(--theme-icon-color, white)">
-                    <i class="fas fa-user-plus"></i>
-                </div>
+                <?php
+                    $stmt_logo = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_logo'");
+                    $stmt_logo->execute();
+                    $site_logo = $stmt_logo->fetchColumn();
+                ?>
+                <?php if ($site_logo): ?>
+                    <div class="w-20 h-20 mb-6 flex items-center justify-center overflow-hidden">
+                        <img src="<?php echo htmlspecialchars($site_logo); ?>" class="max-w-full max-h-full object-contain filter drop-shadow-lg">
+                    </div>
+                <?php else: ?>
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-xl mb-6 transform -rotate-3 transition-colors duration-500" style="background: rgb(var(--primary)); color: var(--theme-icon-color, white)">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                <?php endif; ?>
                 <h1 class="text-3xl font-extrabold text-center tracking-tight" style="color: rgb(var(--text-main))">Creează Cont</h1>
                 <p class="font-semibold mt-2 uppercase tracking-widest text-[10px]" style="color: rgb(var(--text-muted))">Administrator Nou</p>
             </div>

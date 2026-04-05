@@ -91,10 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $error = "Eroare la încărcare: " . $file['error'];
                 } else {
                     $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                    $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'webm', 'ogg'];
+                    $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'webm', 'ogg', 'avi', 'mpeg', 'mov'];
 
                     if (in_array($file_ext, $allowed_exts)) {
-                        $type = in_array($file_ext, ['mp4', 'webm', 'ogg']) ? 'video' : 'image';
+                        $type = in_array($file_ext, ['mp4', 'webm', 'ogg', 'avi', 'mpeg', 'mov']) ? 'video' : 'image';
                         $new_filename = uniqid() . '.' . $file_ext;
                         $upload_path = 'uploads/' . $new_filename;
 
@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 if (in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif'])) {
                     $new_logo = 'uploads/site_logo.' . $file_ext;
                     if (move_uploaded_file($_FILES['site_logo']['tmp_name'], $new_logo)) {
-                        $pdo->prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('site_logo', ?)")->execute([$new_logo]);
+                        $pdo->prepare("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES ('site_logo', ?)")->execute([$new_logo]);
                     }
                 }
             }
@@ -299,10 +299,21 @@ $csrf_token = generate_csrf_token();
 <body class="min-h-screen flex flex-col md:flex-row transition-colors duration-500" style="background-color: rgb(var(--bg-main))">
     <!-- Sidebar -->
     <aside class="w-full md:w-64 border-r border-slate-200 flex flex-col z-20 transition-colors duration-500" style="background-color: rgb(var(--sidebar-bg))">
+        <?php
+            $stmt_logo = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_logo'");
+            $stmt_logo->execute();
+            $site_logo = $stmt_logo->fetchColumn();
+        ?>
         <div class="p-6 border-b border-slate-100 flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-colors duration-500" style="background-color: rgb(var(--primary)); color: var(--theme-icon-color)">
-                <i class="fas fa-tv"></i>
-            </div>
+            <?php if ($site_logo): ?>
+                <div class="w-10 h-10 rounded-xl overflow-hidden shadow-lg border border-slate-100">
+                    <img src="<?php echo htmlspecialchars($site_logo); ?>" class="w-full h-full object-cover">
+                </div>
+            <?php else: ?>
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-colors duration-500" style="background-color: rgb(var(--primary)); color: var(--theme-icon-color)">
+                    <i class="fas fa-tv"></i>
+                </div>
+            <?php endif; ?>
             <div>
                 <h1 class="text-sm font-bold text-slate-800">Viziere Digitale</h1>
                 <p class="text-[10px] text-slate-400 font-medium">Control v2.0</p>
@@ -318,6 +329,10 @@ $csrf_token = generate_csrf_token();
             <a href="admin.php?view=settings" class="<?php echo $view == 'settings' ? 'sidebar-item-active' : 'text-slate-500 hover:bg-slate-50'; ?> flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200">
                 <i class="fas fa-cog text-sm"></i>
                 <span class="text-sm font-semibold">Setări Sistem</span>
+            </a>
+            <a href="admin.php?view=stats" class="<?php echo $view == 'stats' ? 'sidebar-item-active' : 'text-slate-500 hover:bg-slate-50'; ?> flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200">
+                <i class="fas fa-chart-pie text-sm"></i>
+                <span class="text-sm font-semibold">Statistici</span>
             </a>
         </nav>
 
@@ -342,7 +357,11 @@ $csrf_token = generate_csrf_token();
     <main class="flex-grow flex flex-col min-h-screen">
         <header class="h-16 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10 transition-colors duration-500" style="background-color: rgba(var(--sidebar-bg), 0.8)">
             <h2 class="text-lg font-bold" style="color: rgb(var(--text-main))">
-                <?php echo $view == 'settings' ? 'Setări Sistem' : 'Gestionare Canale'; ?>
+                <?php
+                    if ($view == 'settings') echo 'Setări Sistem';
+                    elseif ($view == 'stats') echo 'Statistici Platformă';
+                    else echo 'Gestionare Canale';
+                ?>
             </h2>
             <div class="flex items-center space-x-6">
                 <div class="hidden lg:flex items-center space-x-2 bg-slate-100/50 p-1.5 rounded-xl border border-slate-200/50">
@@ -565,7 +584,7 @@ $csrf_token = generate_csrf_token();
                             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Logo Platformă</label>
                             <div class="flex items-center space-x-4">
                                 <?php
-                                $stmt_logo = $pdo->prepare("SELECT value FROM settings WHERE key = 'site_logo'");
+                                $stmt_logo = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_logo'");
                                 $stmt_logo->execute();
                                 $site_logo = $stmt_logo->fetchColumn();
                                 ?>
@@ -621,25 +640,37 @@ $csrf_token = generate_csrf_token();
                     </div>
                 </div>
 
-                <!-- Calendar & Clock Utility -->
+                <!-- Calendar & Clock & Weather Utility -->
                 <div class="rounded-3xl border border-slate-100 p-8 space-y-6 transition-colors duration-500" style="background-color: rgb(var(--card-bg))">
                     <div class="flex items-center space-x-3 mb-2">
                         <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
-                            <i class="fas fa-calendar-day"></i>
+                            <i class="fas fa-bolt"></i>
                         </div>
                         <h3 class="font-bold text-lg" style="color: rgb(var(--text-main))">Utilități</h3>
                     </div>
 
-                    <div class="bg-slate-50 rounded-2xl p-6 text-center">
-                        <div id="settingsClock" class="text-4xl font-black tracking-tighter text-slate-800 mb-1">00:00:00</div>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><?php echo date('l, d F Y'); ?></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-50 rounded-2xl p-4 text-center">
+                            <div id="settingsClock" class="text-2xl font-black tracking-tighter text-slate-800">00:00:00</div>
+                            <div class="text-[8px] font-bold text-slate-400 uppercase tracking-widest"><?php echo date('l, d F'); ?></div>
+                        </div>
+                        <div class="bg-blue-50 rounded-2xl p-4 text-center flex flex-col items-center justify-center">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-cloud-sun text-blue-500 text-xl"></i>
+                                <span class="text-xl font-black text-slate-800">24°C</span>
+                            </div>
+                            <div class="text-[8px] font-bold text-blue-400 uppercase tracking-widest">București, Senin</div>
+                        </div>
                     </div>
 
-                    <div class="border-t border-slate-100 pt-6">
-                        <div class="grid grid-cols-7 gap-1 text-center">
+                    <div class="border-t border-slate-100 pt-4">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i> Calendar
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center max-w-[200px] mx-auto">
                             <?php
-                            $days = ['Lu', 'Ma', 'Mi', 'Jo', 'Vi', 'Sâ', 'Du'];
-                            foreach($days as $d) echo "<div class='text-[9px] font-black text-slate-400 uppercase'>$d</div>";
+                            $days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+                            foreach($days as $d) echo "<div class='text-[8px] font-black text-slate-300 uppercase'>$d</div>";
 
                             $start_date = date('Y-m-01');
                             $end_date = date('Y-m-t');
@@ -649,11 +680,105 @@ $csrf_token = generate_csrf_token();
 
                             for($i = 1; $i < $start_day; $i++) echo "<div></div>";
                             for($day = 1; $day <= $days_in_month; $day++) {
-                                $is_today = ($day == $today) ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'text-slate-600';
-                                echo "<div class='aspect-square flex items-center justify-center text-xs font-bold rounded-lg $is_today'>$day</div>";
+                                $is_today = ($day == $today) ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500';
+                                echo "<div class='w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded-md $is_today'>$day</div>";
                             }
                             ?>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <?php elseif ($view == 'stats'): ?>
+            <!-- Statistics View -->
+            <div class="space-y-8">
+                <!-- Top Row Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <?php
+                    $total_channels = count($channels);
+                    $total_media = $pdo->query("SELECT COUNT(*) FROM media")->fetchColumn();
+                    $total_images = $pdo->query("SELECT COUNT(*) FROM media WHERE type = 'image'")->fetchColumn();
+                    $total_videos = $pdo->query("SELECT COUNT(*) FROM media WHERE type = 'video'")->fetchColumn();
+                    ?>
+                    <div class="rounded-3xl p-6 border border-slate-100 flex items-center space-x-4 transition hover:shadow-lg" style="background-color: rgb(var(--card-bg))">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center text-xl shadow-sm"><i class="fas fa-layer-group"></i></div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Canale</p>
+                            <h4 class="text-2xl font-black" style="color: rgb(var(--text-main))"><?php echo $total_channels; ?></h4>
+                        </div>
+                    </div>
+                    <div class="rounded-3xl p-6 border border-slate-100 flex items-center space-x-4 transition hover:shadow-lg" style="background-color: rgb(var(--card-bg))">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl shadow-sm"><i class="fas fa-photo-film"></i></div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Media</p>
+                            <h4 class="text-2xl font-black" style="color: rgb(var(--text-main))"><?php echo $total_media; ?></h4>
+                        </div>
+                    </div>
+                    <div class="rounded-3xl p-6 border border-slate-100 flex items-center space-x-4 transition hover:shadow-lg" style="background-color: rgb(var(--card-bg))">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl shadow-sm"><i class="fas fa-image"></i></div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Imagini</p>
+                            <h4 class="text-2xl font-black" style="color: rgb(var(--text-main))"><?php echo $total_images; ?></h4>
+                        </div>
+                    </div>
+                    <div class="rounded-3xl p-6 border border-slate-100 flex items-center space-x-4 transition hover:shadow-lg" style="background-color: rgb(var(--card-bg))">
+                        <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl shadow-sm"><i class="fas fa-video"></i></div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Videoclipuri</p>
+                            <h4 class="text-2xl font-black" style="color: rgb(var(--text-main))"><?php echo $total_videos; ?></h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Distribution Table -->
+                <div class="rounded-3xl border border-slate-100 overflow-hidden" style="background-color: rgb(var(--card-bg))">
+                    <div class="p-8 border-b border-slate-50 flex justify-between items-center">
+                        <h3 class="font-bold text-lg" style="color: rgb(var(--text-main))">Distribuție Media per Canal</h3>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Actualizat în timp real</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-slate-50/50">
+                                    <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nume Canal</th>
+                                    <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Total Fișiere</th>
+                                    <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Imagini</th>
+                                    <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Video</th>
+                                    <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Acțiuni</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                <?php foreach ($channels as $channel):
+                                    $c_total = $pdo->prepare("SELECT COUNT(*) FROM media WHERE channel_id = ?");
+                                    $c_total->execute([$channel['id']]);
+                                    $c_total_val = $c_total->fetchColumn();
+
+                                    $c_img = $pdo->prepare("SELECT COUNT(*) FROM media WHERE channel_id = ? AND type = 'image'");
+                                    $c_img->execute([$channel['id']]);
+                                    $c_img_val = $c_img->fetchColumn();
+
+                                    $c_vid = $pdo->prepare("SELECT COUNT(*) FROM media WHERE channel_id = ? AND type = 'video'");
+                                    $c_vid->execute([$channel['id']]);
+                                    $c_vid_val = $c_vid->fetchColumn();
+                                ?>
+                                <tr class="hover:bg-slate-50/30 transition">
+                                    <td class="px-8 py-6">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-xs"><i class="fas fa-hashtag"></i></div>
+                                            <span class="font-bold text-slate-700"><?php echo htmlspecialchars($channel['name']); ?></span>
+                                        </div>
+                                    </td>
+                                    <td class="px-8 py-6 text-center">
+                                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-black"><?php echo $c_total_val; ?></span>
+                                    </td>
+                                    <td class="px-8 py-6 text-center text-slate-500 font-bold text-sm"><?php echo $c_img_val; ?></td>
+                                    <td class="px-8 py-6 text-center text-slate-500 font-bold text-sm"><?php echo $c_vid_val; ?></td>
+                                    <td class="px-8 py-6 text-right">
+                                        <a href="admin.php?view=channels" class="text-blue-600 hover:text-blue-800 text-xs font-bold uppercase tracking-widest hover:underline">Vezi Detalii</a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -662,6 +787,11 @@ $csrf_token = generate_csrf_token();
 
         <!-- Footer -->
         <footer class="mt-auto py-6 px-12 border-t border-slate-100 text-slate-400 flex justify-between items-center transition-colors duration-500" style="background-color: rgb(var(--sidebar-bg))">
+            <?php if ($site_logo): ?>
+                <div class="h-8 opacity-40 hover:opacity-100 transition">
+                    <img src="<?php echo htmlspecialchars($site_logo); ?>" class="h-full object-contain grayscale">
+                </div>
+            <?php endif; ?>
             <div class="flex space-x-6 text-[10px] font-bold uppercase tracking-widest">
                 <a href="#" class="hover:text-blue-600 transition">Documentație</a>
                 <a href="#" class="hover:text-blue-600 transition">Suport</a>

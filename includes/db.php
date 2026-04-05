@@ -34,8 +34,8 @@ try {
     );");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
-        id INTEGER PRIMARY KEY CHECK (id = 1),
-        site_logo TEXT DEFAULT NULL
+        setting_key TEXT PRIMARY KEY,
+        setting_value TEXT
     );");
 
 } catch (PDOException $e) {
