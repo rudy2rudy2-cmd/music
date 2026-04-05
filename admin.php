@@ -542,7 +542,7 @@ $csrf_token = generate_csrf_token();
                 </div>
                 <?php endforeach; ?>
             </div>
-            <?php else: ?>
+            <?php elseif ($view == 'settings'): ?>
             <!-- Settings View -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                 <!-- Profile Edit -->
