@@ -7,25 +7,34 @@ if (is_logged_in()) {
 }
 
 $error = '';
+$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
 
-    if ($username && $password) {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch();
-
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            redirect('admin.php');
+    if ($username && $password && $confirm_password) {
+        if ($password !== $confirm_password) {
+            $error = 'Parolele nu se potrivesc.';
         } else {
-            $error = 'Utilizator sau parolă incorectă.';
+            // Check if user exists
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
+            $stmt->execute([$username]);
+            if ($stmt->fetchColumn() > 0) {
+                $error = 'Acest utilizator există deja.';
+            } else {
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+                if ($stmt->execute([$username, $hashed_password])) {
+                    $success = 'Cont creat cu succes! Te poți autentifica.';
+                } else {
+                    $error = 'A apărut o eroare la crearea contului.';
+                }
+            }
         }
     } else {
-        $error = 'Vă rugăm să introduceți toate datele.';
+        $error = 'Toate câmpurile sunt obligatorii.';
     }
 }
 ?>
@@ -34,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Viziere Digitale</title>
+    <title>Înregistrare - Viziere Digitale</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -46,48 +55,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid rgba(var(--glass-border), 0.5);
         }
         :root {
-            --primary: 37, 99, 235; /* blue-600 */
-            --primary-hover: 15, 23, 42; /* slate-900 */
-            --bg-from: 219, 234, 254; /* blue-100 */
+            --primary: 37, 99, 235;
+            --primary-hover: 15, 23, 42;
+            --bg-from: 219, 234, 254;
             --bg-via: 255, 255, 255;
-            --bg-to: 241, 245, 249; /* slate-100 */
+            --bg-to: 241, 245, 249;
             --glass-bg: 255, 255, 255;
             --glass-border: 255, 255, 255;
             --text-main: 30, 41, 59;
             --text-muted: 148, 163, 184;
-        }
-        [data-theme="midnight"] {
-            --primary: 139, 92, 246; /* violet-500 */
-            --primary-hover: 124, 58, 237;
-            --bg-from: 15, 23, 42; /* slate-900 */
-            --bg-via: 30, 41, 59; /* slate-800 */
-            --bg-to: 15, 23, 42;
-            --glass-bg: 30, 41, 59;
-            --glass-border: 71, 85, 105;
-            --text-main: 248, 250, 252;
-            --text-muted: 148, 163, 184;
-        }
-        [data-theme="emerald"] {
-            --primary: 16, 185, 129; /* emerald-500 */
-            --primary-hover: 5, 150, 105;
-            --bg-from: 209, 250, 229;
-            --bg-via: 255, 255, 255;
-            --bg-to: 236, 253, 245;
-            --glass-bg: 255, 255, 255;
-            --glass-border: 167, 243, 208;
-            --text-main: 6, 78, 59;
-            --text-muted: 52, 211, 153;
-        }
-        [data-theme="sunset"] {
-            --primary: 244, 63, 94; /* rose-500 */
-            --primary-hover: 225, 29, 72;
-            --bg-from: 255, 241, 242;
-            --bg-via: 255, 255, 255;
-            --bg-to: 255, 247, 237;
-            --glass-bg: 255, 255, 255;
-            --glass-border: 254, 205, 211;
-            --text-main: 159, 18, 57;
-            --text-muted: 251, 113, 133;
         }
         [data-theme="noir"] {
             --primary: 255, 255, 255;
@@ -128,28 +104,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="min-h-screen flex items-center justify-center p-6 transition-colors duration-500"
       style="background: radial-gradient(circle at bottom left, rgb(var(--bg-from)), rgb(var(--bg-via)), rgb(var(--bg-to)))">
 
-    <div class="fixed top-8 right-8 flex space-x-2 glass p-2 rounded-2xl shadow-xl z-50">
-        <button onclick="setTheme('default')" class="w-8 h-8 rounded-xl bg-blue-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Default"></button>
-        <button onclick="setTheme('midnight')" class="w-8 h-8 rounded-xl bg-slate-900 border-2 border-white shadow-sm hover:scale-110 transition" title="Midnight"></button>
-        <button onclick="setTheme('emerald')" class="w-8 h-8 rounded-xl bg-emerald-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Emerald"></button>
-        <button onclick="setTheme('sunset')" class="w-8 h-8 rounded-xl bg-rose-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Sunset"></button>
-        <button onclick="setTheme('noir')" class="w-8 h-8 rounded-xl bg-black border-2 border-white shadow-sm hover:scale-110 transition" title="Noir"></button>
-    </div>
-
     <div class="w-full max-w-md glass rounded-[2.5rem] shadow-2xl overflow-hidden transition-all duration-500" style="color: rgb(var(--text-main))">
         <div class="p-10">
             <div class="flex flex-col items-center mb-10">
-                <div class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl mb-6 transform -rotate-3 transition-colors duration-500" style="background: rgb(var(--primary)); color: var(--theme-icon-color, white)">
-                    <i class="fas fa-lock"></i>
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-xl mb-6 transform -rotate-3 transition-colors duration-500" style="background: rgb(var(--primary)); color: var(--theme-icon-color, white)">
+                    <i class="fas fa-user-plus"></i>
                 </div>
-                <h1 class="text-3xl font-extrabold text-center tracking-tight" style="color: rgb(var(--text-main))">Panou Control</h1>
-                <p class="font-semibold mt-2 uppercase tracking-widest text-[10px]" style="color: rgb(var(--text-muted))">Autentificare Securizată</p>
+                <h1 class="text-3xl font-extrabold text-center tracking-tight" style="color: rgb(var(--text-main))">Creează Cont</h1>
+                <p class="font-semibold mt-2 uppercase tracking-widest text-[10px]" style="color: rgb(var(--text-muted))">Administrator Nou</p>
             </div>
 
             <?php if ($error): ?>
-                <div class="bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-2xl mb-8 flex items-center animate-pulse">
+                <div class="bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-2xl mb-8 flex items-center">
                     <i class="fas fa-circle-exclamation mr-3 text-rose-500"></i>
                     <p class="font-bold text-sm"><?php echo $error; ?></p>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($success): ?>
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-6 py-4 rounded-2xl mb-8 flex items-center">
+                    <i class="fas fa-circle-check mr-3 text-emerald-500"></i>
+                    <p class="font-bold text-sm"><?php echo $success; ?></p>
                 </div>
             <?php endif; ?>
 
@@ -158,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label class="text-xs font-bold uppercase tracking-wider ml-1" style="color: rgb(var(--text-muted))">Utilizator</label>
                     <div class="relative group">
                         <i class="fas fa-user absolute left-5 top-1/2 -translate-y-1/2 transition-colors" style="color: rgb(var(--text-muted))"></i>
-                        <input class="w-full bg-white/20 border border-white/30 rounded-2xl py-4 pl-12 pr-6 outline-none transition font-medium placeholder:text-slate-400/50" style="color: rgb(var(--text-main))" type="text" name="username" placeholder="admin" required autofocus>
+                        <input class="w-full bg-white/20 border border-white/30 rounded-2xl py-4 pl-12 pr-6 outline-none transition font-medium placeholder:text-slate-400/50" style="color: rgb(var(--text-main))" type="text" name="username" placeholder="admin_nou" required autofocus>
                     </div>
                 </div>
 
@@ -167,29 +142,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="relative group">
                         <i class="fas fa-key absolute left-5 top-1/2 -translate-y-1/2 transition-colors" style="color: rgb(var(--text-muted))"></i>
                         <input id="password" class="w-full bg-white/20 border border-white/30 rounded-2xl py-4 pl-12 pr-12 outline-none transition font-medium placeholder:text-slate-400/50" style="color: rgb(var(--text-main))" type="password" name="password" placeholder="********" required>
-                        <button type="button" onclick="togglePassword()" class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition">
-                            <i id="toggleIcon" class="fas fa-eye"></i>
+                        <button type="button" onclick="togglePassword('password', 'toggleIcon1')" class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition">
+                            <i id="toggleIcon1" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold uppercase tracking-wider ml-1" style="color: rgb(var(--text-muted))">Confirmă Parola</label>
+                    <div class="relative group">
+                        <i class="fas fa-shield-halved absolute left-5 top-1/2 -translate-y-1/2 transition-colors" style="color: rgb(var(--text-muted))"></i>
+                        <input id="confirm_password" class="w-full bg-white/20 border border-white/30 rounded-2xl py-4 pl-12 pr-12 outline-none transition font-medium placeholder:text-slate-400/50" style="color: rgb(var(--text-main))" type="password" name="confirm_password" placeholder="********" required>
+                        <button type="button" onclick="togglePassword('confirm_password', 'toggleIcon2')" class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition">
+                            <i id="toggleIcon2" class="fas fa-eye"></i>
                         </button>
                     </div>
                 </div>
 
                 <div class="pt-4 space-y-4">
                     <button class="w-full font-extrabold py-5 rounded-3xl transition duration-300 shadow-xl flex items-center justify-center space-x-2 group active:scale-[0.98]" style="background: rgb(var(--primary)); color: var(--theme-icon-color, white)" type="submit">
-                        <span>Intră în Panou</span>
-                        <i class="fas fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                        <span>Înregistrare</span>
+                        <i class="fas fa-user-plus text-xs group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
-                    <a href="register.php" class="w-full bg-white/10 hover:bg-white/20 text-center font-bold py-4 rounded-2xl transition duration-300 border border-white/10 flex items-center justify-center space-x-2" style="color: rgb(var(--text-main))">
-                        <i class="fas fa-user-plus text-xs"></i>
-                        <span>Creează Cont Admin</span>
+                    <a href="login.php" class="w-full bg-white/10 hover:bg-white/20 text-center font-bold py-4 rounded-2xl transition duration-300 border border-white/10 flex items-center justify-center space-x-2" style="color: rgb(var(--text-main))">
+                        <i class="fas fa-arrow-left text-xs"></i>
+                        <span>Înapoi la Login</span>
                     </a>
                 </div>
             </form>
         </div>
         <script>
-            function togglePassword() {
-                const pwd = document.getElementById('password');
-                const icon = document.getElementById('toggleIcon');
+            function togglePassword(id, iconId) {
+                const pwd = document.getElementById(id);
+                const icon = document.getElementById(iconId);
                 if (pwd.type === 'password') {
                     pwd.type = 'text';
                     icon.classList.remove('fa-eye');

@@ -103,7 +103,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Parolă Admin</label>
                         <div class="relative group">
                             <i class="fas fa-lock absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"></i>
-                            <input class="w-full bg-white/50 border border-slate-200 rounded-2xl py-4 pl-12 pr-6 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-700 font-medium placeholder:text-slate-300" type="password" name="admin_pass" placeholder="********" required>
+                            <input id="password" class="w-full bg-white/50 border border-slate-200 rounded-2xl py-4 pl-12 pr-12 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-700 font-medium placeholder:text-slate-300" type="password" name="admin_pass" placeholder="********" required>
+                            <button type="button" onclick="togglePassword()" class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-blue-500 transition">
+                                <i id="toggleIcon" class="fas fa-eye"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -129,8 +132,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
         </div>
         <div class="bg-white/50 py-6 text-center border-t border-white/50">
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">2026 Developer By Stoian Rudolf Florian</p>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Digital Signage Engine © 2026 Developer By Stoian Rudolf Florian</p>
         </div>
     </div>
+    <script>
+        function togglePassword() {
+            const pwd = document.getElementById('password');
+            const icon = document.getElementById('toggleIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                pwd.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -49,6 +49,25 @@ if (!$channel) {
             --ticker-color: 251, 113, 133;
             --overlay-bg: 136, 19, 55;
         }
+        [data-theme="noir"] {
+            --primary: 255, 255, 255;
+            --header-bg: 0, 0, 0;
+            --ticker-color: 255, 255, 255;
+            --overlay-bg: 0, 0, 0;
+        }
+        [data-theme="noir"] .header {
+            border-bottom: 1px solid transparent;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)),
+                              linear-gradient(90deg, #1e293b, #ffffff, #1e293b);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            background-size: 200% 100%;
+            animation: lightLine 3s linear infinite;
+        }
+        @keyframes lightLine {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
         body, html {
             margin: 0;
             padding: 0;
@@ -156,7 +175,7 @@ if (!$channel) {
             width: 60px;
             height: 60px;
             background: rgb(var(--primary));
-            color: white;
+            color: var(--theme-icon-color, white);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -255,6 +274,11 @@ if (!$channel) {
     <script>
         const savedTheme = localStorage.getItem('theme') || 'default';
         document.documentElement.setAttribute('data-theme', savedTheme);
+        if (savedTheme === 'noir') {
+            document.documentElement.style.setProperty('--theme-icon-color', 'black');
+        } else {
+            document.documentElement.style.setProperty('--theme-icon-color', 'white');
+        }
 
         const channelId = <?php echo (int)$channel_id; ?>;
         const container = document.getElementById('player-container');

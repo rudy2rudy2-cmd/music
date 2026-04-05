@@ -199,10 +199,36 @@ $csrf_token = generate_csrf_token();
             --glass-bg: 255, 255, 255;
             --glass-border: 254, 205, 211;
         }
+        [data-theme="noir"] {
+            --primary: 255, 255, 255;
+            --bg-main: 0, 0, 0;
+            --sidebar-bg: 15, 23, 42;
+            --card-bg: 15, 23, 42;
+            --text-main: 255, 255, 255;
+            --text-muted: 148, 163, 184;
+            --glass-bg: 15, 23, 42;
+            --glass-border: 51, 65, 85;
+        }
+        [data-theme="noir"] .rounded-3xl.shadow-sm.border.border-slate-100 {
+            border: 1px solid transparent !important;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)),
+                              linear-gradient(90deg, #1e293b, #ffffff, #1e293b);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            background-size: 200% 100%;
+            animation: lightLine 3s linear infinite;
+        }
+        @keyframes lightLine {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
         .sidebar-item-active {
             background-color: rgb(var(--primary));
             color: white;
             box-shadow: 0 4px 6px -1px rgba(var(--primary), 0.3);
+        }
+        [data-theme="noir"] .sidebar-item-active {
+            color: black !important;
         }
         .sortable-ghost { opacity: 0.3; transform: scale(0.95); }
         .modal {
@@ -215,15 +241,38 @@ $csrf_token = generate_csrf_token();
         }
     </style>
     <script>
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            if (theme === 'noir') {
+                document.documentElement.style.setProperty('--theme-icon-color', 'black');
+            } else {
+                document.documentElement.style.setProperty('--theme-icon-color', 'white');
+            }
+
+            const updateUI = () => {
+                if (theme === 'noir') {
+                    document.querySelectorAll('.sidebar-item-active').forEach(el => el.style.setProperty('color', 'black', 'important'));
+                } else {
+                    document.querySelectorAll('.sidebar-item-active').forEach(el => el.style.setProperty('color', 'white', 'important'));
+                }
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', updateUI);
+            } else {
+                updateUI();
+            }
+        }
         const savedTheme = localStorage.getItem('theme') || 'default';
-        document.documentElement.setAttribute('data-theme', savedTheme);
+        setTheme(savedTheme);
     </script>
 </head>
 <body class="min-h-screen flex flex-col md:flex-row transition-colors duration-500" style="background-color: rgb(var(--bg-main))">
     <!-- Sidebar -->
     <aside class="w-full md:w-64 border-r border-slate-200 flex flex-col z-20 transition-colors duration-500" style="background-color: rgb(var(--sidebar-bg))">
         <div class="p-6 border-b border-slate-100 flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg transition-colors duration-500" style="background-color: rgb(var(--primary))">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-colors duration-500" style="background-color: rgb(var(--primary)); color: var(--theme-icon-color)">
                 <i class="fas fa-tv"></i>
             </div>
             <div>
@@ -270,9 +319,16 @@ $csrf_token = generate_csrf_token();
     <main class="flex-grow flex flex-col min-h-screen">
         <header class="h-16 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10 transition-colors duration-500" style="background-color: rgba(var(--sidebar-bg), 0.8)">
             <h2 class="text-lg font-bold" style="color: rgb(var(--text-main))">Gestionare Canale</h2>
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-6">
+                <div class="hidden lg:flex items-center space-x-2 bg-slate-100/50 p-1.5 rounded-xl border border-slate-200/50">
+                    <button onclick="setTheme('default')" class="w-6 h-6 rounded-lg bg-blue-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Default"></button>
+                    <button onclick="setTheme('midnight')" class="w-6 h-6 rounded-lg bg-slate-900 border-2 border-white shadow-sm hover:scale-110 transition" title="Midnight"></button>
+                    <button onclick="setTheme('emerald')" class="w-6 h-6 rounded-lg bg-emerald-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Emerald"></button>
+                    <button onclick="setTheme('sunset')" class="w-6 h-6 rounded-lg bg-rose-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Sunset"></button>
+                    <button onclick="setTheme('noir')" class="w-6 h-6 rounded-lg bg-black border-2 border-white shadow-sm hover:scale-110 transition" title="Noir"></button>
+                </div>
                 <span class="text-xs font-medium text-slate-400"><?php echo date('d M Y'); ?></span>
-                <button onclick="document.getElementById('addChannelModal').classList.add('modal-active')" class="text-white text-xs font-bold px-4 py-2 rounded-lg transition duration-200 shadow-md flex items-center" style="background-color: rgb(var(--primary))">
+                <button onclick="document.getElementById('addChannelModal').classList.add('modal-active')" class="text-xs font-bold px-4 py-2 rounded-lg transition duration-200 shadow-md flex items-center" style="background-color: rgb(var(--primary)); color: var(--theme-icon-color)">
                     <i class="fas fa-plus mr-2"></i> Adaugă Canal
                 </button>
             </div>
@@ -444,7 +500,7 @@ $csrf_token = generate_csrf_token();
                 <a href="#" class="hover:text-blue-600 transition">Documentație</a>
                 <a href="#" class="hover:text-blue-600 transition">Suport</a>
             </div>
-            <p class="text-[10px] font-bold uppercase tracking-widest">2026 Developer By Stoian Rudolf Florian</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest">Digital Signage Engine © 2026 Developer By Stoian Rudolf Florian</p>
         </footer>
     </main>
 
