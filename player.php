@@ -25,6 +25,30 @@ if (!$channel) {
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: 37, 99, 235; /* blue-600 */
+            --header-bg: 15, 23, 42;
+            --ticker-color: 96, 165, 250; /* blue-400 */
+            --overlay-bg: 15, 23, 42;
+        }
+        [data-theme="midnight"] {
+            --primary: 139, 92, 246;
+            --header-bg: 15, 23, 42;
+            --ticker-color: 167, 139, 250;
+            --overlay-bg: 15, 23, 42;
+        }
+        [data-theme="emerald"] {
+            --primary: 16, 185, 129;
+            --header-bg: 6, 78, 59;
+            --ticker-color: 52, 211, 153;
+            --overlay-bg: 6, 78, 59;
+        }
+        [data-theme="sunset"] {
+            --primary: 244, 63, 94;
+            --header-bg: 136, 19, 55;
+            --ticker-color: 251, 113, 133;
+            --overlay-bg: 136, 19, 55;
+        }
         body, html {
             margin: 0;
             padding: 0;
@@ -33,6 +57,7 @@ if (!$channel) {
             overflow: hidden;
             background: #000;
             font-family: 'Inter', sans-serif;
+            transition: all 0.5s ease;
         }
         .layout {
             display: flex;
@@ -42,7 +67,7 @@ if (!$channel) {
         }
         .header {
             height: 90px;
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(var(--header-bg), 0.95);
             backdrop-filter: blur(20px);
             color: white;
             display: flex;
@@ -51,6 +76,7 @@ if (!$channel) {
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             z-index: 100;
             border-bottom: 2px solid rgba(255,255,255,0.05);
+            transition: all 0.5s ease;
         }
         .logo-container {
             width: 180px;
@@ -88,9 +114,10 @@ if (!$channel) {
             animation: ticker 25s linear infinite;
             font-size: 28px;
             font-weight: 700;
-            color: #60a5fa;
+            color: rgb(var(--ticker-color));
             text-transform: uppercase;
             letter-spacing: 1px;
+            transition: color 0.5s ease;
         }
         @keyframes ticker {
             0% { transform: translateX(0); }
@@ -128,7 +155,7 @@ if (!$channel) {
             right: 30px;
             width: 60px;
             height: 60px;
-            background: #2563eb;
+            background: rgb(var(--primary));
             color: white;
             border-radius: 50%;
             display: flex;
@@ -136,7 +163,7 @@ if (!$channel) {
             justify-content: center;
             cursor: pointer;
             z-index: 1000;
-            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 10px 30px rgba(var(--primary), 0.4);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 4px solid rgba(255,255,255,0.2);
             opacity: 0.2;
@@ -148,7 +175,7 @@ if (!$channel) {
         .channel-selector {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(var(--overlay-bg), 0.9);
             backdrop-filter: blur(10px);
             z-index: 999;
             display: none;
@@ -156,7 +183,7 @@ if (!$channel) {
             align-items: center;
             justify-content: center;
             color: white;
-            transition: opacity 0.5s ease;
+            transition: all 0.5s ease;
         }
         .selector-active {
             display: flex;
@@ -226,6 +253,9 @@ if (!$channel) {
     </div>
 
     <script>
+        const savedTheme = localStorage.getItem('theme') || 'default';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
         const channelId = <?php echo (int)$channel_id; ?>;
         const container = document.getElementById('player-container');
         const logoBox = document.getElementById('logo-box');
@@ -256,7 +286,7 @@ if (!$channel) {
                         logoEl.style.display = 'none';
                         logoBox.style.background = 'rgba(255,255,255,0.05)';
                     }
-                    tickerEl.textContent = data.config.ticker || 'VĂ RUGĂM SĂ PĂSTRAȚI CURĂȚENIA. VIZIERE DIGITALE © 2025.';
+                    tickerEl.textContent = data.config.ticker || 'VĂ RUGĂM SĂ PĂSTRAȚI CURĂȚENIA. 2026 Developer By Stoian Rudolf Florian';
 
                     // Update media
                     mediaItems = data.media;

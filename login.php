@@ -39,24 +39,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.5s ease; }
         .glass {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(var(--glass-bg), 0.8);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(var(--glass-border), 0.5);
+        }
+        :root {
+            --primary: 37, 99, 235; /* blue-600 */
+            --primary-hover: 15, 23, 42; /* slate-900 */
+            --bg-from: 219, 234, 254; /* blue-100 */
+            --bg-via: 255, 255, 255;
+            --bg-to: 241, 245, 249; /* slate-100 */
+            --glass-bg: 255, 255, 255;
+            --glass-border: 255, 255, 255;
+            --text-main: 30, 41, 59;
+            --text-muted: 148, 163, 184;
+        }
+        [data-theme="midnight"] {
+            --primary: 139, 92, 246; /* violet-500 */
+            --primary-hover: 124, 58, 237;
+            --bg-from: 15, 23, 42; /* slate-900 */
+            --bg-via: 30, 41, 59; /* slate-800 */
+            --bg-to: 15, 23, 42;
+            --glass-bg: 30, 41, 59;
+            --glass-border: 71, 85, 105;
+            --text-main: 248, 250, 252;
+            --text-muted: 148, 163, 184;
+        }
+        [data-theme="emerald"] {
+            --primary: 16, 185, 129; /* emerald-500 */
+            --primary-hover: 5, 150, 105;
+            --bg-from: 209, 250, 229;
+            --bg-via: 255, 255, 255;
+            --bg-to: 236, 253, 245;
+            --glass-bg: 255, 255, 255;
+            --glass-border: 167, 243, 208;
+            --text-main: 6, 78, 59;
+            --text-muted: 52, 211, 153;
+        }
+        [data-theme="sunset"] {
+            --primary: 244, 63, 94; /* rose-500 */
+            --primary-hover: 225, 29, 72;
+            --bg-from: 255, 241, 242;
+            --bg-via: 255, 255, 255;
+            --bg-to: 255, 247, 237;
+            --glass-bg: 255, 255, 255;
+            --glass-border: 254, 205, 211;
+            --text-main: 159, 18, 57;
+            --text-muted: 251, 113, 133;
         }
     </style>
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'default';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+    </script>
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-blue-100 via-white to-slate-100">
+<body class="min-h-screen flex items-center justify-center p-6 transition-colors duration-500"
+      style="background: radial-gradient(circle at bottom left, rgb(var(--bg-from)), rgb(var(--bg-via)), rgb(var(--bg-to)))">
 
-    <div class="w-full max-w-md glass rounded-[2.5rem] shadow-2xl shadow-blue-200/50 overflow-hidden">
+    <div class="fixed top-8 right-8 flex space-x-2 glass p-2 rounded-2xl shadow-xl z-50">
+        <button onclick="setTheme('default')" class="w-8 h-8 rounded-xl bg-blue-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Default"></button>
+        <button onclick="setTheme('midnight')" class="w-8 h-8 rounded-xl bg-slate-900 border-2 border-white shadow-sm hover:scale-110 transition" title="Midnight"></button>
+        <button onclick="setTheme('emerald')" class="w-8 h-8 rounded-xl bg-emerald-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Emerald"></button>
+        <button onclick="setTheme('sunset')" class="w-8 h-8 rounded-xl bg-rose-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Sunset"></button>
+    </div>
+
+    <div class="w-full max-w-md glass rounded-[2.5rem] shadow-2xl overflow-hidden transition-all duration-500" style="color: rgb(var(--text-main))">
         <div class="p-10">
             <div class="flex flex-col items-center mb-10">
-                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-blue-200 mb-6 transform -rotate-3">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl mb-6 transform -rotate-3 transition-colors duration-500" style="background: rgb(var(--primary))">
                     <i class="fas fa-lock"></i>
                 </div>
-                <h1 class="text-3xl font-extrabold text-slate-800 text-center tracking-tight">Panou Control</h1>
-                <p class="text-slate-400 font-semibold mt-2 uppercase tracking-widest text-[10px]">Autentificare Securizată</p>
+                <h1 class="text-3xl font-extrabold text-center tracking-tight" style="color: rgb(var(--text-main))">Panou Control</h1>
+                <p class="font-semibold mt-2 uppercase tracking-widest text-[10px]" style="color: rgb(var(--text-muted))">Autentificare Securizată</p>
             </div>
 
             <?php if ($error): ?>
@@ -68,23 +128,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" class="space-y-6">
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Utilizator</label>
+                    <label class="text-xs font-bold uppercase tracking-wider ml-1" style="color: rgb(var(--text-muted))">Utilizator</label>
                     <div class="relative group">
-                        <i class="fas fa-user absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"></i>
-                        <input class="w-full bg-white/50 border border-slate-200 rounded-2xl py-4 pl-12 pr-6 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-700 font-medium placeholder:text-slate-300" type="text" name="username" placeholder="admin" required autofocus>
+                        <i class="fas fa-user absolute left-5 top-1/2 -translate-y-1/2 transition-colors" style="color: rgb(var(--text-muted))"></i>
+                        <input class="w-full bg-white/20 border border-white/30 rounded-2xl py-4 pl-12 pr-6 outline-none transition font-medium placeholder:text-slate-400/50" style="color: rgb(var(--text-main))" type="text" name="username" placeholder="admin" required autofocus>
                     </div>
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Parolă</label>
+                    <label class="text-xs font-bold uppercase tracking-wider ml-1" style="color: rgb(var(--text-muted))">Parolă</label>
                     <div class="relative group">
-                        <i class="fas fa-key absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"></i>
-                        <input class="w-full bg-white/50 border border-slate-200 rounded-2xl py-4 pl-12 pr-6 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-700 font-medium placeholder:text-slate-300" type="password" name="password" placeholder="********" required>
+                        <i class="fas fa-key absolute left-5 top-1/2 -translate-y-1/2 transition-colors" style="color: rgb(var(--text-muted))"></i>
+                        <input class="w-full bg-white/20 border border-white/30 rounded-2xl py-4 pl-12 pr-6 outline-none transition font-medium placeholder:text-slate-400/50" style="color: rgb(var(--text-main))" type="password" name="password" placeholder="********" required>
                     </div>
                 </div>
 
                 <div class="pt-4">
-                    <button class="w-full bg-slate-900 hover:bg-black text-white font-extrabold py-5 rounded-3xl transition duration-300 shadow-xl shadow-slate-200 flex items-center justify-center space-x-2 group active:scale-[0.98]" type="submit">
+                    <button class="w-full text-white font-extrabold py-5 rounded-3xl transition duration-300 shadow-xl flex items-center justify-center space-x-2 group active:scale-[0.98]" style="background: rgb(var(--primary))" type="submit">
                         <span>Intră în Panou</span>
                         <i class="fas fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
                     </button>
@@ -92,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
         <div class="bg-white/50 py-6 text-center border-t border-white/50">
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Digital Signage Engine &copy; 2025</p>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">2026 Developer By Stoian Rudolf Florian</p>
         </div>
     </div>
 </body>

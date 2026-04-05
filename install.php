@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
         </div>
         <div class="bg-white/50 py-6 text-center border-t border-white/50">
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Digital Signage Engine &copy; 2025</p>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">2026 Developer By Stoian Rudolf Florian</p>
         </div>
     </div>
 </body>

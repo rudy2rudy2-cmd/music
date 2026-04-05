@@ -153,16 +153,56 @@ $csrf_token = generate_csrf_token();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.5s ease; }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(var(--glass-bg), 0.7);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(var(--glass-border), 0.3);
+        }
+        :root {
+            --primary: 37, 99, 235; /* blue-600 */
+            --bg-main: 248, 250, 252; /* slate-50 */
+            --sidebar-bg: 255, 255, 255;
+            --card-bg: 255, 255, 255;
+            --text-main: 30, 41, 59;
+            --text-muted: 148, 163, 184;
+            --glass-bg: 255, 255, 255;
+            --glass-border: 255, 255, 255;
+        }
+        [data-theme="midnight"] {
+            --primary: 139, 92, 246;
+            --bg-main: 15, 23, 42;
+            --sidebar-bg: 30, 41, 59;
+            --card-bg: 30, 41, 59;
+            --text-main: 248, 250, 252;
+            --text-muted: 148, 163, 184;
+            --glass-bg: 30, 41, 59;
+            --glass-border: 71, 85, 105;
+        }
+        [data-theme="emerald"] {
+            --primary: 16, 185, 129;
+            --bg-main: 240, 253, 244;
+            --sidebar-bg: 255, 255, 255;
+            --card-bg: 255, 255, 255;
+            --text-main: 6, 78, 59;
+            --text-muted: 52, 211, 153;
+            --glass-bg: 255, 255, 255;
+            --glass-border: 167, 243, 208;
+        }
+        [data-theme="sunset"] {
+            --primary: 244, 63, 94;
+            --bg-main: 255, 251, 251;
+            --sidebar-bg: 255, 255, 255;
+            --card-bg: 255, 255, 255;
+            --text-main: 159, 18, 57;
+            --text-muted: 251, 113, 133;
+            --glass-bg: 255, 255, 255;
+            --glass-border: 254, 205, 211;
         }
         .sidebar-item-active {
-            background-color: #3b82f6;
+            background-color: rgb(var(--primary));
             color: white;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            box-shadow: 0 4px 6px -1px rgba(var(--primary), 0.3);
         }
         .sortable-ghost { opacity: 0.3; transform: scale(0.95); }
         .modal {
@@ -174,12 +214,16 @@ $csrf_token = generate_csrf_token();
             opacity: 1;
         }
     </style>
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'default';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col md:flex-row">
+<body class="min-h-screen flex flex-col md:flex-row transition-colors duration-500" style="background-color: rgb(var(--bg-main))">
     <!-- Sidebar -->
-    <aside class="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col z-20">
+    <aside class="w-full md:w-64 border-r border-slate-200 flex flex-col z-20 transition-colors duration-500" style="background-color: rgb(var(--sidebar-bg))">
         <div class="p-6 border-b border-slate-100 flex items-center space-x-3">
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg transition-colors duration-500" style="background-color: rgb(var(--primary))">
                 <i class="fas fa-tv"></i>
             </div>
             <div>
@@ -224,11 +268,11 @@ $csrf_token = generate_csrf_token();
 
     <!-- Main Content -->
     <main class="flex-grow flex flex-col min-h-screen">
-        <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
-            <h2 class="text-lg font-bold text-slate-800">Gestionare Canale</h2>
+        <header class="h-16 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10 transition-colors duration-500" style="background-color: rgba(var(--sidebar-bg), 0.8)">
+            <h2 class="text-lg font-bold" style="color: rgb(var(--text-main))">Gestionare Canale</h2>
             <div class="flex items-center space-x-4">
                 <span class="text-xs font-medium text-slate-400"><?php echo date('d M Y'); ?></span>
-                <button onclick="document.getElementById('addChannelModal').classList.add('modal-active')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition duration-200 shadow-md shadow-blue-100 flex items-center">
+                <button onclick="document.getElementById('addChannelModal').classList.add('modal-active')" class="text-white text-xs font-bold px-4 py-2 rounded-lg transition duration-200 shadow-md flex items-center" style="background-color: rgb(var(--primary))">
                     <i class="fas fa-plus mr-2"></i> Adaugă Canal
                 </button>
             </div>
@@ -256,11 +300,11 @@ $csrf_token = generate_csrf_token();
             <!-- Grid Canale -->
             <div class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-8 mb-12">
                 <?php foreach ($channels as $channel): ?>
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col transition hover:shadow-xl hover:shadow-slate-200/50 group">
+                <div class="rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col transition hover:shadow-xl group duration-500" style="background-color: rgb(var(--card-bg))">
                     <!-- Header Card -->
                     <div class="p-6 border-b border-slate-50 flex justify-between items-start">
                         <div class="flex items-center space-x-4">
-                            <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100 shadow-sm relative overflow-hidden">
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center border border-blue-100 shadow-sm relative overflow-hidden transition-colors" style="background-color: rgba(var(--primary), 0.1); color: rgb(var(--primary))">
                                 <?php if ($channel['logo_path']): ?>
                                     <img src="<?php echo htmlspecialchars($channel['logo_path']); ?>" class="w-full h-full object-contain p-2">
                                 <?php else: ?>
@@ -268,7 +312,7 @@ $csrf_token = generate_csrf_token();
                                 <?php endif; ?>
                             </div>
                             <div>
-                                <h3 class="font-bold text-slate-800 text-lg group-hover:text-blue-600 transition duration-200"><?php echo htmlspecialchars($channel['name']); ?></h3>
+                                <h3 class="font-bold text-lg group-hover:text-blue-600 transition duration-200" style="color: rgb(var(--text-main))"><?php echo htmlspecialchars($channel['name']); ?></h3>
                                 <div class="flex items-center space-x-2 mt-1">
                                     <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Activ • ID: <?php echo $channel['id']; ?></span>
@@ -395,12 +439,12 @@ $csrf_token = generate_csrf_token();
         </div>
 
         <!-- Footer -->
-        <footer class="mt-auto py-6 px-12 bg-white border-t border-slate-100 text-slate-400 flex justify-between items-center">
+        <footer class="mt-auto py-6 px-12 border-t border-slate-100 text-slate-400 flex justify-between items-center transition-colors duration-500" style="background-color: rgb(var(--sidebar-bg))">
             <div class="flex space-x-6 text-[10px] font-bold uppercase tracking-widest">
                 <a href="#" class="hover:text-blue-600 transition">Documentație</a>
                 <a href="#" class="hover:text-blue-600 transition">Suport</a>
             </div>
-            <p class="text-[10px] font-bold uppercase tracking-widest">Sistem Viziere Digitale © 2025</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest">2026 Developer By Stoian Rudolf Florian</p>
         </footer>
     </main>
 
