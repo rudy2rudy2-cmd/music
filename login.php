@@ -30,47 +30,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <!DOCTYPE html>
-<html lang="ro">
+<html lang="ro" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Viziere Digitale</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
     </style>
 </head>
-<body class="bg-gray-100 h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">Viziere Digitale</h1>
-        <p class="text-gray-600 mb-8 text-center">Autentificare în panoul de administrare</p>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-blue-100 via-white to-slate-100">
 
-        <?php if ($error): ?>
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                <?php echo $error; ?>
+    <div class="w-full max-w-md glass rounded-[2.5rem] shadow-2xl shadow-blue-200/50 overflow-hidden">
+        <div class="p-10">
+            <div class="flex flex-col items-center mb-10">
+                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-blue-200 mb-6 transform -rotate-3">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold text-slate-800 text-center tracking-tight">Panou Control</h1>
+                <p class="text-slate-400 font-semibold mt-2 uppercase tracking-widest text-[10px]">Autentificare Securizată</p>
             </div>
-        <?php endif; ?>
 
-        <form method="POST">
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
-                    Utilizator
-                </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" id="username" name="username" type="text" placeholder="admin" required>
-            </div>
-            <div class="mb-6">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
-                    Parolă
-                </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" id="password" name="password" type="password" placeholder="******************" required>
-            </div>
-            <div class="flex items-center justify-between">
-                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition duration-300" type="submit">
-                    Autentificare
-                </button>
-            </div>
-        </form>
+            <?php if ($error): ?>
+                <div class="bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-2xl mb-8 flex items-center animate-pulse">
+                    <i class="fas fa-circle-exclamation mr-3 text-rose-500"></i>
+                    <p class="font-bold text-sm"><?php echo $error; ?></p>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" class="space-y-6">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Utilizator</label>
+                    <div class="relative group">
+                        <i class="fas fa-user absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"></i>
+                        <input class="w-full bg-white/50 border border-slate-200 rounded-2xl py-4 pl-12 pr-6 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-700 font-medium placeholder:text-slate-300" type="text" name="username" placeholder="admin" required autofocus>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Parolă</label>
+                    <div class="relative group">
+                        <i class="fas fa-key absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"></i>
+                        <input class="w-full bg-white/50 border border-slate-200 rounded-2xl py-4 pl-12 pr-6 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-700 font-medium placeholder:text-slate-300" type="password" name="password" placeholder="********" required>
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button class="w-full bg-slate-900 hover:bg-black text-white font-extrabold py-5 rounded-3xl transition duration-300 shadow-xl shadow-slate-200 flex items-center justify-center space-x-2 group active:scale-[0.98]" type="submit">
+                        <span>Intră în Panou</span>
+                        <i class="fas fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="bg-white/50 py-6 text-center border-t border-white/50">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Digital Signage Engine &copy; 2025</p>
+        </div>
     </div>
 </body>
 </html>
