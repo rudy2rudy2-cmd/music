@@ -243,7 +243,7 @@ if (!$channel) {
                 const response = await fetch(`api_media.php?channel=${channelId}`);
                 const data = await response.json();
 
-                const responseStr = JSON.stringify(data.media + JSON.stringify(data.config));
+                const responseStr = JSON.stringify(data.media) + JSON.stringify(data.config);
                 if (responseStr !== lastResponseStr) {
                     lastResponseStr = responseStr;
 
@@ -284,9 +284,6 @@ if (!$channel) {
         }
 
         function updatePlayer() {
-            // Store reference to current active if exists to avoid jarring swap if possible
-            const currentActiveEl = document.querySelector('.media-item.active');
-
             container.innerHTML = '';
             if (mediaItems.length === 0) {
                 container.innerHTML = '<div id="no-media" class="text-slate-400 font-bold uppercase tracking-widest text-2xl animate-pulse">Nicio media încărcată pe acest canal.</div>';

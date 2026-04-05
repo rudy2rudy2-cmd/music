@@ -396,11 +396,11 @@ $csrf_token = generate_csrf_token();
 
         <!-- Footer -->
         <footer class="mt-auto py-6 px-12 bg-white border-t border-slate-100 text-slate-400 flex justify-between items-center">
-            <p class="text-[10px] font-bold uppercase tracking-widest">Sistem Viziere Digitale © 2025</p>
             <div class="flex space-x-6 text-[10px] font-bold uppercase tracking-widest">
                 <a href="#" class="hover:text-blue-600 transition">Documentație</a>
                 <a href="#" class="hover:text-blue-600 transition">Suport</a>
             </div>
+            <p class="text-[10px] font-bold uppercase tracking-widest">Sistem Viziere Digitale © 2025</p>
         </footer>
     </main>
 
