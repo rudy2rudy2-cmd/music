@@ -6,6 +6,8 @@ if (!is_logged_in()) {
     redirect('login.php');
 }
 
+$view = $_GET['view'] ?? 'channels';
+
 $message = '';
 $error = '';
 
@@ -134,6 +136,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $stmt->execute([$index, $media_id]);
             }
             $message = "Ordinea a fost salvată.";
+        } elseif ($_POST['action'] == 'update_admin') {
+            $username = $_POST['admin_username'] ?? '';
+            $password = $_POST['admin_password'] ?? '';
+            if ($username) {
+                if ($password) {
+                    $hashed = password_hash($password, PASSWORD_DEFAULT);
+                    $stmt = $pdo->prepare("UPDATE users SET username = ?, password = ? WHERE id = ?");
+                    $stmt->execute([$username, $hashed, $_SESSION['user_id']]);
+                } else {
+                    $stmt = $pdo->prepare("UPDATE users SET username = ? WHERE id = ?");
+                    $stmt->execute([$username, $_SESSION['user_id']]);
+                }
+                $_SESSION['username'] = $username;
+                $message = "Profil administrator actualizat.";
+            }
+        } elseif ($_POST['action'] == 'update_settings') {
+            if (isset($_FILES['site_logo']) && $_FILES['site_logo']['error'] === UPLOAD_ERR_OK) {
+                $file_ext = strtolower(pathinfo($_FILES['site_logo']['name'], PATHINFO_EXTENSION));
+                if (in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif'])) {
+                    $new_logo = 'uploads/site_logo.' . $file_ext;
+                    if (move_uploaded_file($_FILES['site_logo']['tmp_name'], $new_logo)) {
+                        $pdo->prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('site_logo', ?)")->execute([$new_logo]);
+                    }
+                }
+            }
+            $message = "Setări salvate.";
         }
     }
 }
@@ -283,16 +311,11 @@ $csrf_token = generate_csrf_token();
 
         <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
             <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2 mt-4">Navigare</div>
-            <a href="admin.php" class="sidebar-item-active flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200">
+            <a href="admin.php?view=channels" class="<?php echo $view == 'channels' ? 'sidebar-item-active' : 'text-slate-500 hover:bg-slate-50'; ?> flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200">
                 <i class="fas fa-layer-group text-sm"></i>
                 <span class="text-sm font-semibold">Canale Media</span>
             </a>
-            <!-- Placeholder for other sections -->
-            <a href="#" class="text-slate-500 hover:bg-slate-50 flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200">
-                <i class="fas fa-chart-line text-sm"></i>
-                <span class="text-sm font-semibold">Statistici</span>
-            </a>
-            <a href="#" class="text-slate-500 hover:bg-slate-50 flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200">
+            <a href="admin.php?view=settings" class="<?php echo $view == 'settings' ? 'sidebar-item-active' : 'text-slate-500 hover:bg-slate-50'; ?> flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200">
                 <i class="fas fa-cog text-sm"></i>
                 <span class="text-sm font-semibold">Setări Sistem</span>
             </a>
@@ -318,7 +341,9 @@ $csrf_token = generate_csrf_token();
     <!-- Main Content -->
     <main class="flex-grow flex flex-col min-h-screen">
         <header class="h-16 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10 transition-colors duration-500" style="background-color: rgba(var(--sidebar-bg), 0.8)">
-            <h2 class="text-lg font-bold" style="color: rgb(var(--text-main))">Gestionare Canale</h2>
+            <h2 class="text-lg font-bold" style="color: rgb(var(--text-main))">
+                <?php echo $view == 'settings' ? 'Setări Sistem' : 'Gestionare Canale'; ?>
+            </h2>
             <div class="flex items-center space-x-6">
                 <div class="hidden lg:flex items-center space-x-2 bg-slate-100/50 p-1.5 rounded-xl border border-slate-200/50">
                     <button onclick="setTheme('default')" class="w-6 h-6 rounded-lg bg-blue-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Default"></button>
@@ -327,10 +352,15 @@ $csrf_token = generate_csrf_token();
                     <button onclick="setTheme('sunset')" class="w-6 h-6 rounded-lg bg-rose-500 border-2 border-white shadow-sm hover:scale-110 transition" title="Sunset"></button>
                     <button onclick="setTheme('noir')" class="w-6 h-6 rounded-lg bg-black border-2 border-white shadow-sm hover:scale-110 transition" title="Noir"></button>
                 </div>
-                <span class="text-xs font-medium text-slate-400"><?php echo date('d M Y'); ?></span>
+                <div class="flex flex-col items-end">
+                    <span id="liveClock" class="text-sm font-extrabold tracking-tighter" style="color: rgb(var(--text-main))">00:00:00</span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest"><?php echo date('d M Y'); ?></span>
+                </div>
+                <?php if ($view == 'channels'): ?>
                 <button onclick="document.getElementById('addChannelModal').classList.add('modal-active')" class="text-xs font-bold px-4 py-2 rounded-lg transition duration-200 shadow-md flex items-center" style="background-color: rgb(var(--primary)); color: var(--theme-icon-color)">
                     <i class="fas fa-plus mr-2"></i> Adaugă Canal
                 </button>
+                <?php endif; ?>
             </div>
         </header>
 
@@ -353,6 +383,7 @@ $csrf_token = generate_csrf_token();
                 </div>
             <?php endif; ?>
 
+            <?php if ($view == 'channels'): ?>
             <!-- Grid Canale -->
             <div class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-8 mb-12">
                 <?php foreach ($channels as $channel): ?>
@@ -492,6 +523,141 @@ $csrf_token = generate_csrf_token();
                 </div>
                 <?php endforeach; ?>
             </div>
+            <?php else: ?>
+            <!-- Settings View -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- Profile Edit -->
+                <div class="rounded-3xl border border-slate-100 p-8 space-y-6 transition-colors duration-500" style="background-color: rgb(var(--card-bg))">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                            <i class="fas fa-user-gear"></i>
+                        </div>
+                        <h3 class="font-bold text-lg" style="color: rgb(var(--text-main))">Profil Administrator</h3>
+                    </div>
+                    <form method="POST" class="space-y-4">
+                        <input type="hidden" name="action" value="update_admin">
+                        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Utilizator</label>
+                            <input type="text" name="admin_username" value="<?php echo htmlspecialchars($_SESSION['username']); ?>" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-100 transition" required>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Parolă Nouă (lasă gol pentru neschimbată)</label>
+                            <input type="password" name="admin_password" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-100 transition">
+                        </div>
+                        <button type="submit" class="w-full bg-slate-800 hover:bg-black text-white font-bold py-4 rounded-2xl transition duration-200 shadow-lg shadow-slate-200">Salvează Profilul</button>
+                    </form>
+                </div>
+
+                <!-- Global Settings & Logo -->
+                <div class="rounded-3xl border border-slate-100 p-8 space-y-6 transition-colors duration-500" style="background-color: rgb(var(--card-bg))">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                            <i class="fas fa-sliders"></i>
+                        </div>
+                        <h3 class="font-bold text-lg" style="color: rgb(var(--text-main))">Setări Generale</h3>
+                    </div>
+                    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                        <input type="hidden" name="action" value="update_settings">
+                        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Logo Platformă</label>
+                            <div class="flex items-center space-x-4">
+                                <?php
+                                $stmt_logo = $pdo->prepare("SELECT value FROM settings WHERE key = 'site_logo'");
+                                $stmt_logo->execute();
+                                $site_logo = $stmt_logo->fetchColumn();
+                                ?>
+                                <div class="w-20 h-20 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center overflow-hidden bg-slate-50">
+                                    <?php if ($site_logo): ?>
+                                        <img src="<?php echo htmlspecialchars($site_logo); ?>" class="w-full h-full object-contain p-2">
+                                    <?php else: ?>
+                                        <i class="fas fa-image text-slate-300 text-2xl"></i>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="flex-grow">
+                                    <input type="file" name="site_logo" class="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 block mb-3">Selectare Temă Rapidă</label>
+                            <div class="grid grid-cols-5 gap-3">
+                                <button type="button" onclick="setTheme('default')" class="h-10 rounded-xl bg-blue-500 border-2 border-white shadow-sm hover:scale-105 transition"></button>
+                                <button type="button" onclick="setTheme('midnight')" class="h-10 rounded-xl bg-slate-900 border-2 border-white shadow-sm hover:scale-105 transition"></button>
+                                <button type="button" onclick="setTheme('emerald')" class="h-10 rounded-xl bg-emerald-500 border-2 border-white shadow-sm hover:scale-105 transition"></button>
+                                <button type="button" onclick="setTheme('sunset')" class="h-10 rounded-xl bg-rose-500 border-2 border-white shadow-sm hover:scale-105 transition"></button>
+                                <button type="button" onclick="setTheme('noir')" class="h-10 rounded-xl bg-black border-2 border-white shadow-sm hover:scale-105 transition"></button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition duration-200 shadow-lg shadow-blue-100">Salvează Setările</button>
+                    </form>
+                </div>
+
+                <!-- Live View Quick Access -->
+                <div class="rounded-3xl border border-slate-100 p-8 space-y-6 transition-colors duration-500" style="background-color: rgb(var(--card-bg))">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <h3 class="font-bold text-lg" style="color: rgb(var(--text-main))">Vizualizare Live Canale</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <?php foreach ($channels as $channel): ?>
+                        <div class="flex items-center justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-2xl hover:bg-white hover:shadow-md transition">
+                            <div class="flex items-center space-x-3">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                                <span class="text-sm font-bold" style="color: rgb(var(--text-main))"><?php echo htmlspecialchars($channel['name']); ?></span>
+                            </div>
+                            <button onclick="openPreview(<?php echo $channel['id']; ?>)" class="text-xs font-extrabold text-blue-600 uppercase tracking-widest hover:underline">Deschide Live</button>
+                        </div>
+                        <?php endforeach; ?>
+                        <?php if (empty($channels)): ?>
+                            <p class="text-xs text-slate-400 italic">Nu există canale create.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Calendar & Clock Utility -->
+                <div class="rounded-3xl border border-slate-100 p-8 space-y-6 transition-colors duration-500" style="background-color: rgb(var(--card-bg))">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <h3 class="font-bold text-lg" style="color: rgb(var(--text-main))">Utilități</h3>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-2xl p-6 text-center">
+                        <div id="settingsClock" class="text-4xl font-black tracking-tighter text-slate-800 mb-1">00:00:00</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><?php echo date('l, d F Y'); ?></div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-6">
+                        <div class="grid grid-cols-7 gap-1 text-center">
+                            <?php
+                            $days = ['Lu', 'Ma', 'Mi', 'Jo', 'Vi', 'Sâ', 'Du'];
+                            foreach($days as $d) echo "<div class='text-[9px] font-black text-slate-400 uppercase'>$d</div>";
+
+                            $start_date = date('Y-m-01');
+                            $end_date = date('Y-m-t');
+                            $start_day = date('N', strtotime($start_date));
+                            $days_in_month = date('t');
+                            $today = date('j');
+
+                            for($i = 1; $i < $start_day; $i++) echo "<div></div>";
+                            for($day = 1; $day <= $days_in_month; $day++) {
+                                $is_today = ($day == $today) ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'text-slate-600';
+                                echo "<div class='aspect-square flex items-center justify-center text-xs font-bold rounded-lg $is_today'>$day</div>";
+                            }
+                            ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Footer -->
@@ -544,6 +710,15 @@ $csrf_token = generate_csrf_token();
     </form>
 
     <script>
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ro-RO', { hour12: false });
+            if (document.getElementById('liveClock')) document.getElementById('liveClock').textContent = timeStr;
+            if (document.getElementById('settingsClock')) document.getElementById('settingsClock').textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
         document.querySelectorAll('.media-list').forEach(el => {
             new Sortable(el, {
                 animation: 250,

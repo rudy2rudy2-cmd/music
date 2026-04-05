@@ -33,6 +33,11 @@ try {
         FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
     );");
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        site_logo TEXT DEFAULT NULL
+    );");
+
 } catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }
