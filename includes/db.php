@@ -18,7 +18,9 @@ try {
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS channels (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
+        name TEXT NOT NULL,
+        logo_path TEXT DEFAULT NULL,
+        ticker_text TEXT DEFAULT NULL
     );");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS media (
@@ -30,15 +32,6 @@ try {
         duration INTEGER DEFAULT 10,
         FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
     );");
-
-    // Insert default admin if not exists
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = 'admin'");
-    $stmt->execute();
-    if (!$stmt->fetch()) {
-        $hashed_password = password_hash('admin123', PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES ('admin', ?)");
-        $stmt->execute([$hashed_password]);
-    }
 
 } catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());

@@ -29,14 +29,61 @@ if (!$channel) {
             height: 100%;
             overflow: hidden;
             background: #000;
+            font-family: Arial, sans-serif;
         }
-        .container {
+        .layout {
+            display: flex;
+            flex-direction: column;
             width: 100%;
             height: 100%;
+        }
+        .header {
+            height: 80px;
+            background: #1a1a1a;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .logo {
+            height: 60px;
+            max-width: 150px;
+            object-fit: contain;
+            margin-right: 30px;
+        }
+        .ticker-container {
+            flex-grow: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            background: rgba(0,0,0,0.3);
+            border-radius: 40px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .ticker {
+            display: inline-block;
+            white-space: nowrap;
+            padding-left: 100%;
+            animation: ticker 20s linear infinite;
+            font-size: 28px;
+            font-weight: bold;
+            color: #60a5fa;
+        }
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        .content {
+            flex-grow: 1;
+            position: relative;
+            background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
         .media-item {
             position: absolute;
@@ -52,31 +99,54 @@ if (!$channel) {
         }
         #no-media {
             color: white;
-            font-family: Arial, sans-serif;
             text-align: center;
         }
     </style>
 </head>
 <body>
-    <div class="container" id="player-container">
-        <div id="no-media">Incarcare...</div>
+    <div class="layout">
+        <div class="header">
+            <img id="channel-logo" src="" class="logo" style="display:none;">
+            <div class="ticker-container">
+                <div id="ticker-text" class="ticker"></div>
+            </div>
+        </div>
+        <div class="content" id="player-container">
+            <div id="no-media">Incarcare...</div>
+        </div>
     </div>
 
     <script>
         const channelId = <?php echo (int)$channel_id; ?>;
         const container = document.getElementById('player-container');
+        const logoEl = document.getElementById('channel-logo');
+        const tickerEl = document.getElementById('ticker-text');
+
         let mediaItems = [];
         let currentIndex = 0;
         let playTimeout = null;
+        let lastResponseStr = '';
 
         async function fetchMedia() {
             try {
                 const response = await fetch(`api_media.php?channel=${channelId}`);
-                const newMedia = await response.json();
+                const data = await response.json();
 
-                // Compare with current media (simple JSON string comparison for brevity)
-                if (JSON.stringify(newMedia) !== JSON.stringify(mediaItems)) {
-                    mediaItems = newMedia;
+                const responseStr = JSON.stringify(data);
+                if (responseStr !== lastResponseStr) {
+                    lastResponseStr = responseStr;
+
+                    // Update header config
+                    if (data.config.logo) {
+                        logoEl.src = data.config.logo;
+                        logoEl.style.display = 'block';
+                    } else {
+                        logoEl.style.display = 'none';
+                    }
+                    tickerEl.textContent = data.config.ticker || '';
+
+                    // Update media
+                    mediaItems = data.media;
                     updatePlayer();
                 }
             } catch (e) {
@@ -118,10 +188,12 @@ if (!$channel) {
             if (elements.length === 0) return;
 
             const current = elements[currentIndex];
-            current.classList.remove('active');
-            if (current.tagName === 'VIDEO') {
-                current.pause();
-                current.currentTime = 0;
+            if (current) {
+                current.classList.remove('active');
+                if (current.tagName === 'VIDEO') {
+                    current.pause();
+                    current.currentTime = 0;
+                }
             }
 
             currentIndex = (currentIndex + 1) % elements.length;
@@ -133,6 +205,8 @@ if (!$channel) {
             if (elements.length === 0) return;
 
             const current = elements[currentIndex];
+            if (!current) return;
+
             current.classList.add('active');
 
             if (playTimeout) clearTimeout(playTimeout);
@@ -152,8 +226,8 @@ if (!$channel) {
         // Initial fetch
         fetchMedia();
 
-        // Check for updates every 1 minute
-        setInterval(fetchMedia, 60000);
+        // Check for updates every 30 seconds
+        setInterval(fetchMedia, 30000);
     </script>
 </body>
 </html>

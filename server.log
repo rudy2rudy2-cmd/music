@@ -1,0 +1,154 @@
+[Sun Apr  5 00:17:38 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Sun Apr  5 00:17:58 2026] [::1]:57540 Accepted
+[Sun Apr  5 00:17:58 2026] [::1]:57540 [200]: GET /install.php
+[Sun Apr  5 00:17:58 2026] [::1]:57540 Closing
+[Sun Apr  5 00:17:59 2026] [::1]:57554 Accepted
+[Sun Apr  5 00:17:59 2026] [::1]:57554 [200]: POST /install.php
+[Sun Apr  5 00:17:59 2026] [::1]:57554 Closing
+[Sun Apr  5 00:17:59 2026] [::1]:57556 Accepted
+[Sun Apr  5 00:17:59 2026] [::1]:57556 [200]: GET /login.php
+[Sun Apr  5 00:17:59 2026] [::1]:57556 Closing
+[Sun Apr  5 00:17:59 2026] [::1]:57572 Accepted
+[Sun Apr  5 00:17:59 2026] [::1]:57572 [302]: POST /login.php
+[Sun Apr  5 00:17:59 2026] [::1]:57572 Closing
+[Sun Apr  5 00:17:59 2026] [::1]:57576 Accepted
+[Sun Apr  5 00:17:59 2026] [::1]:57576 [200]: GET /admin.php
+[Sun Apr  5 00:17:59 2026] [::1]:57576 Closing
+[Sun Apr  5 00:18:00 2026] [::1]:57580 Accepted
+[Sun Apr  5 00:18:00 2026] [::1]:57580 [200]: POST /admin.php
+[Sun Apr  5 00:18:00 2026] [::1]:57580 Closing
+[Sun Apr  5 00:18:00 2026] [::1]:57590 Accepted
+[Sun Apr  5 00:18:00 2026] [::1]:57590 [200]: POST /admin.php
+[Sun Apr  5 00:18:00 2026] [::1]:57590 Closing
+[Sun Apr  5 00:18:00 2026] [::1]:57604 Accepted
+[Sun Apr  5 00:18:00 2026] [::1]:57604 [200]: POST /admin.php
+[Sun Apr  5 00:18:00 2026] [::1]:57604 Closing
+[Sun Apr  5 00:18:00 2026] [::1]:57616 Accepted
+[Sun Apr  5 00:18:00 2026] [::1]:57616 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:00 2026] [::1]:57616 Closing
+[Sun Apr  5 00:18:01 2026] [::1]:57624 Accepted
+[Sun Apr  5 00:18:01 2026] [::1]:57624 [200]: GET /player.php?channel=1
+[Sun Apr  5 00:18:01 2026] [::1]:57624 Closing
+[Sun Apr  5 00:18:01 2026] [::1]:57634 Accepted
+[Sun Apr  5 00:18:01 2026] [::1]:57634 [200]: GET /api_media.php?channel=1
+[Sun Apr  5 00:18:01 2026] [::1]:57634 Closing
+[Sun Apr  5 00:18:01 2026] [::1]:57642 Accepted
+[Sun Apr  5 00:18:01 2026] [::1]:57642 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:01 2026] [::1]:57642 Closing
+[Sun Apr  5 00:18:28 2026] [::1]:36100 Accepted
+[Sun Apr  5 00:18:28 2026] [::1]:36100 [200]: GET /install.php
+[Sun Apr  5 00:18:28 2026] [::1]:36100 Closing
+[Sun Apr  5 00:18:29 2026] [::1]:36108 Accepted
+[Sun Apr  5 00:18:29 2026] [::1]:36108 [200]: POST /install.php
+[Sun Apr  5 00:18:29 2026] [::1]:36108 Closing
+[Sun Apr  5 00:18:29 2026] [::1]:36124 Accepted
+[Sun Apr  5 00:18:29 2026] [::1]:36124 [200]: GET /login.php
+[Sun Apr  5 00:18:29 2026] [::1]:36124 Closing
+[Sun Apr  5 00:18:29 2026] [::1]:36136 Accepted
+[Sun Apr  5 00:18:29 2026] [::1]:36136 [302]: POST /login.php
+[Sun Apr  5 00:18:29 2026] [::1]:36136 Closing
+[Sun Apr  5 00:18:29 2026] [::1]:36138 Accepted
+[Sun Apr  5 00:18:29 2026] [::1]:36138 [200]: GET /admin.php
+[Sun Apr  5 00:18:29 2026] [::1]:36138 Closing
+[Sun Apr  5 00:18:29 2026] [::1]:36150 Accepted
+[Sun Apr  5 00:18:29 2026] [::1]:36150 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:29 2026] [::1]:36150 Closing
+[Sun Apr  5 00:18:30 2026] [::1]:36152 Accepted
+[Sun Apr  5 00:18:30 2026] [::1]:36152 [200]: POST /admin.php
+[Sun Apr  5 00:18:30 2026] [::1]:36152 Closing
+[Sun Apr  5 00:18:30 2026] [::1]:36154 Accepted
+[Sun Apr  5 00:18:30 2026] [::1]:36154 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:30 2026] [::1]:36154 Closing
+[Sun Apr  5 00:18:30 2026] [::1]:36160 Accepted
+[Sun Apr  5 00:18:30 2026] [::1]:36160 [200]: POST /admin.php
+[Sun Apr  5 00:18:30 2026] [::1]:36160 Closing
+[Sun Apr  5 00:18:30 2026] [::1]:36168 Accepted
+[Sun Apr  5 00:18:30 2026] [::1]:36168 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:30 2026] [::1]:36168 Closing
+[Sun Apr  5 00:18:30 2026] [::1]:36170 Accepted
+[Sun Apr  5 00:18:30 2026] [::1]:36170 [200]: POST /admin.php
+[Sun Apr  5 00:18:30 2026] [::1]:36170 Closing
+[Sun Apr  5 00:18:30 2026] [::1]:36186 Accepted
+[Sun Apr  5 00:18:30 2026] [::1]:36196 Accepted
+[Sun Apr  5 00:18:30 2026] [::1]:36186 [200]: GET /uploads/69d1aa56a948f.png
+[Sun Apr  5 00:18:30 2026] [::1]:36196 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:30 2026] [::1]:36186 Closing
+[Sun Apr  5 00:18:30 2026] [::1]:36196 Closing
+[Sun Apr  5 00:18:30 2026] [::1]:36208 Accepted
+[Sun Apr  5 00:18:31 2026] [::1]:36208 [200]: GET /player.php?channel=1
+[Sun Apr  5 00:18:31 2026] [::1]:36208 Closing
+[Sun Apr  5 00:18:31 2026] [::1]:36214 Accepted
+[Sun Apr  5 00:18:31 2026] [::1]:36214 [200]: GET /api_media.php?channel=1
+[Sun Apr  5 00:18:31 2026] [::1]:36214 Closing
+[Sun Apr  5 00:18:31 2026] [::1]:36228 Accepted
+[Sun Apr  5 00:18:31 2026] [::1]:36228 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:31 2026] [::1]:36228 Closing
+[Sun Apr  5 00:18:31 2026] [::1]:36240 Accepted
+[Sun Apr  5 00:18:31 2026] [::1]:36240 [200]: GET /uploads/69d1aa56a948f.png
+[Sun Apr  5 00:18:31 2026] [::1]:36240 Closing
+[Sun Apr  5 00:18:54 2026] [::1]:57884 Accepted
+[Sun Apr  5 00:18:54 2026] [::1]:57884 [200]: GET /install.php
+[Sun Apr  5 00:18:54 2026] [::1]:57884 Closing
+[Sun Apr  5 00:18:54 2026] [::1]:46846 Accepted
+[Sun Apr  5 00:18:54 2026] [::1]:46846 [200]: POST /install.php
+[Sun Apr  5 00:18:54 2026] [::1]:46846 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46852 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46852 [200]: GET /login.php
+[Sun Apr  5 00:18:55 2026] [::1]:46852 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46866 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46866 [302]: POST /login.php
+[Sun Apr  5 00:18:55 2026] [::1]:46866 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46880 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46880 [200]: GET /admin.php
+[Sun Apr  5 00:18:55 2026] [::1]:46880 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46890 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46892 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46890 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:55 2026] [::1]:46892 [200]: GET /uploads/69d1aa56a948f.png
+[Sun Apr  5 00:18:55 2026] [::1]:46890 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46892 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46894 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46894 [200]: POST /admin.php
+[Sun Apr  5 00:18:55 2026] [::1]:46894 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46906 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46906 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:55 2026] [::1]:46906 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46922 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46922 [200]: GET /uploads/69d1aa56a948f.png
+[Sun Apr  5 00:18:55 2026] [::1]:46922 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46938 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46938 [200]: POST /admin.php
+[Sun Apr  5 00:18:55 2026] [::1]:46938 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46950 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46954 Accepted
+[Sun Apr  5 00:18:55 2026] [::1]:46950 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:55 2026] [::1]:46954 [200]: GET /uploads/69d1aa56a948f.png
+[Sun Apr  5 00:18:55 2026] [::1]:46950 Closing
+[Sun Apr  5 00:18:55 2026] [::1]:46954 Closing
+[Sun Apr  5 00:18:56 2026] [::1]:46958 Accepted
+[Sun Apr  5 00:18:56 2026] [::1]:46958 [200]: POST /admin.php
+[Sun Apr  5 00:18:56 2026] [::1]:46958 Closing
+[Sun Apr  5 00:18:56 2026] [::1]:46966 Accepted
+[Sun Apr  5 00:18:56 2026] [::1]:46970 Accepted
+[Sun Apr  5 00:18:56 2026] [::1]:46966 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:56 2026] [::1]:46970 [200]: GET /uploads/69d1aa56a948f.png
+[Sun Apr  5 00:18:56 2026] [::1]:46966 Closing
+[Sun Apr  5 00:18:56 2026] [::1]:46970 Closing
+[Sun Apr  5 00:18:56 2026] [::1]:46976 Accepted
+[Sun Apr  5 00:18:56 2026] [::1]:46976 [200]: GET /uploads/69d1aa7026777.png
+[Sun Apr  5 00:18:56 2026] [::1]:46976 Closing
+[Sun Apr  5 00:18:56 2026] [::1]:46986 Accepted
+[Sun Apr  5 00:18:56 2026] [::1]:46986 [200]: GET /player.php?channel=1
+[Sun Apr  5 00:18:56 2026] [::1]:46986 Closing
+[Sun Apr  5 00:18:56 2026] [::1]:46990 Accepted
+[Sun Apr  5 00:18:56 2026] [::1]:46990 [200]: GET /api_media.php?channel=1
+[Sun Apr  5 00:18:56 2026] [::1]:46990 Closing
+[Sun Apr  5 00:18:56 2026] [::1]:46992 Accepted
+[Sun Apr  5 00:18:56 2026] [::1]:47008 Accepted
+[Sun Apr  5 00:18:56 2026] [::1]:47012 Accepted
+[Sun Apr  5 00:18:56 2026] [::1]:46992 [200]: GET /uploads/69d1aa38e6235.png
+[Sun Apr  5 00:18:56 2026] [::1]:46992 Closing
+[Sun Apr  5 00:18:56 2026] [::1]:47008 [200]: GET /uploads/69d1aa56a948f.png
+[Sun Apr  5 00:18:56 2026] [::1]:47008 Closing
+[Sun Apr  5 00:18:56 2026] [::1]:47012 [200]: GET /uploads/69d1aa7026777.png
+[Sun Apr  5 00:18:56 2026] [::1]:47012 Closing

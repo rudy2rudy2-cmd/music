@@ -9,7 +9,7 @@ if (!is_logged_in()) {
 $message = '';
 $error = '';
 
-// Handle channel actions
+// Handle actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $error = "Eroare de securitate (CSRF).";
@@ -33,9 +33,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         unlink($m['file_path']);
                     }
                 }
+                // Delete logo if exists
+                $stmt = $pdo->prepare("SELECT logo_path FROM channels WHERE id = ?");
+                $stmt->execute([$channel_id]);
+                $chan = $stmt->fetch();
+                if ($chan && $chan['logo_path'] && file_exists($chan['logo_path'])) {
+                    unlink($chan['logo_path']);
+                }
+
                 $stmt = $pdo->prepare("DELETE FROM channels WHERE id = ?");
                 $stmt->execute([$channel_id]);
                 $message = "Canal șters.";
+            }
+        } elseif ($_POST['action'] == 'update_channel') {
+            $channel_id = $_POST['channel_id'] ?? 0;
+            $ticker_text = $_POST['ticker_text'] ?? '';
+
+            if ($channel_id) {
+                $logo_path = null;
+                if (isset($_FILES['logo_file']) && $_FILES['logo_file']['error'] === UPLOAD_ERR_OK) {
+                    $file_ext = strtolower(pathinfo($_FILES['logo_file']['name'], PATHINFO_EXTENSION));
+                    if (in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif'])) {
+                        $new_logo = 'uploads/logo_' . $channel_id . '.' . $file_ext;
+                        if (move_uploaded_file($_FILES['logo_file']['tmp_name'], $new_logo)) {
+                            $logo_path = $new_logo;
+                        }
+                    }
+                }
+
+                if ($logo_path) {
+                    $stmt = $pdo->prepare("UPDATE channels SET ticker_text = ?, logo_path = ? WHERE id = ?");
+                    $stmt->execute([$ticker_text, $logo_path, $channel_id]);
+                } else {
+                    $stmt = $pdo->prepare("UPDATE channels SET ticker_text = ? WHERE id = ?");
+                    $stmt->execute([$ticker_text, $channel_id]);
+                }
+                $message = "Configurația canalului a fost salvată.";
             }
         } elseif ($_POST['action'] == 'upload_media') {
             $channel_id = $_POST['channel_id'] ?? 0;
@@ -119,7 +152,7 @@ $csrf_token = generate_csrf_token();
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold"><i class="fas fa-tv mr-2"></i>Viziere Digitale - Admin</h1>
             <div class="flex items-center space-x-4">
-                <span>Salut, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
+                <span>Salut, <?php echo htmlspecialchars($_SESSION['username'] ?? 'Admin'); ?></span>
                 <a href="logout.php" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm transition duration-300">Logout</a>
             </div>
         </div>
@@ -172,6 +205,27 @@ $csrf_token = generate_csrf_token();
                     </div>
                 </div>
 
+                <!-- Config Channel -->
+                <div class="mb-4 bg-blue-50 p-3 rounded border border-blue-100">
+                    <form method="POST" enctype="multipart/form-data" class="flex flex-col space-y-2">
+                        <input type="hidden" name="action" value="update_channel">
+                        <input type="hidden" name="channel_id" value="<?php echo $channel['id']; ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+                        <label class="block text-xs font-bold text-blue-700 uppercase">Setări Canal</label>
+
+                        <div class="flex items-center space-x-2">
+                            <?php if ($channel['logo_path']): ?>
+                                <img src="<?php echo htmlspecialchars($channel['logo_path']); ?>" class="w-8 h-8 object-contain rounded border bg-white">
+                            <?php endif; ?>
+                            <input type="file" name="logo_file" class="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-white file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+
+                        <input type="text" name="ticker_text" placeholder="Text scrollant live..." value="<?php echo htmlspecialchars($channel['ticker_text'] ?? ''); ?>" class="w-full text-xs border rounded p-1 focus:outline-none focus:ring-1 focus:ring-blue-400">
+
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1 rounded transition duration-300 uppercase">Salvează Configurarea</button>
+                    </form>
+                </div>
+
                 <!-- Media Upload for Channel -->
                 <div class="mb-4">
                     <form method="POST" enctype="multipart/form-data" class="flex flex-col space-y-2 border p-3 rounded bg-gray-50">
@@ -191,7 +245,7 @@ $csrf_token = generate_csrf_token();
                 <!-- Media List (Sortable) -->
                 <div class="mt-4">
                     <div class="flex justify-between items-center mb-2 border-b pb-1">
-                        <h4 class="text-sm font-semibold text-gray-600">Media (trage pt reordonare):</h4>
+                        <h4 class="text-sm font-semibold text-gray-600">Media (reordonează):</h4>
                     </div>
                     <form method="POST">
                         <input type="hidden" name="action" value="reorder_media">
