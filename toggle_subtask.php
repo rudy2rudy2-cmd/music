@@ -3,8 +3,8 @@ require_once __DIR__ . '/includes/db.php';
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+    exit;
 }
 
 // Global settings fetch to set timezone
@@ -16,15 +16,20 @@ while ($row = $stmt_settings->fetch()) {
 date_default_timezone_set($site_settings['timezone'] ?? 'Europe/Bucharest');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $defect_id = $_POST['defect_id'];
-    $subtask_index = $_POST['subtask_index'];
+    $defect_id = $_POST['defect_id'] ?? null;
+    $subtask_index = isset($_POST['subtask_index']) ? (string)$_POST['subtask_index'] : null;
 
-    $stmt = $pdo->prepare("SELECT description, resolved_subtasks FROM defects WHERE id = ?");
+    if ($defect_id === null || $subtask_index === null) {
+        echo json_encode(['status' => 'error', 'message' => 'Missing parameters']);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("SELECT description, resolved_subtasks, resolved_at FROM defects WHERE id = ?");
     $stmt->execute([$defect_id]);
     $defect = $stmt->fetch();
 
     if ($defect) {
-        $resolved = array_filter(explode(',', $defect['resolved_subtasks'] ?? ''));
+        $resolved = array_filter(explode(',', (string)$defect['resolved_subtasks']), 'strlen');
 
         if (in_array($subtask_index, $resolved)) {
             $resolved = array_diff($resolved, [$subtask_index]);
@@ -34,17 +39,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $resolved_str = implode(',', $resolved);
 
-        // Check if all are resolved
-        $subtasks = array_filter(array_map('trim', explode('.', $defect['description'] ?? '')));
-        $new_status = (count($resolved) >= count($subtasks)) ? 'rezolvat' : 'activ';
-        $resolved_at = ($new_status == 'rezolvat') ? date('Y-m-d H:i:s') : ($defect['resolved_at'] ?? null);
+        // Subtasks count logic
+        $subtasks = array_filter(array_map('trim', explode('.', (string)$defect['description'])), 'strlen');
+        $total_subtasks = count($subtasks);
+        $resolved_count = count($resolved);
+
+        $new_status = ($resolved_count >= $total_subtasks && $total_subtasks > 0) ? 'rezolvat' : 'activ';
+
+        // Manage resolved_at timestamp
+        $resolved_at = $defect['resolved_at'];
+        if ($new_status == 'rezolvat') {
+            if (!$resolved_at) $resolved_at = date('Y-m-d H:i:s');
+        } else {
+            // If at least one subtask is resolved, we might want a timestamp of "partial resolution"
+            // but the user wants it to appear in "Rezolvate" filter.
+            // For now, only set resolved_at if fully resolved.
+            // But my index.php filter uses resolved_subtasks != '' too.
+        }
 
         $update = $pdo->prepare("UPDATE defects SET resolved_subtasks = ?, status = ?, resolved_at = ? WHERE id = ?");
         $update->execute([$resolved_str, $new_status, $resolved_at, $defect_id]);
 
-        echo json_encode(['status' => 'success', 'new_status' => $new_status]);
+        echo json_encode(['status' => 'success', 'new_status' => $new_status, 'resolved_count' => $resolved_count]);
         exit;
     }
 }
-echo json_encode(['status' => 'error']);
+echo json_encode(['status' => 'error', 'message' => 'Invalid request']);
 ?>

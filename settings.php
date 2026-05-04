@@ -61,7 +61,7 @@ require_once __DIR__ . '/includes/header.php';
 <div class="max-w-4xl mx-auto">
     <div class="mb-8">
         <h2 class="text-3xl font-bold">Setări Sistem</h2>
-        <p class="text-gray-400">Configurare avansată platformă</p>
+        <p class="text-gray-400">Personalizare și Configurare Platformă</p>
     </div>
 
     <?php if ($success): ?>
@@ -96,35 +96,58 @@ require_once __DIR__ . '/includes/header.php';
                 <label class="block text-sm text-gray-400 mb-2">Text Copyright</label>
                 <textarea name="copyright" rows="2" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition"><?php echo htmlspecialchars($settings['copyright'] ?? ''); ?></textarea>
             </div>
-        </div>
-
-        <!-- System Section -->
-        <div class="glass p-8 rounded-2xl space-y-6">
-            <h3 class="text-xl font-bold border-b border-white/5 pb-4">Preferințe și Timp</h3>
-
-            <div>
-                <label class="block text-sm text-gray-400 mb-2">Filtru Dashboard Implicit</label>
-                <select name="default_filter" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 appearance-none">
-                    <option value="all" <?php echo ($settings['default_filter'] ?? 'all') == 'all' ? 'selected' : ''; ?> class="bg-slate-900">Toate</option>
-                    <option value="active" <?php echo ($settings['default_filter'] ?? 'all') == 'active' ? 'selected' : ''; ?> class="bg-slate-900">Doar Active</option>
-                    <option value="resolved" <?php echo ($settings['default_filter'] ?? 'all') == 'resolved' ? 'selected' : ''; ?> class="bg-slate-900">Doar Rezolvate</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm text-gray-400 mb-2">Fus Orar (Timezone)</label>
-                <input type="text" name="timezone" value="<?php echo htmlspecialchars($settings['timezone'] ?? 'Europe/Bucharest'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition" placeholder="Ex: Europe/Bucharest">
-                <p class="text-[10px] text-gray-600 mt-1">Setați pentru ora locală corectă.</p>
-            </div>
 
             <div>
                 <label class="block text-sm text-gray-400 mb-2">Logo Nou</label>
                 <input type="file" name="logo" class="text-xs text-gray-500 cursor-pointer">
             </div>
+        </div>
+
+        <!-- Appearance Section -->
+        <div class="glass p-8 rounded-2xl space-y-6">
+            <h3 class="text-xl font-bold border-b border-white/5 pb-4">Teme și Dashboard</h3>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-4">Selectează Tema</label>
+                <div class="grid grid-cols-1 gap-3">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="theme" value="blue" <?php echo ($settings['theme'] ?? 'blue') == 'blue' ? 'checked' : ''; ?> class="peer hidden">
+                        <div class="p-4 border border-white/10 rounded-xl flex items-center justify-between peer-checked:bg-blue-600 peer-checked:border-blue-600 transition">
+                            <span class="font-bold">Tema Albastră</span>
+                            <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer">
+                        <input type="radio" name="theme" value="black" <?php echo ($settings['theme'] ?? 'blue') == 'black' ? 'checked' : ''; ?> class="peer hidden">
+                        <div class="p-4 border border-white/10 rounded-xl flex items-center justify-between peer-checked:bg-slate-800 peer-checked:border-slate-700 transition">
+                            <span class="font-bold">Tema Neagră</span>
+                            <div class="w-4 h-4 bg-black rounded-full border border-white/20"></div>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer">
+                        <input type="radio" name="theme" value="white" <?php echo ($settings['theme'] ?? 'blue') == 'white' ? 'checked' : ''; ?> class="peer hidden">
+                        <div class="p-4 border border-white/10 rounded-xl flex items-center justify-between peer-checked:bg-slate-100 peer-checked:border-slate-200 peer-checked:text-black transition">
+                            <span class="font-bold">Tema Albă</span>
+                            <div class="w-4 h-4 bg-white rounded-full border border-gray-300"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Filtru Implicit</label>
+                <select name="default_filter" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 appearance-none">
+                    <option value="all" <?php echo ($settings['default_filter'] ?? 'all') == 'all' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Toate</option>
+                    <option value="active" <?php echo ($settings['default_filter'] ?? 'all') == 'active' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Doar Active</option>
+                    <option value="resolved" <?php echo ($settings['default_filter'] ?? 'all') == 'resolved' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Doar Rezolvate</option>
+                </select>
+            </div>
 
             <div class="pt-4">
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-blue-600/20">
-                    Salvează Setările
+                    Salvează Toate Setările
                 </button>
             </div>
         </div>

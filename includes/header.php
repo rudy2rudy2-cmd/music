@@ -1,5 +1,5 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once __DIR__ . '/db.php';
 
 function checkLogin() {
@@ -22,13 +22,11 @@ while ($row = $stmt->fetch()) {
 // Set Timezone
 date_default_timezone_set($site_settings['timezone'] ?? 'Europe/Bucharest');
 
-$theme = $site_settings['theme'] ?? 'default';
+$theme = $site_settings['theme'] ?? 'blue';
 $logo = !empty($site_settings['logo_path']) ? $site_settings['logo_path'] : '';
 $copyright = $site_settings['copyright'] ?? 'Copyright 2026 Autor Stoian Rudolf';
 $site_title = $site_settings['site_title'] ?? 'HotelDefects';
 $logo_size = $site_settings['logo_size'] ?? '32';
-$default_filter = $site_settings['default_filter'] ?? 'all';
-$total_rooms_count = $site_settings['total_rooms'] ?? '100';
 ?>
 <!DOCTYPE html>
 <html lang="ro">
@@ -41,6 +39,7 @@ $total_rooms_count = $site_settings['total_rooms'] ?? '100';
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
+            /* Default Blue Theme */
             --bg-color: #0f172a;
             --sidebar-bg: rgba(255, 255, 255, 0.03);
             --card-bg: rgba(255, 255, 255, 0.03);
@@ -48,6 +47,9 @@ $total_rooms_count = $site_settings['total_rooms'] ?? '100';
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
             --accent-color: #3b82f6;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --subtask-bg: rgba(255, 255, 255, 0.05);
+            --subtask-text: #ffffff;
         }
 
         <?php if ($theme === 'black'): ?>
@@ -59,7 +61,41 @@ $total_rooms_count = $site_settings['total_rooms'] ?? '100';
             --text-primary: #ffffff;
             --text-secondary: #71717a;
             --accent-color: #3f3f46;
+            --input-bg: #111111;
+            --subtask-bg: #111111;
+            --subtask-text: #ffffff;
         }
+        <?php elseif ($theme === 'white'): ?>
+        :root {
+            --bg-color: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent-color: #3b82f6;
+            --input-bg: #f1f5f9;
+            --subtask-bg: #f1f5f9;
+            --subtask-text: #0f172a;
+        }
+        .glass {
+            backdrop-filter: none !important;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .sidebar {
+            box-shadow: 1px 0 0 0 var(--border-color);
+        }
+        input, select, textarea {
+            color: #0f172a !important;
+        }
+        .defect-desc {
+            color: #0f172a !important;
+        }
+        .white-time {
+            color: #1e293b !important;
+        }
+        <?php else: ?>
+        /* Explicitly handle 'blue' if needed, though it's the default in :root */
         <?php endif; ?>
 
         body {
@@ -93,10 +129,10 @@ $total_rooms_count = $site_settings['total_rooms'] ?? '100';
             border: 1px solid rgba(34, 197, 94, 0.3);
         }
         .defect-desc {
-            color: #ffffff !important;
+            color: var(--text-primary);
         }
         .white-time {
-            color: #ffffff !important;
+            color: var(--text-primary);
         }
     </style>
 </head>

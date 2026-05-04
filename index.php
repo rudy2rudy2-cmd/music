@@ -1,13 +1,13 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
-// Global settings fetch for default filter and total rooms
+// Global settings fetch
 $stmt_settings = $pdo->query("SELECT * FROM settings");
 $site_settings_idx = [];
 while ($row = $stmt_settings->fetch()) {
@@ -17,7 +17,7 @@ while ($row = $stmt_settings->fetch()) {
 $default_filter_idx = $site_settings_idx['default_filter'] ?? 'all';
 $total_rooms_idx = $site_settings_idx['total_rooms'] ?? '100';
 
-// Statistics update logic
+// Statistics update logic - Optimized for subtasks
 $active_defects = $pdo->query("SELECT COUNT(*) FROM defects WHERE status = 'activ'")->fetchColumn();
 $resolved_defects = $pdo->query("SELECT COUNT(*) FROM defects WHERE status = 'rezolvat' OR (resolved_subtasks != '' AND resolved_subtasks IS NOT NULL)")->fetchColumn();
 
@@ -29,8 +29,10 @@ $query = "SELECT d.*, u.username as reported_by_user FROM defects d LEFT JOIN us
 $params = [];
 
 if ($filter === 'active') {
+    // In active view, we show things that are NOT fully resolved
     $query .= " AND d.status = 'activ'";
 } elseif ($filter === 'resolved') {
+    // In resolved view, we show things that have AT LEAST one subtask resolved OR are fully resolved
     $query .= " AND (d.status = 'rezolvat' OR (d.resolved_subtasks != '' AND d.resolved_subtasks IS NOT NULL))";
 }
 
@@ -135,14 +137,16 @@ require_once __DIR__ . '/includes/header.php';
                 <?php else: ?>
                     <?php foreach ($defects as $defect): ?>
                         <?php
-                            $subtasks = array_filter(array_map('trim', explode('.', $defect['description'] ?? '')));
-                            $resolved = array_filter(explode(',', $defect['resolved_subtasks'] ?? ''));
+                            $description = (string)$defect['description'];
+                            $subtasks = array_filter(array_map('trim', explode('.', $description)), 'strlen');
+                            $resolved = array_filter(explode(',', (string)$defect['resolved_subtasks']), 'strlen');
 
+                            // Filtering subtasks based on view
                             $visible_subtasks = $subtasks;
                             if ($filter === 'active') {
-                                $visible_subtasks = array_filter($subtasks, function($k) use ($resolved) { return !in_array($k, $resolved); }, ARRAY_FILTER_USE_KEY);
+                                $visible_subtasks = array_filter($subtasks, function($k) use ($resolved) { return !in_array((string)$k, $resolved); }, ARRAY_FILTER_USE_KEY);
                             } elseif ($filter === 'resolved') {
-                                $visible_subtasks = array_filter($subtasks, function($k) use ($resolved) { return in_array($k, $resolved); }, ARRAY_FILTER_USE_KEY);
+                                $visible_subtasks = array_filter($subtasks, function($k) use ($resolved) { return in_array((string)$k, $resolved); }, ARRAY_FILTER_USE_KEY);
                             }
 
                             if (empty($visible_subtasks)) continue;
@@ -152,14 +156,14 @@ require_once __DIR__ . '/includes/header.php';
                                 <span class="text-lg font-black text-blue-500">#<?php echo htmlspecialchars($defect['room_number']); ?></span>
                             </td>
                             <td class="px-6 py-5">
-                                <div class="font-semibold text-gray-200"><?php echo htmlspecialchars($defect['issue_type']); ?></div>
+                                <div class="font-semibold defect-desc"><?php echo htmlspecialchars($defect['issue_type']); ?></div>
                                 <div class="flex flex-wrap gap-1 mt-1">
                                     <?php foreach($visible_subtasks as $index => $task):
-                                            $is_resolved = in_array($index, $resolved);
+                                            $is_resolved = in_array((string)$index, $resolved);
                                     ?>
                                         <span
-                                            onclick="toggleSubtask(<?php echo $defect['id']; ?>, <?php echo $index; ?>)"
-                                            class="cursor-pointer px-2 py-0.5 rounded text-[11px] transition border <?php echo $is_resolved ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-white/5 text-white border-white/10 hover:bg-white/10'; ?>"
+                                            onclick="event.stopPropagation(); toggleSubtask(<?php echo $defect['id']; ?>, '<?php echo $index; ?>')"
+                                            class="cursor-pointer px-2 py-0.5 rounded text-[11px] transition border <?php echo $is_resolved ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-subtask-bg text-subtask-text border-white/10 hover:bg-white/10'; ?>"
                                         >
                                             <?php echo htmlspecialchars($task); ?>
                                         </span>
@@ -222,6 +226,7 @@ require_once __DIR__ . '/includes/header.php';
 
 <script>
     function toggleSubtask(defectId, index) {
+        console.log("Toggling subtask:", defectId, index);
         const formData = new FormData();
         formData.append('defect_id', defectId);
         formData.append('subtask_index', index);
@@ -232,9 +237,16 @@ require_once __DIR__ . '/includes/header.php';
         })
         .then(response => response.json())
         .then(data => {
+            console.log("Response:", data);
             if (data.status === 'success') {
                 location.reload();
+            } else {
+                alert("Eroare: " + (data.message || "Necunoscută"));
             }
+        })
+        .catch(err => {
+            console.error("Fetch error:", err);
+            alert("Eroare de conexiune.");
         });
     }
 
@@ -248,7 +260,7 @@ require_once __DIR__ . '/includes/header.php';
         const seconds = String(now.getSeconds()).padStart(2, '0');
 
         const el = document.getElementById('live-clock');
-        if (el) el.textContent = \`\${day}.\${month}.\${year} \${hours}:\${minutes}:\${seconds}\`;
+        if (el) el.textContent = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
     }
     setInterval(updateClock, 1000);
 
