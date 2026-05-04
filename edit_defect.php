@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If description changed, reset resolved subtasks
     $resolved_subtasks = $defect['resolved_subtasks'];
     if ($desc !== $defect['description']) {
-        $resolved_subtasks = '';
+        $resolved_subtasks = '[]';
     }
 
     $resolved_at = ($status == 'rezolvat') ? ($defect['resolved_at'] ?? gmdate('Y-m-d H:i:s')) : null;

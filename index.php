@@ -19,7 +19,7 @@ $total_rooms_idx = $site_settings_idx['total_rooms'] ?? '100';
 
 // Statistics update logic - Optimized for subtasks
 $active_defects = $pdo->query("SELECT COUNT(*) FROM defects WHERE status = 'activ'")->fetchColumn();
-$resolved_defects = $pdo->query("SELECT COUNT(*) FROM defects WHERE status = 'rezolvat' OR (resolved_subtasks != '' AND resolved_subtasks IS NOT NULL)")->fetchColumn();
+$resolved_defects = $pdo->query("SELECT COUNT(*) FROM defects WHERE status = 'rezolvat' OR (resolved_subtasks != '' AND resolved_subtasks != '[]' AND resolved_subtasks IS NOT NULL)")->fetchColumn();
 
 // Filters
 $filter = $_GET['filter'] ?? $default_filter_idx;
@@ -33,7 +33,7 @@ if ($filter === 'active') {
     $query .= " AND d.status = 'activ'";
 } elseif ($filter === 'resolved') {
     // In resolved view, we show things that have AT LEAST one subtask resolved OR are fully resolved
-    $query .= " AND (d.status = 'rezolvat' OR (d.resolved_subtasks != '' AND d.resolved_subtasks IS NOT NULL))";
+    $query .= " AND (d.status = 'rezolvat' OR (d.resolved_subtasks != '' AND d.resolved_subtasks != '[]' AND d.resolved_subtasks IS NOT NULL))";
 }
 
 if (!empty($search)) {
@@ -139,14 +139,14 @@ require_once __DIR__ . '/includes/header.php';
                         <?php
                             $description = (string)$defect['description'];
                             $subtasks = array_filter(array_map('trim', explode('.', $description)), 'strlen');
-                            $resolved = array_filter(explode(',', (string)$defect['resolved_subtasks']), 'strlen');
+                            $resolved_data = json_decode((string)$defect['resolved_subtasks'], true) ?: [];
 
                             // Filtering subtasks based on view
                             $visible_subtasks = $subtasks;
                             if ($filter === 'active') {
-                                $visible_subtasks = array_filter($subtasks, function($k) use ($resolved) { return !in_array((string)$k, $resolved); }, ARRAY_FILTER_USE_KEY);
+                                $visible_subtasks = array_filter($subtasks, function($k) use ($resolved_data) { return !isset($resolved_data[$k]); }, ARRAY_FILTER_USE_KEY);
                             } elseif ($filter === 'resolved') {
-                                $visible_subtasks = array_filter($subtasks, function($k) use ($resolved) { return in_array((string)$k, $resolved); }, ARRAY_FILTER_USE_KEY);
+                                $visible_subtasks = array_filter($subtasks, function($k) use ($resolved_data) { return isset($resolved_data[$k]); }, ARRAY_FILTER_USE_KEY);
                             }
 
                             // If we have a filter active and no subtasks match, skip only if there was a description
@@ -162,15 +162,22 @@ require_once __DIR__ . '/includes/header.php';
                                 <div class="font-semibold defect-desc"><?php echo htmlspecialchars($defect['issue_type']); ?></div>
                                 <div class="flex flex-wrap gap-1 mt-1">
                                     <?php foreach($visible_subtasks as $index => $task):
-                                            $is_resolved = in_array((string)$index, $resolved);
+                                            $resolver = $resolved_data[$index] ?? null;
                                     ?>
-                                        <span
-                                            onclick="event.stopPropagation(); toggleSubtask(<?php echo $defect['id']; ?>, '<?php echo $index; ?>')"
-                                            class="cursor-pointer px-2 py-0.5 rounded transition border <?php echo $is_resolved ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-subtask-bg text-subtask-text border-white/10 hover:bg-white/10'; ?>"
-                                            style="font-size: 0.85em;"
-                                        >
-                                            <?php echo htmlspecialchars($task); ?>
-                                        </span>
+                                        <div class="flex items-center gap-1">
+                                            <span
+                                                onclick="event.stopPropagation(); toggleSubtask(<?php echo $defect['id']; ?>, '<?php echo $index; ?>')"
+                                                class="cursor-pointer px-2 py-0.5 rounded transition border <?php echo $resolver ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-subtask-bg text-subtask-text border-white/10 hover:bg-white/10'; ?>"
+                                                style="font-size: 0.85em;"
+                                            >
+                                                <?php echo htmlspecialchars($task); ?>
+                                            </span>
+                                            <?php if ($resolver): ?>
+                                                <span class="text-[9px] text-gray-500 italic flex items-center gap-0.5" title="Rezolvat de <?php echo htmlspecialchars($resolver); ?>">
+                                                    <i class="fas fa-user-check text-[7px]"></i> <?php echo htmlspecialchars($resolver); ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
                                     <?php endforeach; ?>
                                 </div>
                             </td>

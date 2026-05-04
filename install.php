@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             reported_by INTEGER,
             reported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             resolved_at DATETIME,
-            resolved_subtasks TEXT DEFAULT '',
+            resolved_subtasks TEXT DEFAULT '[]',
             FOREIGN KEY (reported_by) REFERENCES users(id)
         );
 

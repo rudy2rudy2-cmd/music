@@ -29,20 +29,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $defect = $stmt->fetch();
 
     if ($defect) {
-        $resolved = array_filter(explode(',', (string)$defect['resolved_subtasks']), 'strlen');
+        $resolved_data = json_decode((string)$defect['resolved_subtasks'], true) ?: [];
 
-        if (in_array($subtask_index, $resolved)) {
-            $resolved = array_diff($resolved, [$subtask_index]);
+        if (isset($resolved_data[$subtask_index])) {
+            unset($resolved_data[$subtask_index]);
         } else {
-            $resolved[] = $subtask_index;
+            $resolved_data[$subtask_index] = $_SESSION['username'];
         }
 
-        $resolved_str = implode(',', $resolved);
+        $resolved_str = json_encode($resolved_data);
 
         // Subtasks count logic
         $subtasks = array_filter(array_map('trim', explode('.', (string)$defect['description'])), 'strlen');
         $total_subtasks = count($subtasks);
-        $resolved_count = count($resolved);
+        $resolved_count = count($resolved_data);
 
         $new_status = ($resolved_count >= $total_subtasks && $total_subtasks > 0) ? 'rezolvat' : 'activ';
 
