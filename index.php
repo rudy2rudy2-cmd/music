@@ -108,9 +108,17 @@ require_once __DIR__ . '/includes/header.php';
             </form>
         </div>
 
-        <a href="add_defect.php" class="w-full lg:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
-            <i class="fas fa-plus-circle"></i> Adaugă Raport
-        </a>
+        <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+            <a href="export.php" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/30 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg">
+                <i class="fas fa-file-export"></i> Export CSV
+            </a>
+            <a href="import.php" class="bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-white border border-amber-600/30 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg">
+                <i class="fas fa-file-import"></i> Import CSV
+            </a>
+            <a href="add_defect.php" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+                <i class="fas fa-plus-circle"></i> Adaugă Raport
+            </a>
+        </div>
     </div>
 
     <div class="overflow-x-auto">
