@@ -168,13 +168,13 @@ require_once __DIR__ . '/includes/header.php';
                                             <span
                                                 onclick="event.stopPropagation(); toggleSubtask(<?php echo $defect['id']; ?>, '<?php echo $index; ?>')"
                                                 class="cursor-pointer px-2 py-0.5 rounded transition border <?php echo $resolver ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-subtask-bg text-subtask-text border-white/10 hover:bg-white/10'; ?>"
-                                                style="font-size: 0.85em;"
+                                                style="font-size: var(--subtask-font-size);"
                                             >
                                                 <?php echo htmlspecialchars($task); ?>
                                             </span>
                                             <?php if ($resolver): ?>
-                                                <span class="text-[9px] text-gray-500 italic flex items-center gap-0.5" title="Rezolvat de <?php echo htmlspecialchars($resolver); ?>">
-                                                    <i class="fas fa-user-check text-[7px]"></i> <?php echo htmlspecialchars($resolver); ?>
+                                                <span class="text-gray-500 italic flex items-center gap-0.5" style="font-size: var(--subtask-font-size);" title="Rezolvat de <?php echo htmlspecialchars($resolver); ?>">
+                                                    <i class="fas fa-user-check" style="font-size: 0.8em;"></i> <?php echo htmlspecialchars($resolver); ?>
                                                 </span>
                                             <?php endif; ?>
                                         </div>

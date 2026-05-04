@@ -58,6 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('default_filter', 'all');
         INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('timezone', 'Europe/Bucharest');
         INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('report_font_size', '14');
+        INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('subtask_font_size', '10');
+        INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('report_text_color', 'white');
         ";
 
         $pdo->exec($sql);

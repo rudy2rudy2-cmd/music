@@ -28,6 +28,15 @@ $copyright = $site_settings['copyright'] ?? 'Copyright 2026 Autor Stoian Rudolf'
 $site_title = $site_settings['site_title'] ?? 'HotelDefects';
 $logo_size = $site_settings['logo_size'] ?? '32';
 $report_font_size = $site_settings['report_font_size'] ?? '14';
+$subtask_font_size = $site_settings['subtask_font_size'] ?? '10';
+$report_text_color_val = $site_settings['report_text_color'] ?? 'white';
+$color_map = [
+    'white' => '#ffffff',
+    'red' => '#ef4444',
+    'green' => '#22c55e',
+    'orange' => '#f97316'
+];
+$report_text_color = $color_map[$report_text_color_val] ?? '#ffffff';
 ?>
 <!DOCTYPE html>
 <html lang="ro">
@@ -50,6 +59,8 @@ $report_font_size = $site_settings['report_font_size'] ?? '14';
             --accent-color: #3b82f6;
             --input-bg: rgba(255, 255, 255, 0.05);
             --report-font-size: <?php echo $report_font_size; ?>px;
+            --subtask-font-size: <?php echo $subtask_font_size; ?>px;
+            --report-text-color: <?php echo $report_text_color; ?>;
             --subtask-bg: rgba(255, 255, 255, 0.05);
             --subtask-text: #ffffff;
         }
@@ -131,7 +142,7 @@ $report_font_size = $site_settings['report_font_size'] ?? '14';
             border: 1px solid rgba(34, 197, 94, 0.3);
         }
         .defect-desc {
-            color: var(--text-primary);
+            color: var(--report-text-color) !important;
         }
         .white-time {
             color: var(--text-primary);

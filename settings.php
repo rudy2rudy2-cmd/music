@@ -18,7 +18,7 @@ while ($row = $stmt->fetch()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $keys = ['copyright', 'site_title', 'logo_size', 'report_font_size', 'theme', 'total_rooms', 'default_filter', 'timezone'];
+    $keys = ['copyright', 'site_title', 'logo_size', 'report_font_size', 'subtask_font_size', 'report_text_color', 'theme', 'total_rooms', 'default_filter', 'timezone'];
 
     foreach ($keys as $key) {
         if (isset($_POST[$key])) {
@@ -110,9 +110,25 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
             </div>
 
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Font Rapoarte (px)</label>
+                    <input type="number" name="report_font_size" value="<?php echo htmlspecialchars($settings['report_font_size'] ?? '14'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Font Subtasks (px)</label>
+                    <input type="number" name="subtask_font_size" value="<?php echo htmlspecialchars($settings['subtask_font_size'] ?? '10'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+                </div>
+            </div>
+
             <div>
-                <label class="block text-sm text-gray-400 mb-2">Font Rapoarte (px)</label>
-                <input type="number" name="report_font_size" value="<?php echo htmlspecialchars($settings['report_font_size'] ?? '14'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+                <label class="block text-sm text-gray-400 mb-2">Culoare Text Rapoarte</label>
+                <select name="report_text_color" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 appearance-none">
+                    <option value="white" <?php echo ($settings['report_text_color'] ?? 'white') == 'white' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Alb</option>
+                    <option value="red" <?php echo ($settings['report_text_color'] ?? 'white') == 'red' ? 'selected' : ''; ?> class="bg-slate-900 text-red-500">Roșu</option>
+                    <option value="green" <?php echo ($settings['report_text_color'] ?? 'white') == 'green' ? 'selected' : ''; ?> class="bg-slate-900 text-green-500">Verde</option>
+                    <option value="orange" <?php echo ($settings['report_text_color'] ?? 'white') == 'orange' ? 'selected' : ''; ?> class="bg-slate-900 text-orange-500">Portocaliu</option>
+                </select>
             </div>
 
             <div>
