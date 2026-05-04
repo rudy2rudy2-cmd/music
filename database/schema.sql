@@ -30,3 +30,6 @@ INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('logo_path',
 INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('theme', 'default');
 INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('site_title', 'HotelDefects');
 INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('logo_size', '32');
+INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('total_rooms', '100');
+INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('default_filter', 'all');
+INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('timezone', 'Europe/Bucharest');

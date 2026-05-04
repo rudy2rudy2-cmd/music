@@ -7,12 +7,22 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Global settings fetch for default filter and total rooms
+$stmt_settings = $pdo->query("SELECT * FROM settings");
+$site_settings_idx = [];
+while ($row = $stmt_settings->fetch()) {
+    $site_settings_idx[$row['setting_key']] = $row['setting_value'];
+}
+
+$default_filter_idx = $site_settings_idx['default_filter'] ?? 'all';
+$total_rooms_idx = $site_settings_idx['total_rooms'] ?? '100';
+
 // Statistics update logic
 $active_defects = $pdo->query("SELECT COUNT(*) FROM defects WHERE status = 'activ'")->fetchColumn();
 $resolved_defects = $pdo->query("SELECT COUNT(*) FROM defects WHERE status = 'rezolvat' OR (resolved_subtasks != '' AND resolved_subtasks IS NOT NULL)")->fetchColumn();
 
 // Filters
-$filter = $_GET['filter'] ?? 'all';
+$filter = $_GET['filter'] ?? $default_filter_idx;
 $search = $_GET['search'] ?? '';
 
 $query = "SELECT d.*, u.username as reported_by_user FROM defects d LEFT JOIN users u ON d.reported_by = u.id WHERE 1=1";
@@ -54,7 +64,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
             <div>
                 <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p>
-                <p class="text-xl font-bold">100</p>
+                <p class="text-xl font-bold"><?php echo $total_rooms_idx; ?></p>
             </div>
         </div>
         <div class="glass p-4 rounded-2xl flex items-center gap-4 min-w-[150px]">
@@ -128,7 +138,6 @@ require_once __DIR__ . '/includes/header.php';
                             $subtasks = array_filter(array_map('trim', explode('.', $defect['description'] ?? '')));
                             $resolved = array_filter(explode(',', $defect['resolved_subtasks'] ?? ''));
 
-                            // Filtering subtasks based on view
                             $visible_subtasks = $subtasks;
                             if ($filter === 'active') {
                                 $visible_subtasks = array_filter($subtasks, function($k) use ($resolved) { return !in_array($k, $resolved); }, ARRAY_FILTER_USE_KEY);
@@ -179,9 +188,17 @@ require_once __DIR__ . '/includes/header.php';
                                 <i class="far fa-user mr-1 opacity-50"></i>
                                 <?php echo htmlspecialchars($defect['reported_by_user'] ?? 'Sistem'); ?>
                             </td>
-                            <td class="px-6 py-5" data-sort="<?php echo strtotime($defect['reported_at']); ?>">
-                                <div class="text-xs font-medium"><?php echo date('d M Y', strtotime($defect['reported_at'])); ?></div>
-                                <div class="text-[10px] text-gray-600"><?php echo date('H:i', strtotime($defect['reported_at'])); ?></div>
+                            <td class="px-6 py-5">
+                                <div class="mb-1">
+                                    <span class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Raportat:</span>
+                                    <span class="text-xs white-time ml-1"><?php echo date('d.m H:i', strtotime($defect['reported_at'])); ?></span>
+                                </div>
+                                <?php if ($defect['resolved_at']): ?>
+                                <div>
+                                    <span class="text-[9px] text-green-600 uppercase font-bold tracking-tighter">Rezolvat:</span>
+                                    <span class="text-xs white-time ml-1"><?php echo date('d.m H:i', strtotime($defect['resolved_at'])); ?></span>
+                                </div>
+                                <?php endif; ?>
                             </td>
                             <td class="px-6 py-5 text-right">
                                 <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition">
@@ -231,7 +248,7 @@ require_once __DIR__ . '/includes/header.php';
         const seconds = String(now.getSeconds()).padStart(2, '0');
 
         const el = document.getElementById('live-clock');
-        if (el) el.textContent = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+        if (el) el.textContent = \`\${day}.\${month}.\${year} \${hours}:\${minutes}:\${seconds}\`;
     }
     setInterval(updateClock, 1000);
 
@@ -248,16 +265,14 @@ require_once __DIR__ . '/includes/header.php';
                 x = rows[i].getElementsByTagName("TD")[n];
                 y = rows[i + 1].getElementsByTagName("TD")[n];
 
-                let xVal = x.getAttribute('data-sort') || x.innerText.toLowerCase();
-                let yVal = y.getAttribute('data-sort') || y.innerText.toLowerCase();
-
+                let xVal = x.innerText.toLowerCase();
                 if (dir == "asc") {
-                    if (xVal > yVal) {
+                    if (xVal > y.innerText.toLowerCase()) {
                         shouldSwitch = true;
                         break;
                     }
                 } else if (dir == "desc") {
-                    if (xVal < yVal) {
+                    if (xVal < y.innerText.toLowerCase()) {
                         shouldSwitch = true;
                         break;
                     }

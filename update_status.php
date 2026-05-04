@@ -7,6 +7,14 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Global settings fetch for timezone
+$stmt_settings = $pdo->query("SELECT * FROM settings");
+$site_settings = [];
+while ($row = $stmt_settings->fetch()) {
+    $site_settings[$row['setting_key']] = $row['setting_value'];
+}
+date_default_timezone_set($site_settings['timezone'] ?? 'Europe/Bucharest');
+
 $id = $_GET['id'] ?? null;
 $status = $_GET['status'] ?? 'rezolvat';
 

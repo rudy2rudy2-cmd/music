@@ -5,7 +5,6 @@ require_once __DIR__ . '/db.php';
 function checkLogin() {
     if (!isset($_SESSION['user_id'])) {
         header("Location: login.php");
-        exit();
     }
 }
 
@@ -20,11 +19,16 @@ while ($row = $stmt->fetch()) {
     $site_settings[$row['setting_key']] = $row['setting_value'];
 }
 
+// Set Timezone
+date_default_timezone_set($site_settings['timezone'] ?? 'Europe/Bucharest');
+
 $theme = $site_settings['theme'] ?? 'default';
 $logo = !empty($site_settings['logo_path']) ? $site_settings['logo_path'] : '';
 $copyright = $site_settings['copyright'] ?? 'Copyright 2026 Autor Stoian Rudolf';
 $site_title = $site_settings['site_title'] ?? 'HotelDefects';
 $logo_size = $site_settings['logo_size'] ?? '32';
+$default_filter = $site_settings['default_filter'] ?? 'all';
+$total_rooms_count = $site_settings['total_rooms'] ?? '100';
 ?>
 <!DOCTYPE html>
 <html lang="ro">
@@ -89,6 +93,9 @@ $logo_size = $site_settings['logo_size'] ?? '32';
             border: 1px solid rgba(34, 197, 94, 0.3);
         }
         .defect-desc {
+            color: #ffffff !important;
+        }
+        .white-time {
             color: #ffffff !important;
         }
     </style>
