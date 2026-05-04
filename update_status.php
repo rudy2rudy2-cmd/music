@@ -19,7 +19,7 @@ $id = $_GET['id'] ?? null;
 $status = $_GET['status'] ?? 'rezolvat';
 
 if ($id) {
-    $resolved_at = ($status == 'rezolvat') ? date('Y-m-d H:i:s') : null;
+    $resolved_at = ($status == 'rezolvat') ? gmdate('Y-m-d H:i:s') : null;
     $stmt = $pdo->prepare("UPDATE defects SET status = ?, resolved_at = ? WHERE id = ?");
     $stmt->execute([$status, $resolved_at, $id]);
 }

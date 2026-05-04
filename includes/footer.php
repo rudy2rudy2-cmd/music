@@ -1,6 +1,6 @@
     </main>
     <footer class="fixed bottom-4 left-1/2 -translate-x-1/2 text-sm text-white bg-black/40 backdrop-blur-md px-6 py-2 rounded-full border border-white/10 shadow-lg">
-        &copy; 2026 Autor Stoian Rudolf
+        &copy; <?php echo htmlspecialchars($copyright ?? '2026 Autor Stoian Rudolf'); ?>
     </footer>
     <script>
         // Instant search functionality
