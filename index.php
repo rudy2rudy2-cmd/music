@@ -149,7 +149,10 @@ require_once __DIR__ . '/includes/header.php';
                                 $visible_subtasks = array_filter($subtasks, function($k) use ($resolved) { return in_array((string)$k, $resolved); }, ARRAY_FILTER_USE_KEY);
                             }
 
-                            if (empty($visible_subtasks)) continue;
+                            // If we have a filter active and no subtasks match, skip only if there was a description
+                            // If description was empty, it should probably only show in 'active' filter
+                            if (!empty($description) && empty($visible_subtasks)) continue;
+                            if (empty($description) && $filter === 'resolved') continue;
                         ?>
                         <tr class="hover:bg-white/[0.03] transition group" id="defect-row-<?php echo $defect['id']; ?>">
                             <td class="px-6 py-5">

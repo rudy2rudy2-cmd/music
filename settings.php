@@ -31,13 +31,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Handle Logo Upload
     if (isset($_FILES['logo']) && $_FILES['logo']['error'] === 0) {
+        $upload_dir = __DIR__ . '/uploads/';
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+
         $allowed = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
         $filename = $_FILES['logo']['name'];
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
         if (in_array($ext, $allowed)) {
             $new_name = 'logo_' . time() . '.' . $ext;
-            $upload_path = __DIR__ . '/uploads/' . $new_name;
+            $upload_path = $upload_dir . $new_name;
 
             if (move_uploaded_file($_FILES['logo']['tmp_name'], $upload_path)) {
                 if (!empty($settings['logo_path']) && file_exists(__DIR__ . '/' . $settings['logo_path'])) {
@@ -48,11 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES ('logo_path', ?)");
                 $stmt->execute([$db_logo_path]);
                 $settings['logo_path'] = $db_logo_path;
+            } else {
+                $error = "Eroare la încărcarea logo-ului. Verificați permisiunile folderului 'uploads/'.";
             }
+        } else {
+            $error = "Formatul fișierului logo nu este permis.";
         }
     }
 
-    $success = "Toate modificările au fost salvate!";
+    if (!$error) {
+        $success = "Toate modificările au fost salvate!";
+    }
 }
 
 require_once __DIR__ . '/includes/header.php';
@@ -68,6 +79,13 @@ require_once __DIR__ . '/includes/header.php';
         <div class="bg-green-500/10 border border-green-500/50 text-green-400 p-4 rounded-xl mb-6 flex items-center gap-3">
             <i class="fas fa-check-circle"></i>
             <?php echo $success; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($error): ?>
+        <div class="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6 flex items-center gap-3">
+            <i class="fas fa-exclamation-circle"></i>
+            <?php echo $error; ?>
         </div>
     <?php endif; ?>
 
@@ -147,6 +165,15 @@ require_once __DIR__ . '/includes/header.php';
                     <option value="all" <?php echo ($settings['default_filter'] ?? 'all') == 'all' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Toate</option>
                     <option value="active" <?php echo ($settings['default_filter'] ?? 'all') == 'active' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Doar Active</option>
                     <option value="resolved" <?php echo ($settings['default_filter'] ?? 'all') == 'resolved' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Doar Rezolvate</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Fus Orar (Timezone)</label>
+                <select name="timezone" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 appearance-none">
+                    <option value="Europe/Bucharest" <?php echo ($settings['timezone'] ?? 'Europe/Bucharest') == 'Europe/Bucharest' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Europe/Bucharest</option>
+                    <option value="UTC" <?php echo ($settings['timezone'] ?? 'Europe/Bucharest') == 'UTC' ? 'selected' : ''; ?> class="bg-slate-900 text-white">UTC</option>
+                    <option value="Europe/London" <?php echo ($settings['timezone'] ?? 'Europe/Bucharest') == 'Europe/London' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Europe/London</option>
                 </select>
             </div>
 
