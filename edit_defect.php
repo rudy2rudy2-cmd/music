@@ -31,10 +31,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $prio = $_POST['priority'];
     $status = $_POST['status'];
 
+    // If description changed, reset resolved subtasks
+    $resolved_subtasks = $defect['resolved_subtasks'];
+    if ($desc !== $defect['description']) {
+        $resolved_subtasks = '';
+    }
+
     $resolved_at = ($status == 'rezolvat') ? ($defect['resolved_at'] ?? date('Y-m-d H:i:s')) : null;
 
-    $stmt = $pdo->prepare("UPDATE defects SET room_number = ?, issue_type = ?, description = ?, priority = ?, status = ?, resolved_at = ? WHERE id = ?");
-    if ($stmt->execute([$room, $type, $desc, $prio, $status, $resolved_at, $id])) {
+    $stmt = $pdo->prepare("UPDATE defects SET room_number = ?, issue_type = ?, description = ?, priority = ?, status = ?, resolved_at = ?, resolved_subtasks = ? WHERE id = ?");
+    if ($stmt->execute([$room, $type, $desc, $prio, $status, $resolved_at, $resolved_subtasks, $id])) {
         $success = "Modificări salvate!";
         header("refresh:1;url=index.php");
     } else {
@@ -54,11 +60,11 @@ require_once __DIR__ . '/includes/header.php';
     <form method="POST" class="glass p-8 rounded-2xl space-y-6">
         <div class="grid grid-cols-2 gap-6">
             <div>
-                <label class="block text-sm font-medium text-gray-400 mb-2">Număr Cameră</label>
+                <label class="block text-sm text-gray-400 mb-2">Număr Cameră</label>
                 <input type="text" name="room_number" value="<?php echo htmlspecialchars($defect['room_number']); ?>" required class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-400 mb-2">Status</label>
+                <label class="block text-sm text-gray-400 mb-2">Status</label>
                 <select name="status" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition appearance-none">
                     <option value="activ" <?php echo $defect['status'] == 'activ' ? 'selected' : ''; ?> class="bg-slate-900">🔴 Activ</option>
                     <option value="rezolvat" <?php echo $defect['status'] == 'rezolvat' ? 'selected' : ''; ?> class="bg-slate-900">🟢 Rezolvat</option>
@@ -67,7 +73,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-400 mb-2">Tip Problemă</label>
+            <label class="block text-sm text-gray-400 mb-2">Tip Problemă</label>
             <select name="issue_type" required class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition appearance-none">
                 <?php
                 $types = ['Electricitate', 'Sanitare', 'AC / Ventilație', 'Mobilier', 'Electronică / TV', 'Curățenie', 'Altele'];
@@ -78,7 +84,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-400 mb-2">Prioritate</label>
+            <label class="block text-sm text-gray-400 mb-2">Prioritate</label>
             <div class="flex gap-4">
                 <?php foreach (['Mică', 'Medie', 'Mare', 'Urgentă'] as $p): ?>
                     <label class="flex-1 cursor-pointer">
@@ -92,7 +98,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-400 mb-2">Descriere Detaliată</label>
+            <label class="block text-sm text-gray-400 mb-2">Descriere Detaliată (separați defectele cu punct . )</label>
             <textarea name="description" rows="4" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition"><?php echo htmlspecialchars($defect['description']); ?></textarea>
         </div>
 

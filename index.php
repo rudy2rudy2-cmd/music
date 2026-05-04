@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Statistics
-$total_rooms = 100; // As specified in the request
+$total_rooms = 100;
 $active_stmt = $pdo->query("SELECT COUNT(*) FROM defects WHERE status = 'activ'");
 $active_defects = $active_stmt->fetchColumn();
 
@@ -128,14 +128,26 @@ require_once __DIR__ . '/includes/header.php';
                     </tr>
                 <?php else: ?>
                     <?php foreach ($defects as $defect): ?>
-                        <tr class="hover:bg-white/[0.03] transition group">
+                        <tr class="hover:bg-white/[0.03] transition group" id="defect-row-<?php echo $defect['id']; ?>">
                             <td class="px-6 py-5">
                                 <span class="text-lg font-black text-blue-500">#<?php echo htmlspecialchars($defect['room_number']); ?></span>
                             </td>
                             <td class="px-6 py-5">
                                 <div class="font-semibold text-gray-200"><?php echo htmlspecialchars($defect['issue_type']); ?></div>
-                                <div class="text-xs defect-desc max-w-xs truncate" title="<?php echo htmlspecialchars($defect['description']); ?>">
-                                    <?php echo htmlspecialchars($defect['description']); ?>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    <?php
+                                        $subtasks = array_filter(array_map('trim', explode('.', $defect['description'])));
+                                        $resolved = array_filter(explode(',', $defect['resolved_subtasks']));
+                                        foreach($subtasks as $index => $task):
+                                            $is_resolved = in_array($index, $resolved);
+                                    ?>
+                                        <span
+                                            onclick="toggleSubtask(<?php echo $defect['id']; ?>, <?php echo $index; ?>)"
+                                            class="cursor-pointer px-2 py-0.5 rounded text-[11px] transition border <?php echo $is_resolved ? 'bg-green-500/20 text-green-400 border-green-500/30 line-through opacity-50' : 'bg-white/5 text-white border-white/10 hover:bg-white/10'; ?>"
+                                        >
+                                            <?php echo htmlspecialchars($task); ?>
+                                        </span>
+                                    <?php endforeach; ?>
                                 </div>
                             </td>
                             <td class="px-6 py-5">
@@ -149,9 +161,9 @@ require_once __DIR__ . '/includes/header.php';
                                 </span>
                             </td>
                             <td class="px-6 py-5">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 rounded-full <?php echo $defect['status'] == 'activ' ? 'bg-red-500 animate-pulse' : 'bg-green-500'; ?>"></div>
-                                    <span class="text-sm font-medium capitalize <?php echo $defect['status'] == 'activ' ? 'text-red-400' : 'text-green-400'; ?>">
+                                <div class="flex items-center gap-2 status-container">
+                                    <div class="w-2 h-2 rounded-full status-dot <?php echo $defect['status'] == 'activ' ? 'bg-red-500 animate-pulse' : 'bg-green-500'; ?>"></div>
+                                    <span class="text-sm font-medium capitalize status-text <?php echo $defect['status'] == 'activ' ? 'text-red-400' : 'text-green-400'; ?>">
                                         <?php echo $defect['status']; ?>
                                     </span>
                                 </div>
@@ -166,11 +178,6 @@ require_once __DIR__ . '/includes/header.php';
                             </td>
                             <td class="px-6 py-5 text-right">
                                 <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition">
-                                    <?php if ($defect['status'] == 'activ'): ?>
-                                        <a href="update_status.php?id=<?php echo $defect['id']; ?>&status=rezolvat" class="w-8 h-8 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center hover:bg-green-500 hover:text-white transition" title="Rezolvat">
-                                            <i class="fas fa-check"></i>
-                                        </a>
-                                    <?php endif; ?>
                                     <a href="edit_defect.php?id=<?php echo $defect['id']; ?>" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition" title="Editare">
                                         <i class="fas fa-pen-nib text-xs"></i>
                                     </a>
@@ -190,6 +197,24 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 
 <script>
+    function toggleSubtask(defectId, index) {
+        const formData = new FormData();
+        formData.append('defect_id', defectId);
+        formData.append('subtask_index', index);
+
+        fetch('toggle_subtask.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Refresh the row or relevant elements
+                location.reload(); // Simple reload for now to update all badges and stats
+            }
+        });
+    }
+
     function updateClock() {
         const now = new Date();
         const day = String(now.getDate()).padStart(2, '0');

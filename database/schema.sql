@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS defects (
     reported_by INTEGER,
     reported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     resolved_at DATETIME,
+    resolved_subtasks TEXT DEFAULT '',
     FOREIGN KEY (reported_by) REFERENCES users(id)
 );
 
