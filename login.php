@@ -1,4 +1,9 @@
 <?php
+if (!file_exists(__DIR__ . '/database/install.lock')) {
+    header("Location: install.php");
+    exit();
+}
+
 session_start();
 require_once __DIR__ . '/includes/db.php';
 

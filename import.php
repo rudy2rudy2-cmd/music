@@ -23,13 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         }
 
         // Skip header row
-        $headers = fgetcsv($handle, 0, ",", "\"", "");
+        $headers = fgetcsv($handle, 0, ",", "\"", "\\");
 
         $imported = 0;
         $pdo->beginTransaction();
 
         try {
-            while (($data = fgetcsv($handle, 0, ",", "\"", "")) !== FALSE) {
+            while (($data = fgetcsv($handle, 0, ",", "\"", "\\")) !== FALSE) {
                 // Mapping (based on export structure)
                 // 0:ID, 1:Cameră, 2:Tip Problemă, 3:Descriere, 4:Status, 5:Prioritate, 6:Raportat De, 7:Data Raportării, 8:Data Rezolvării, 9:Subtask-uri (JSON)
                 if (count($data) < 7) continue;
