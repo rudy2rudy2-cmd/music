@@ -18,7 +18,7 @@ while ($row = $stmt->fetch()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $keys = ['copyright', 'site_title', 'logo_size', 'theme', 'total_rooms', 'default_filter', 'timezone'];
+    $keys = ['copyright', 'site_title', 'logo_size', 'report_font_size', 'theme', 'total_rooms', 'default_filter', 'timezone'];
 
     foreach ($keys as $key) {
         if (isset($_POST[$key])) {
@@ -90,6 +90,11 @@ require_once __DIR__ . '/includes/header.php';
                     <label class="block text-sm text-gray-400 mb-2">Logo Size (px)</label>
                     <input type="number" name="logo_size" value="<?php echo htmlspecialchars($settings['logo_size'] ?? '32'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
                 </div>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Font Rapoarte (px)</label>
+                <input type="number" name="report_font_size" value="<?php echo htmlspecialchars($settings['report_font_size'] ?? '14'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
             </div>
 
             <div>

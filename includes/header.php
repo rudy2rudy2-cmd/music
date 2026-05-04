@@ -27,6 +27,7 @@ $logo = !empty($site_settings['logo_path']) ? $site_settings['logo_path'] : '';
 $copyright = $site_settings['copyright'] ?? 'Copyright 2026 Autor Stoian Rudolf';
 $site_title = $site_settings['site_title'] ?? 'HotelDefects';
 $logo_size = $site_settings['logo_size'] ?? '32';
+$report_font_size = $site_settings['report_font_size'] ?? '14';
 ?>
 <!DOCTYPE html>
 <html lang="ro">
@@ -48,6 +49,7 @@ $logo_size = $site_settings['logo_size'] ?? '32';
             --text-secondary: #94a3b8;
             --accent-color: #3b82f6;
             --input-bg: rgba(255, 255, 255, 0.05);
+            --report-font-size: <?php echo $report_font_size; ?>px;
             --subtask-bg: rgba(255, 255, 255, 0.05);
             --subtask-text: #ffffff;
         }

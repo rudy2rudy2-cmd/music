@@ -126,7 +126,7 @@ require_once __DIR__ . '/includes/header.php';
                     <th class="px-6 py-4 text-right">Acțiuni</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-white/5">
+            <tbody class="divide-y divide-white/5" style="font-size: var(--report-font-size);">
                 <?php if (empty($defects)): ?>
                     <tr>
                         <td colspan="7" class="px-6 py-12 text-center">
@@ -163,7 +163,8 @@ require_once __DIR__ . '/includes/header.php';
                                     ?>
                                         <span
                                             onclick="event.stopPropagation(); toggleSubtask(<?php echo $defect['id']; ?>, '<?php echo $index; ?>')"
-                                            class="cursor-pointer px-2 py-0.5 rounded text-[11px] transition border <?php echo $is_resolved ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-subtask-bg text-subtask-text border-white/10 hover:bg-white/10'; ?>"
+                                            class="cursor-pointer px-2 py-0.5 rounded transition border <?php echo $is_resolved ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-subtask-bg text-subtask-text border-white/10 hover:bg-white/10'; ?>"
+                                            style="font-size: 0.85em;"
                                         >
                                             <?php echo htmlspecialchars($task); ?>
                                         </span>
