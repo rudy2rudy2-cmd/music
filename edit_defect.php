@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $resolved_subtasks = '';
     }
 
-    $resolved_at = ($status == 'rezolvat') ? ($defect['resolved_at'] ?? date('Y-m-d H:i:s')) : null;
+    $resolved_at = ($status == 'rezolvat') ? ($defect['resolved_at'] ?? gmdate('Y-m-d H:i:s')) : null;
 
     $stmt = $pdo->prepare("UPDATE defects SET room_number = ?, issue_type = ?, description = ?, priority = ?, status = ?, resolved_at = ?, resolved_subtasks = ? WHERE id = ?");
     if ($stmt->execute([$room, $type, $desc, $prio, $status, $resolved_at, $resolved_subtasks, $id])) {

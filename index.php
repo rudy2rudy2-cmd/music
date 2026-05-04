@@ -199,12 +199,24 @@ require_once __DIR__ . '/includes/header.php';
                             <td class="px-6 py-5">
                                 <div class="mb-1">
                                     <span class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Raportat:</span>
-                                    <span class="text-xs white-time ml-1"><?php echo date('d.m H:i', strtotime($defect['reported_at'])); ?></span>
+                                    <span class="text-xs white-time ml-1">
+                                        <?php
+                                            $reported_utc = new DateTime($defect['reported_at'], new DateTimeZone('UTC'));
+                                            $reported_utc->setTimezone(new DateTimeZone($site_settings_idx['timezone'] ?? 'Europe/Bucharest'));
+                                            echo $reported_utc->format('d.m H:i:s');
+                                        ?>
+                                    </span>
                                 </div>
                                 <?php if ($defect['resolved_at']): ?>
                                 <div>
                                     <span class="text-[9px] text-green-600 uppercase font-bold tracking-tighter">Rezolvat:</span>
-                                    <span class="text-xs white-time ml-1"><?php echo date('d.m H:i', strtotime($defect['resolved_at'])); ?></span>
+                                    <span class="text-xs white-time ml-1">
+                                        <?php
+                                            $resolved_utc = new DateTime($defect['resolved_at'], new DateTimeZone('UTC'));
+                                            $resolved_utc->setTimezone(new DateTimeZone($site_settings_idx['timezone'] ?? 'Europe/Bucharest'));
+                                            echo $resolved_utc->format('d.m H:i:s');
+                                        ?>
+                                    </span>
                                 </div>
                                 <?php endif; ?>
                             </td>

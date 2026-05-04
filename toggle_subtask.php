@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Manage resolved_at timestamp
         $resolved_at = $defect['resolved_at'];
         if ($new_status == 'rezolvat') {
-            if (!$resolved_at) $resolved_at = date('Y-m-d H:i:s');
+            if (!$resolved_at) $resolved_at = gmdate('Y-m-d H:i:s');
         } else {
             // If at least one subtask is resolved, we might want a timestamp of "partial resolution"
             // but the user wants it to appear in "Rezolvate" filter.
