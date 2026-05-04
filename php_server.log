@@ -1,0 +1,25 @@
+[Mon May  4 13:47:52 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Mon May  4 13:47:55 2026] [::1]:49730 Accepted
+[Mon May  4 13:47:55 2026] [::1]:49730 [200]: GET /install.php
+[Mon May  4 13:47:55 2026] [::1]:49730 Closing
+[Mon May  4 13:49:35 2026] [::1]:37264 Accepted
+[Mon May  4 13:49:35 2026] [::1]:37264 [200]: GET /install.php
+[Mon May  4 13:49:35 2026] [::1]:37264 Closing
+[Mon May  4 13:49:36 2026] [::1]:37274 Accepted
+[Mon May  4 13:49:36 2026] [::1]:37274 [200]: POST /install.php
+[Mon May  4 13:49:36 2026] [::1]:37274 Closing
+[Mon May  4 13:49:36 2026] [::1]:37278 Accepted
+[Mon May  4 13:49:36 2026] [::1]:37278 [200]: GET /login.php
+[Mon May  4 13:49:36 2026] [::1]:37278 Closing
+[Mon May  4 13:49:37 2026] [::1]:37280 Accepted
+[Mon May  4 13:49:37 2026] [::1]:37280 [302]: POST /login.php
+[Mon May  4 13:49:37 2026] [::1]:37280 Closing
+[Mon May  4 13:49:37 2026] [::1]:37282 Accepted
+[Mon May  4 13:49:37 2026] [::1]:37282 [200]: GET /index.php
+[Mon May  4 13:49:37 2026] [::1]:37282 Closing
+[Mon May  4 13:49:37 2026] [::1]:37288 Accepted
+[Mon May  4 13:49:37 2026] [::1]:37288 [200]: GET /index.php
+[Mon May  4 13:49:37 2026] [::1]:37288 Closing
+[Mon May  4 13:49:37 2026] [::1]:37300 Accepted
+[Mon May  4 13:49:37 2026] [::1]:37300 [200]: GET /settings.php
+[Mon May  4 13:49:37 2026] [::1]:37300 Closing

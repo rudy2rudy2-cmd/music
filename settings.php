@@ -66,6 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_resolved') {
+    $stmt = $pdo->prepare("DELETE FROM defects WHERE status = 'rezolvat'");
+    $stmt->execute();
+    $success = "Toate rapoartele rezolvate au fost șterse!";
+}
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -200,6 +206,21 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </div>
     </form>
+
+    <!-- Danger Zone -->
+    <div class="mt-12 glass p-8 rounded-2xl border-red-500/20">
+        <h3 class="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
+            <i class="fas fa-exclamation-triangle"></i> Zonă Administrativă Periculoasă
+        </h3>
+        <p class="text-gray-400 mb-6 text-sm">Ștergerea rapoartelor rezolvate va elibera spațiu și va curăța istoricul. Această acțiune este ireversibilă.</p>
+
+        <form method="POST" onsubmit="return confirm('Ești sigur că vrei să ștergi TOATE rapoartele rezolvate? Această acțiune nu poate fi anulată.')">
+            <input type="hidden" name="action" value="delete_resolved">
+            <button type="submit" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/30 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                <i class="fas fa-trash-alt"></i> Șterge Defecțiunile Rezolvate
+            </button>
+        </form>
+    </div>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
