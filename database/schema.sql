@@ -27,3 +27,5 @@ CREATE TABLE IF NOT EXISTS settings (
 INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('copyright', 'Copyright 2026 Autor Stoian Rudolf');
 INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('logo_path', '');
 INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('theme', 'default');
+INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('site_title', 'HotelDefects');
+INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('logo_size', '32');

@@ -23,13 +23,15 @@ while ($row = $stmt->fetch()) {
 $theme = $site_settings['theme'] ?? 'default';
 $logo = !empty($site_settings['logo_path']) ? $site_settings['logo_path'] : '';
 $copyright = $site_settings['copyright'] ?? 'Copyright 2026 Autor Stoian Rudolf';
+$site_title = $site_settings['site_title'] ?? 'HotelDefects';
+$logo_size = $site_settings['logo_size'] ?? '32';
 ?>
 <!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Management - Defectiuni</title>
+    <title><?php echo htmlspecialchars($site_title); ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -86,6 +88,9 @@ $copyright = $site_settings['copyright'] ?? 'Copyright 2026 Autor Stoian Rudolf'
             color: #22c55e;
             border: 1px solid rgba(34, 197, 94, 0.3);
         }
+        .defect-desc {
+            color: #ffffff !important;
+        }
     </style>
 </head>
 <body class="flex min-h-screen">
@@ -95,11 +100,11 @@ $copyright = $site_settings['copyright'] ?? 'Copyright 2026 Autor Stoian Rudolf'
         <div class="p-6">
             <h1 class="text-xl font-bold flex items-center gap-3">
                 <?php if ($logo): ?>
-                    <img src="<?php echo $logo; ?>" class="h-8 w-auto object-contain">
+                    <img src="<?php echo $logo; ?>" style="height: <?php echo $logo_size; ?>px; width: auto;" class="object-contain">
                 <?php else: ?>
-                    <i class="fas fa-hotel text-blue-500"></i>
+                    <i class="fas fa-hotel text-blue-500" style="font-size: <?php echo $logo_size; ?>px;"></i>
                 <?php endif; ?>
-                <span>Hotel<span class="text-blue-500">Defects</span></span>
+                <span><?php echo htmlspecialchars($site_title); ?></span>
             </h1>
         </div>
 
@@ -122,7 +127,7 @@ $copyright = $site_settings['copyright'] ?? 'Copyright 2026 Autor Stoian Rudolf'
 
         <div class="p-4 mt-auto border-t border-white/5">
             <div class="flex items-center gap-3 px-4 py-3">
-                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold">
+                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold text-white">
                     <?php echo strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1)); ?>
                 </div>
                 <div class="flex-1 overflow-hidden">

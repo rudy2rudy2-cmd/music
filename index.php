@@ -134,7 +134,7 @@ require_once __DIR__ . '/includes/header.php';
                             </td>
                             <td class="px-6 py-5">
                                 <div class="font-semibold text-gray-200"><?php echo htmlspecialchars($defect['issue_type']); ?></div>
-                                <div class="text-xs text-gray-500 max-w-xs truncate" title="<?php echo htmlspecialchars($defect['description']); ?>">
+                                <div class="text-xs defect-desc max-w-xs truncate" title="<?php echo htmlspecialchars($defect['description']); ?>">
                                     <?php echo htmlspecialchars($defect['description']); ?>
                                 </div>
                             </td>
