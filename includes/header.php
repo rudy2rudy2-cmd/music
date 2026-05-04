@@ -12,6 +12,17 @@ function checkLogin() {
 function isAdmin() {
     return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 }
+
+// Global settings fetch
+$stmt = $pdo->query("SELECT * FROM settings");
+$site_settings = [];
+while ($row = $stmt->fetch()) {
+    $site_settings[$row['setting_key']] = $row['setting_value'];
+}
+
+$theme = $site_settings['theme'] ?? 'default';
+$logo = !empty($site_settings['logo_path']) ? $site_settings['logo_path'] : '';
+$copyright = $site_settings['copyright'] ?? 'Copyright 2026 Autor Stoian Rudolf';
 ?>
 <!DOCTYPE html>
 <html lang="ro">
@@ -23,19 +34,44 @@ function isAdmin() {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #0f172a;
+            --sidebar-bg: rgba(255, 255, 255, 0.03);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.05);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+        }
+
+        <?php if ($theme === 'black'): ?>
+        :root {
+            --bg-color: #000000;
+            --sidebar-bg: #0a0a0a;
+            --card-bg: #0f0f0f;
+            --border-color: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #71717a;
+            --accent-color: #3f3f46;
+        }
+        <?php endif; ?>
+
         body {
             font-family: 'Inter', sans-serif;
-            background: #0f172a;
-            color: #f1f5f9;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
         }
         .glass {
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--card-bg);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
         }
         .sidebar {
             width: 260px;
             transition: all 0.3s;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(20px);
         }
         .main-content {
             flex: 1;
@@ -55,10 +91,14 @@ function isAdmin() {
 <body class="flex min-h-screen">
     <?php if (isset($_SESSION['user_id'])): ?>
     <!-- Sidebar -->
-    <aside class="sidebar glass border-r border-white/5 flex flex-col h-screen sticky top-0">
+    <aside class="sidebar border-r border-white/5 flex flex-col h-screen sticky top-0">
         <div class="p-6">
-            <h1 class="text-xl font-bold flex items-center gap-2">
-                <i class="fas fa-hotel text-blue-500"></i>
+            <h1 class="text-xl font-bold flex items-center gap-3">
+                <?php if ($logo): ?>
+                    <img src="<?php echo $logo; ?>" class="h-8 w-auto object-contain">
+                <?php else: ?>
+                    <i class="fas fa-hotel text-blue-500"></i>
+                <?php endif; ?>
                 <span>Hotel<span class="text-blue-500">Defects</span></span>
             </h1>
         </div>
@@ -73,6 +113,9 @@ function isAdmin() {
             <?php if (isAdmin()): ?>
             <a href="users.php" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition <?php echo basename($_SERVER['PHP_SELF']) == 'users.php' ? 'bg-blue-600/20 text-blue-400' : ''; ?>">
                 <i class="fas fa-users w-5"></i> Utilizatori
+            </a>
+            <a href="settings.php" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'bg-blue-600/20 text-blue-400' : ''; ?>">
+                <i class="fas fa-cog w-5"></i> Setări Sistem
             </a>
             <?php endif; ?>
         </nav>

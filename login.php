@@ -7,6 +7,14 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Global settings fetch for logo
+$stmt = $pdo->query("SELECT * FROM settings");
+$site_settings = [];
+while ($row = $stmt->fetch()) {
+    $site_settings[$row['setting_key']] = $row['setting_value'];
+}
+$logo = !empty($site_settings['logo_path']) ? $site_settings['logo_path'] : '';
+
 $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -55,26 +63,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 100%;
             max-width: 450px;
         }
-        .input-group input {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s;
-        }
-        .input-group input:focus {
-            border-color: #3b82f6;
-            background: rgba(255, 255, 255, 0.08);
-            outline: none;
-        }
     </style>
 </head>
 <body>
     <div class="glass shadow-2xl">
         <div class="text-center mb-10">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/20 text-blue-500 mb-4">
-                <i class="fas fa-hotel text-3xl"></i>
+            <div class="inline-flex items-center justify-center mb-4">
+                <?php if ($logo): ?>
+                    <img src="<?php echo $logo; ?>" class="h-16 w-auto object-contain">
+                <?php else: ?>
+                    <div class="w-16 h-16 rounded-2xl bg-blue-600/20 text-blue-500 flex items-center justify-center">
+                        <i class="fas fa-hotel text-3xl"></i>
+                    </div>
+                <?php endif; ?>
             </div>
-            <h1 class="text-3xl font-bold">Bine ai revenit</h1>
-            <p class="text-gray-400 mt-2">Introdu datele pentru a accesa panoul</p>
+            <h1 class="text-3xl font-bold">Autentificare</h1>
+            <p class="text-gray-400 mt-2">Introdu datele pentru a accesa platforma</p>
         </div>
 
         <?php if ($error): ?>
@@ -85,41 +89,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST" class="space-y-6">
-            <div class="input-group">
+            <div>
                 <label class="block text-sm font-medium text-gray-400 mb-2 pl-1">Utilizator</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500">
-                        <i class="fas fa-user"></i>
-                    </span>
-                    <input type="text" name="username" required class="w-full rounded-xl py-3 pl-11 pr-4 text-white" placeholder="Introduceți numele de utilizator">
-                </div>
+                <input type="text" name="username" required class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition" placeholder="Nume utilizator">
             </div>
 
-            <div class="input-group">
+            <div>
                 <label class="block text-sm font-medium text-gray-400 mb-2 pl-1">Parolă</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500">
-                        <i class="fas fa-lock"></i>
-                    </span>
-                    <input type="password" name="password" required class="w-full rounded-xl py-3 pl-11 pr-4 text-white" placeholder="••••••••">
-                </div>
-            </div>
-
-            <div class="flex items-center justify-between px-1">
-                <label class="flex items-center gap-2 cursor-pointer group">
-                    <input type="checkbox" class="rounded border-gray-700 bg-gray-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-900">
-                    <span class="text-sm text-gray-400 group-hover:text-gray-300 transition">Ține-mă minte</span>
-                </label>
-                <a href="#" class="text-sm text-blue-500 hover:text-blue-400 transition">Ai uitat parola?</a>
+                <input type="password" name="password" required class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition" placeholder="••••••••">
             </div>
 
             <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition duration-300 shadow-lg shadow-blue-600/20">
-                Autentificare
+                Login
             </button>
         </form>
 
-        <div class="mt-8 text-center text-sm text-gray-500">
-            Nu ai cont? Contactează administratorul.
+        <div class="mt-8 text-center text-[10px] text-gray-600 uppercase tracking-widest">
+            &copy; 2026 Stoian Rudolf
         </div>
     </div>
 </body>
