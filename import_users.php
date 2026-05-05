@@ -23,13 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         }
 
         // Skip header
-        fgetcsv($handle, 0, ",", "\"", "\\");
+        fgetcsv($handle, 0, ",", "\"", "");
 
         $imported = 0;
         $pdo->beginTransaction();
 
         try {
-            while (($data = fgetcsv($handle, 0, ",", "\"", "\\")) !== FALSE) {
+            while (($data = fgetcsv($handle, 0, ",", "\"", "")) !== FALSE) {
                 // Mapping: 0:ID, 1:Username, 2:Role, 3:Created At
                 if (count($data) < 3) continue;
 
