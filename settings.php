@@ -18,60 +18,69 @@ while ($row = $stmt->fetch()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $keys = ['copyright', 'site_title', 'logo_size', 'report_font_size', 'subtask_font_size', 'report_text_color', 'theme', 'total_rooms', 'default_filter', 'timezone'];
+    if (isset($_POST['save_settings'])) {
+        $keys = ['copyright', 'site_title', 'logo_size', 'report_font_size', 'subtask_font_size', 'report_text_color', 'theme', 'total_rooms', 'default_filter', 'timezone', 'update_url'];
 
-    foreach ($keys as $key) {
-        if (isset($_POST[$key])) {
-            $val = $_POST[$key];
-            $stmt = $pdo->prepare("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES (?, ?)");
-            $stmt->execute([$key, $val]);
-            $settings[$key] = $val;
-        }
-    }
-
-    // Handle Logo Upload
-    if (isset($_FILES['logo']) && $_FILES['logo']['error'] === 0) {
-        $upload_dir = __DIR__ . '/uploads/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
-        }
-
-        $allowed = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
-        $filename = $_FILES['logo']['name'];
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-        if (in_array($ext, $allowed)) {
-            $new_name = 'logo_' . time() . '.' . $ext;
-            $upload_path = $upload_dir . $new_name;
-
-            if (move_uploaded_file($_FILES['logo']['tmp_name'], $upload_path)) {
-                if (!empty($settings['logo_path']) && file_exists(__DIR__ . '/' . $settings['logo_path'])) {
-                    @unlink(__DIR__ . '/' . $settings['logo_path']);
-                }
-
-                $db_logo_path = 'uploads/' . $new_name;
-                $stmt = $pdo->prepare("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES ('logo_path', ?)");
-                $stmt->execute([$db_logo_path]);
-                $settings['logo_path'] = $db_logo_path;
-            } else {
-                $error = "Eroare la încărcarea logo-ului. Verificați permisiunile folderului 'uploads/'.";
+        foreach ($keys as $key) {
+            if (isset($_POST[$key])) {
+                $val = $_POST[$key];
+                $stmt = $pdo->prepare("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES (?, ?)");
+                $stmt->execute([$key, $val]);
+                $settings[$key] = $val;
             }
+        }
+
+        // Handle Logo Upload
+        if (isset($_FILES['logo']) && $_FILES['logo']['error'] === 0) {
+            $upload_dir = __DIR__ . '/uploads/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+
+            $allowed = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
+            $filename = $_FILES['logo']['name'];
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+            if (in_array($ext, $allowed)) {
+                $new_name = 'logo_' . time() . '.' . $ext;
+                $upload_path = $upload_dir . $new_name;
+
+                if (move_uploaded_file($_FILES['logo']['tmp_name'], $upload_path)) {
+                    if (!empty($settings['logo_path']) && file_exists(__DIR__ . '/' . $settings['logo_path'])) {
+                        @unlink(__DIR__ . '/' . $settings['logo_path']);
+                    }
+
+                    $db_logo_path = 'uploads/' . $new_name;
+                    $stmt = $pdo->prepare("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES ('logo_path', ?)");
+                    $stmt->execute([$db_logo_path]);
+                    $settings['logo_path'] = $db_logo_path;
+                } else {
+                    $error = "Eroare la încărcarea logo-ului. Verificați permisiunile folderului 'uploads/'.";
+                }
+            } else {
+                $error = "Formatul fișierului logo nu este permis.";
+            }
+        }
+
+        if (!$error) {
+            $success = "Toate modificările au fost salvate!";
+        }
+    } elseif (isset($_POST['action']) && $_POST['action'] === 'delete_resolved') {
+        // Delete items that match the "resolved" filter logic:
+        // Fully resolved OR have at least one subtask resolved
+        $stmt = $pdo->prepare("DELETE FROM defects WHERE status = 'rezolvat' OR (resolved_subtasks != '' AND resolved_subtasks != '[]' AND resolved_subtasks IS NOT NULL)");
+        $stmt->execute();
+        $success = "Toate rapoartele din secțiunea 'Rezolvate' au fost șterse!";
+    } elseif (isset($_POST['action']) && $_POST['action'] === 'update_platform') {
+        $url = $settings['update_url'] ?? '';
+        if (empty($url)) {
+            $error = "Vă rugăm să introduceți un URL pentru update în setări.";
         } else {
-            $error = "Formatul fișierului logo nu este permis.";
+            // Here we would normally implement the update logic (e.g. file_get_contents and unzip)
+            // For now, we will simulate the attempt
+            $success = "S-a inițiat verificarea update-ului de la: " . htmlspecialchars($url) . ". (Funcționalitate în curs de dezvoltare)";
         }
     }
-
-    if (!$error) {
-        $success = "Toate modificările au fost salvate!";
-    }
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_resolved') {
-    // Delete items that match the "resolved" filter logic:
-    // Fully resolved OR have at least one subtask resolved
-    $stmt = $pdo->prepare("DELETE FROM defects WHERE status = 'rezolvat' OR (resolved_subtasks != '' AND resolved_subtasks != '[]' AND resolved_subtasks IS NOT NULL)");
-    $stmt->execute();
-    $success = "Toate rapoartele din secțiunea 'Rezolvate' au fost șterse!";
 }
 
 require_once __DIR__ . '/includes/header.php';
@@ -145,6 +154,11 @@ require_once __DIR__ . '/includes/header.php';
             </div>
 
             <div>
+                <label class="block text-sm text-gray-400 mb-2">URL Update (Ramură)</label>
+                <input type="text" name="update_url" value="<?php echo htmlspecialchars($settings['update_url'] ?? ''); ?>" placeholder="https://exemplu.com/update.zip" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+            </div>
+
+            <div>
                 <label class="block text-sm text-gray-400 mb-2">Logo Nou</label>
                 <input type="file" name="logo" class="text-xs text-gray-500 cursor-pointer">
             </div>
@@ -202,15 +216,30 @@ require_once __DIR__ . '/includes/header.php';
             </div>
 
             <div class="pt-4">
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-blue-600/20">
+                <button type="submit" name="save_settings" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-blue-600/20">
                     Salvează Toate Setările
                 </button>
             </div>
         </div>
     </form>
 
+    <!-- Update Section -->
+    <div class="mt-12 glass p-8 rounded-2xl border-blue-500/20">
+        <h3 class="text-xl font-bold text-blue-500 mb-4 flex items-center gap-2">
+            <i class="fas fa-sync-alt"></i> Actualizare Platformă
+        </h3>
+        <p class="text-gray-400 mb-6 text-sm">Actualizați platforma la cea mai recentă versiune folosind link-ul configurat în secțiunea "Ramură Update".</p>
+
+        <form method="POST">
+            <input type="hidden" name="action" value="update_platform">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg">
+                <i class="fas fa-cloud-download-alt"></i> Update la Noua Platformă
+            </button>
+        </form>
+    </div>
+
     <!-- Danger Zone -->
-    <div class="mt-12 glass p-8 rounded-2xl border-red-500/20">
+    <div class="mt-8 glass p-8 rounded-2xl border-red-500/20">
         <h3 class="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
             <i class="fas fa-exclamation-triangle"></i> Zonă Administrativă Periculoasă
         </h3>

@@ -179,6 +179,9 @@ $report_text_color = $color_map[$report_text_color_val] ?? '#ffffff';
                 <i class="fas fa-cog w-5"></i> Setări Sistem
             </a>
             <?php endif; ?>
+            <button onclick="document.getElementById('about-modal').classList.remove('hidden')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-gray-300">
+                <i class="fas fa-info-circle w-5"></i> Despre Platformă
+            </button>
         </nav>
 
         <div class="p-4 mt-auto border-t border-white/5">
@@ -199,3 +202,48 @@ $report_text_color = $color_map[$report_text_color_val] ?? '#ffffff';
     <?php endif; ?>
 
     <main class="main-content p-8">
+
+    <!-- About Modal -->
+    <div id="about-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="glass max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-3xl p-8 relative shadow-2xl border-white/10">
+            <button onclick="document.getElementById('about-modal').classList.add('hidden')" class="absolute top-6 right-6 text-gray-400 hover:text-white transition text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="space-y-6 text-gray-200">
+                <div class="text-center pb-6 border-b border-white/5">
+                    <h2 class="text-2xl font-bold text-white mb-2">Management Defecțiuni Hotel</h2>
+                    <p class="text-blue-400 font-medium">Platformă pentru Managementul HoReCa</p>
+                </div>
+
+                <div class="space-y-4 leading-relaxed">
+                    <p>Platforma Management Defecțiuni Hotel este o soluție digitală modernă dedicată industriei HoReCa, concepută pentru a eficientiza gestionarea problemelor tehnice și operaționale din cadrul unităților de cazare și alimentație publică.</p>
+
+                    <p>Aceasta permite personalului să raporteze rapid defecțiuni sau incidente (ex: echipamente defecte, probleme în camere, instalații, curățenie), direct dintr-o interfață intuitivă, accesibilă de pe mobil, tabletă sau desktop. Fiecare sesizare este înregistrată în sistem, prioritizată și alocată automat sau manual către echipa responsabilă (mentenanță, housekeeping, IT etc.).</p>
+
+                    <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                        <p class="font-bold text-white mb-3">Platforma oferă funcționalități esențiale precum:</p>
+                        <ul class="space-y-2 list-none">
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1"></i> Monitorizarea în timp real a tuturor defecțiunilor raportate</li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1"></i> Istoric complet al intervențiilor și trasabilitate</li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1"></i> Notificări automate pentru echipele implicate</li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1"></i> Managementul priorităților și al timpilor de rezolvare</li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1"></i> Rapoarte și statistici pentru optimizarea proceselor interne</li>
+                        </ul>
+                    </div>
+
+                    <p>Prin digitalizarea fluxului de lucru, platforma contribuie la reducerea timpilor de intervenție, creșterea eficienței echipelor și îmbunătățirea experienței clienților.</p>
+
+                    <p>Soluția este scalabilă și adaptabilă, fiind potrivită atât pentru hoteluri independente, cât și pentru lanțuri hoteliere, restaurante sau alte afaceri din domeniul HoReCa.</p>
+                </div>
+
+                <div class="pt-6 border-t border-white/5 text-center text-sm text-gray-500 italic">
+                    Dezvoltator Platforma @Stoian Rudolf
+                </div>
+
+                <button onclick="document.getElementById('about-modal').classList.add('hidden')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition mt-4">
+                    Am înțeles
+                </button>
+            </div>
+        </div>
+    </div>
