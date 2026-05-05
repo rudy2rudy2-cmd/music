@@ -67,9 +67,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_resolved') {
-    $stmt = $pdo->prepare("DELETE FROM defects WHERE status = 'rezolvat'");
+    // Delete items that match the "resolved" filter logic:
+    // Fully resolved OR have at least one subtask resolved
+    $stmt = $pdo->prepare("DELETE FROM defects WHERE status = 'rezolvat' OR (resolved_subtasks != '' AND resolved_subtasks != '[]' AND resolved_subtasks IS NOT NULL)");
     $stmt->execute();
-    $success = "Toate rapoartele rezolvate au fost șterse!";
+    $success = "Toate rapoartele din secțiunea 'Rezolvate' au fost șterse!";
 }
 
 require_once __DIR__ . '/includes/header.php';

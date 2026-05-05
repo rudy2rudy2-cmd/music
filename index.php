@@ -188,8 +188,17 @@ require_once __DIR__ . '/includes/header.php';
                                                 <?php echo htmlspecialchars($task); ?>
                                             </span>
                                             <?php if ($resolver): ?>
-                                                <span class="text-gray-500 italic flex items-center gap-0.5" style="font-size: var(--subtask-font-size);" title="Rezolvat de <?php echo htmlspecialchars($resolver); ?>">
-                                                    <i class="fas fa-user-check" style="font-size: 0.8em;"></i> <?php echo htmlspecialchars($resolver); ?>
+                                                <?php
+                                                    $res_user = is_array($resolver) ? ($resolver['user'] ?? '??') : $resolver;
+                                                    $res_at_str = '';
+                                                    if (is_array($resolver) && isset($resolver['at'])) {
+                                                        $res_utc = new DateTime($resolver['at'], new DateTimeZone('UTC'));
+                                                        $res_utc->setTimezone(new DateTimeZone($site_settings_idx['timezone'] ?? 'Europe/Bucharest'));
+                                                        $res_at_str = ' la ' . $res_utc->format('d.m H:i');
+                                                    }
+                                                ?>
+                                                <span class="text-gray-500 italic flex items-center gap-0.5" style="font-size: var(--subtask-font-size);" title="Rezolvat de <?php echo htmlspecialchars($res_user . $res_at_str); ?>">
+                                                    <i class="fas fa-user-check" style="font-size: 0.8em;"></i> <?php echo htmlspecialchars($res_user . $res_at_str); ?>
                                                 </span>
                                             <?php endif; ?>
                                         </div>
@@ -244,6 +253,11 @@ require_once __DIR__ . '/includes/header.php';
                             </td>
                             <td class="px-6 py-5 text-right">
                                 <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition">
+                                    <?php if ($defect['status'] === 'activ'): ?>
+                                        <a href="update_status.php?id=<?php echo $defect['id']; ?>&status=rezolvat" class="w-8 h-8 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center hover:bg-green-500 hover:text-white transition" title="Marchează Rezolvat">
+                                            <i class="fas fa-check text-xs"></i>
+                                        </a>
+                                    <?php endif; ?>
                                     <a href="edit_defect.php?id=<?php echo $defect['id']; ?>" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition" title="Editare">
                                         <i class="fas fa-pen-nib text-xs"></i>
                                     </a>

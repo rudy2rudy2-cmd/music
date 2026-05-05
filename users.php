@@ -41,9 +41,19 @@ $users = $pdo->query("SELECT * FROM users ORDER BY role ASC, username ASC")->fet
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<div class="mb-8">
-    <h2 class="text-3xl font-bold">Gestionare Utilizatori</h2>
-    <p class="text-gray-400">Administrare conturi Staff și Admin</p>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <h2 class="text-3xl font-bold">Gestionare Utilizatori</h2>
+        <p class="text-gray-400">Administrare conturi Staff și Admin</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="export_users.php" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/30 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+            <i class="fas fa-file-export"></i> Export
+        </a>
+        <a href="import_users.php" class="bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-white border border-amber-600/30 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+            <i class="fas fa-file-import"></i> Import
+        </a>
+    </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

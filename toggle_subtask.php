@@ -31,10 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($defect) {
         $resolved_data = json_decode((string)$defect['resolved_subtasks'], true) ?: [];
 
-        if (isset($resolved_data[$subtask_index])) {
-            unset($resolved_data[$subtask_index]);
-        } else {
-            $resolved_data[$subtask_index] = $_SESSION['username'];
+        // Only allow resolving, not un-resolving
+        if (!isset($resolved_data[$subtask_index])) {
+            $resolved_data[$subtask_index] = [
+                'user' => $_SESSION['username'],
+                'at' => gmdate('Y-m-d H:i:s')
+            ];
         }
 
         $resolved_str = json_encode($resolved_data);
