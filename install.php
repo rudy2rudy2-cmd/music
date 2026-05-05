@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
             role TEXT NOT NULL DEFAULT 'staff',
+            profile TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
