@@ -171,6 +171,9 @@ $report_text_color = $color_map[$report_text_color_val] ?? '#ffffff';
             <a href="add_defect.php" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition <?php echo basename($_SERVER['PHP_SELF']) == 'add_defect.php' ? 'bg-blue-600/20 text-blue-400' : ''; ?>">
                 <i class="fas fa-plus-circle w-5"></i> Raport Nou
             </a>
+            <a href="reports.php" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition <?php echo basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'bg-blue-600/20 text-blue-400' : ''; ?>">
+                <i class="fas fa-file-alt w-5"></i> Rapoarte
+            </a>
             <?php if (isAdmin()): ?>
             <a href="users.php" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition <?php echo basename($_SERVER['PHP_SELF']) == 'users.php' ? 'bg-blue-600/20 text-blue-400' : ''; ?>">
                 <i class="fas fa-users w-5"></i> Utilizatori
