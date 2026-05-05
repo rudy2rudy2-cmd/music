@@ -1,12 +1,27 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
 require_once __DIR__ . '/includes/header.php';
-checkLogin();
 
 // Statistics queries for Weekly and Monthly
-// Week starts on Monday
-$week_start = date('Y-m-d 00:00:00', strtotime('monday this week'));
-$month_start = date('Y-m-01 00:00:00');
+// Week starts on Monday. We calculate boundaries in UTC to match DB timestamps.
+$tz = new DateTimeZone($site_settings['timezone'] ?? 'Europe/Bucharest');
+
+$week_start_local = new DateTime('monday this week 00:00:00', $tz);
+$week_start_utc = clone $week_start_local;
+$week_start_utc->setTimezone(new DateTimeZone('UTC'));
+$week_start = $week_start_utc->format('Y-m-d H:i:s');
+
+$month_start_local = new DateTime('first day of this month 00:00:00', $tz);
+$month_start_utc = clone $month_start_local;
+$month_start_utc->setTimezone(new DateTimeZone('UTC'));
+$month_start = $month_start_utc->format('Y-m-d H:i:s');
 
 function getStats($pdo, $start_date) {
     // Total reported

@@ -12,15 +12,10 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Global settings fetch
-$stmt_settings = $pdo->query("SELECT * FROM settings");
-$site_settings_idx = [];
-while ($row = $stmt_settings->fetch()) {
-    $site_settings_idx[$row['setting_key']] = $row['setting_value'];
-}
+require_once __DIR__ . '/includes/settings_load.php';
 
-$default_filter_idx = $site_settings_idx['default_filter'] ?? 'all';
-$total_rooms_idx = $site_settings_idx['total_rooms'] ?? '100';
+$default_filter_idx = $site_settings['default_filter'] ?? 'all';
+$total_rooms_idx = $site_settings['total_rooms'] ?? '100';
 
 // Statistics update logic - Optimized for subtasks
 $active_defects = $pdo->query("SELECT COUNT(*) FROM defects WHERE status = 'activ'")->fetchColumn();
@@ -233,7 +228,7 @@ require_once __DIR__ . '/includes/header.php';
                                     <span class="text-xs white-time ml-1">
                                         <?php
                                             $reported_utc = new DateTime($defect['reported_at'], new DateTimeZone('UTC'));
-                                            $reported_utc->setTimezone(new DateTimeZone($site_settings_idx['timezone'] ?? 'Europe/Bucharest'));
+                                            $reported_utc->setTimezone(new DateTimeZone($site_settings['timezone'] ?? 'Europe/Bucharest'));
                                             echo $reported_utc->format('d.m H:i:s');
                                         ?>
                                     </span>
@@ -244,7 +239,7 @@ require_once __DIR__ . '/includes/header.php';
                                     <span class="text-xs white-time ml-1">
                                         <?php
                                             $resolved_utc = new DateTime($defect['resolved_at'], new DateTimeZone('UTC'));
-                                            $resolved_utc->setTimezone(new DateTimeZone($site_settings_idx['timezone'] ?? 'Europe/Bucharest'));
+                                            $resolved_utc->setTimezone(new DateTimeZone($site_settings['timezone'] ?? 'Europe/Bucharest'));
                                             echo $resolved_utc->format('d.m H:i:s');
                                         ?>
                                     </span>

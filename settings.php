@@ -17,6 +17,15 @@ while ($row = $stmt->fetch()) {
     $settings[$row['setting_key']] = $row['setting_value'];
 }
 
+if (isset($_GET['export_settings'])) {
+    $stmt = $pdo->query("SELECT * FROM settings");
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    header('Content-Type: application/json');
+    header('Content-Disposition: attachment; filename="settings_export_' . date('Y-m-d') . '.json"');
+    echo json_encode($data, JSON_PRETTY_PRINT);
+    exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['save_settings'])) {
         $keys = ['copyright', 'site_title', 'logo_size', 'report_font_size', 'subtask_font_size', 'report_text_color', 'theme', 'total_rooms', 'default_filter', 'timezone', 'update_url'];
@@ -80,6 +89,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // For now, we will simulate the attempt
             $success = "S-a inițiat verificarea update-ului de la: " . htmlspecialchars($url) . ". (Funcționalitate în curs de dezvoltare)";
         }
+    } elseif (isset($_POST['import_settings']) && isset($_FILES['settings_json'])) {
+        if ($_FILES['settings_json']['error'] === 0) {
+            $content = file_get_contents($_FILES['settings_json']['tmp_name']);
+            $data = json_decode($content, true);
+            if (is_array($data)) {
+                $pdo->beginTransaction();
+                try {
+                    foreach ($data as $row) {
+                        if (isset($row['setting_key']) && isset($row['setting_value'])) {
+                            $stmt = $pdo->prepare("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES (?, ?)");
+                            $stmt->execute([$row['setting_key'], $row['setting_value']]);
+                        }
+                    }
+                    $pdo->commit();
+                    $success = "Setările au fost importate cu succes! Reîncărcați pagina.";
+                    header("Refresh: 2; url=settings.php");
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    $error = "Eroare la importul setărilor.";
+                }
+            } else {
+                $error = "Format JSON invalid.";
+            }
+        }
     }
 }
 
@@ -105,6 +138,15 @@ require_once __DIR__ . '/includes/header.php';
             <?php echo $error; ?>
         </div>
     <?php endif; ?>
+
+    <div class="flex flex-wrap gap-4 mb-8">
+        <a href="?export_settings=1" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/30 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2">
+            <i class="fas fa-download"></i> Exportă Toate Setările (JSON)
+        </a>
+        <button onclick="document.getElementById('import-modal').classList.remove('hidden')" class="bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-white border border-amber-600/30 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2">
+            <i class="fas fa-upload"></i> Importă Setări (JSON)
+        </button>
+    </div>
 
     <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Branding Section -->
@@ -249,6 +291,29 @@ require_once __DIR__ . '/includes/header.php';
             <input type="hidden" name="action" value="delete_resolved">
             <button type="submit" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/30 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2">
                 <i class="fas fa-trash-alt"></i> Șterge Defecțiunile Rezolvate
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div id="import-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="glass max-w-md w-full rounded-3xl p-8 relative shadow-2xl border-white/10">
+        <button onclick="document.getElementById('import-modal').classList.add('hidden')" class="absolute top-6 right-6 text-gray-400 hover:text-white transition text-xl">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <h3 class="text-xl font-bold mb-6">Importă Setări</h3>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            <input type="hidden" name="import_settings" value="1">
+            <div class="space-y-2">
+                <label class="block text-sm text-gray-400">Fișier JSON Exportat</label>
+                <input type="file" name="settings_json" accept=".json" required class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+            </div>
+
+            <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2">
+                <i class="fas fa-file-import"></i> Confirmă Importul
             </button>
         </form>
     </div>

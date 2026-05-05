@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT 'staff',
+    profile TEXT DEFAULT 'Receptioner',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

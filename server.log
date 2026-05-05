@@ -1,0 +1,7 @@
+[Tue May  5 12:55:05 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Tue May  5 12:55:08 2026] [::1]:53138 Accepted
+[Tue May  5 12:55:08 2026] [::1]:53138 [200]: GET /login.php
+[Tue May  5 12:55:08 2026] [::1]:53138 Closing
+[Tue May  5 12:55:09 2026] [::1]:53140 Accepted
+[Tue May  5 12:55:09 2026] [::1]:53140 [200]: POST /login.php
+[Tue May  5 12:55:09 2026] [::1]:53140 Closing
