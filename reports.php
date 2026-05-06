@@ -251,9 +251,9 @@ if (!empty($custom_from) && !empty($custom_to)) {
             <div class="space-y-2">
                 <label class="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Status</label>
                 <select name="status" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition text-white appearance-none">
-                    <option value="all" <?php echo $custom_status == 'all' ? 'selected' : ''; ?>>Toate</option>
-                    <option value="active" <?php echo $custom_status == 'active' ? 'selected' : ''; ?>>Active</option>
-                    <option value="resolved" <?php echo $custom_status == 'resolved' ? 'selected' : ''; ?>>Rezolvate</option>
+                    <option value="all" <?php echo $custom_status == 'all' ? 'selected' : ''; ?> class="bg-slate-900">Toate</option>
+                    <option value="active" <?php echo $custom_status == 'active' ? 'selected' : ''; ?> class="bg-slate-900">Active</option>
+                    <option value="resolved" <?php echo $custom_status == 'resolved' ? 'selected' : ''; ?> class="bg-slate-900">Rezolvate</option>
                 </select>
             </div>
             <div class="flex items-end">

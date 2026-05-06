@@ -31,9 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $prio = $_POST['priority'];
     $status = $_POST['status'];
 
-    // If description changed, reset resolved subtasks
+    // If description changed or status set to active, reset resolved subtasks
     $resolved_subtasks = $defect['resolved_subtasks'];
-    if ($desc !== $defect['description']) {
+    if ($desc !== $defect['description'] || $status === 'activ') {
         $resolved_subtasks = '[]';
     }
 

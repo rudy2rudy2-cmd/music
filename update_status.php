@@ -20,8 +20,14 @@ $status = $_GET['status'] ?? 'rezolvat';
 
 if ($id) {
     $resolved_at = ($status == 'rezolvat') ? gmdate('Y-m-d H:i:s') : null;
-    $stmt = $pdo->prepare("UPDATE defects SET status = ?, resolved_at = ? WHERE id = ?");
-    $stmt->execute([$status, $resolved_at, $id]);
+
+    if ($status === 'activ') {
+        $stmt = $pdo->prepare("UPDATE defects SET status = ?, resolved_at = ?, resolved_subtasks = '[]' WHERE id = ?");
+        $stmt->execute([$status, $resolved_at, $id]);
+    } else {
+        $stmt = $pdo->prepare("UPDATE defects SET status = ?, resolved_at = ? WHERE id = ?");
+        $stmt->execute([$status, $resolved_at, $id]);
+    }
 }
 
 header("Location: index.php");
