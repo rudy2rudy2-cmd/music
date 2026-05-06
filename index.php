@@ -188,7 +188,7 @@ require_once __DIR__ . '/includes/header.php';
                                                     $res_at_str = '';
                                                     if (is_array($resolver) && isset($resolver['at'])) {
                                                         $res_utc = new DateTime($resolver['at'], new DateTimeZone('UTC'));
-                                                        $res_utc->setTimezone(new DateTimeZone($site_settings_idx['timezone'] ?? 'Europe/Bucharest'));
+                                                        $res_utc->setTimezone(new DateTimeZone($site_settings['timezone'] ?? 'Europe/Bucharest'));
                                                         $res_at_str = ' la ' . $res_utc->format('d.m H:i');
                                                     }
                                                 ?>

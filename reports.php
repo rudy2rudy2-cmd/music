@@ -35,7 +35,7 @@ function getStats($pdo, $start_date) {
     // Let's use the same logic as dashboard for consistency
 
     // Fully resolved or has resolved subtasks
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM defects WHERE reported_at >= ? AND (status = 'rezolvat' OR (resolved_subtasks != '[]' AND resolved_subtasks IS NOT NULL))");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM defects WHERE reported_at >= ? AND (status = 'rezolvat' OR (resolved_subtasks != '' AND resolved_subtasks != '[]' AND resolved_subtasks IS NOT NULL))");
     $stmt->execute([$start_date]);
     $resolved = $stmt->fetchColumn();
 
@@ -50,6 +50,53 @@ function getStats($pdo, $start_date) {
 
 $weekly = getStats($pdo, $week_start);
 $monthly = getStats($pdo, $month_start);
+
+// Custom Report Logic
+$custom_from = $_GET['from'] ?? '';
+$custom_to = $_GET['to'] ?? '';
+$custom_status = $_GET['status'] ?? 'all';
+$custom_results = null;
+$custom_stats = null;
+
+if (!empty($custom_from) && !empty($custom_to)) {
+    $from_utc = new DateTime($custom_from . ' 00:00:00', $tz);
+    $from_utc->setTimezone(new DateTimeZone('UTC'));
+    $from_str = $from_utc->format('Y-m-d H:i:s');
+
+    $to_utc = new DateTime($custom_to . ' 23:59:59', $tz);
+    $to_utc->setTimezone(new DateTimeZone('UTC'));
+    $to_str = $to_utc->format('Y-m-d H:i:s');
+
+    // Stats for custom range
+    $stmt_total = $pdo->prepare("SELECT COUNT(*) FROM defects WHERE reported_at BETWEEN ? AND ?");
+    $stmt_total->execute([$from_str, $to_str]);
+    $total_count = $stmt_total->fetchColumn();
+
+    $stmt_res = $pdo->prepare("SELECT COUNT(*) FROM defects WHERE reported_at BETWEEN ? AND ? AND (status = 'rezolvat' OR (resolved_subtasks != '' AND resolved_subtasks != '[]' AND resolved_subtasks IS NOT NULL))");
+    $stmt_res->execute([$from_str, $to_str]);
+    $res_count = $stmt_res->fetchColumn();
+
+    $custom_stats = [
+        'total' => $total_count,
+        'resolved' => $res_count
+    ];
+    $custom_stats['active'] = $custom_stats['total'] - $custom_stats['resolved'];
+
+    // Query for custom list
+    $q = "SELECT d.*, u.username as reported_by_user FROM defects d LEFT JOIN users u ON d.reported_by = u.id WHERE d.reported_at BETWEEN ? AND ?";
+    $p = [$from_str, $to_str];
+
+    if ($custom_status === 'active') {
+        $q .= " AND d.status = 'activ'";
+    } elseif ($custom_status === 'resolved') {
+        $q .= " AND (d.status = 'rezolvat' OR (d.resolved_subtasks != '' AND d.resolved_subtasks != '[]' AND d.resolved_subtasks IS NOT NULL))";
+    }
+
+    $q .= " ORDER BY d.reported_at DESC";
+    $stmt_custom = $pdo->prepare($q);
+    $stmt_custom->execute($p);
+    $custom_results = $stmt_custom->fetchAll();
+}
 
 ?>
 
@@ -177,6 +224,108 @@ $monthly = getStats($pdo, $month_start);
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Custom Report Section -->
+<div class="mt-12">
+    <div class="glass p-8 rounded-3xl border border-white/10 shadow-2xl">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+            <div>
+                <h3 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="fas fa-search-plus text-blue-500"></i> Raport Personalizat
+                </h3>
+                <p class="text-gray-400 text-sm">Selectează perioada și criteriile de filtrare</p>
+            </div>
+        </div>
+
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">De la</label>
+                <input type="date" name="from" value="<?php echo htmlspecialchars($custom_from); ?>" required class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition text-white">
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Până la</label>
+                <input type="date" name="to" value="<?php echo htmlspecialchars($custom_to); ?>" required class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition text-white">
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Status</label>
+                <select name="status" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition text-white appearance-none">
+                    <option value="all" <?php echo $custom_status == 'all' ? 'selected' : ''; ?>>Toate</option>
+                    <option value="active" <?php echo $custom_status == 'active' ? 'selected' : ''; ?>>Active</option>
+                    <option value="resolved" <?php echo $custom_status == 'resolved' ? 'selected' : ''; ?>>Rezolvate</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-filter"></i> Generează Raport
+                </button>
+            </div>
+        </form>
+
+        <?php if ($custom_stats): ?>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="p-6 bg-white/5 rounded-2xl border border-white/5">
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Total în Perioadă</p>
+                    <p class="text-3xl font-bold text-white"><?php echo $custom_stats['total']; ?></p>
+                </div>
+                <div class="p-6 bg-green-500/10 rounded-2xl border border-green-500/20">
+                    <p class="text-xs text-green-500 font-bold uppercase tracking-wider mb-2">Rezolvate</p>
+                    <p class="text-3xl font-bold text-green-400"><?php echo $custom_stats['resolved']; ?></p>
+                </div>
+                <div class="p-6 bg-red-500/10 rounded-2xl border border-red-500/20">
+                    <p class="text-xs text-red-500 font-bold uppercase tracking-wider mb-2">Active</p>
+                    <p class="text-3xl font-bold text-red-400"><?php echo $custom_stats['active']; ?></p>
+                </div>
+            </div>
+
+            <?php if (!empty($custom_results)): ?>
+                <div class="overflow-x-auto rounded-2xl border border-white/5">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white/[0.02] text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b border-white/5">
+                                <th class="px-6 py-4">Cameră</th>
+                                <th class="px-6 py-4">Defecțiune</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4">Data Raportării</th>
+                                <th class="px-6 py-4 text-right">Raportat de</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <?php foreach ($custom_results as $res): ?>
+                                <tr class="hover:bg-white/[0.03] transition">
+                                    <td class="px-6 py-4 font-bold text-blue-500">#<?php echo htmlspecialchars($res['room_number']); ?></td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-white"><?php echo htmlspecialchars($res['issue_type']); ?></div>
+                                        <div class="text-xs text-gray-500 truncate max-w-xs"><?php echo htmlspecialchars($res['description']); ?></div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <?php $is_res = ($res['status'] == 'rezolvat' || (!empty($res['resolved_subtasks']) && $res['resolved_subtasks'] != '' && $res['resolved_subtasks'] != '[]')); ?>
+                                        <span class="px-3 py-1 rounded-full text-[10px] font-bold <?php echo $is_res ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'; ?>">
+                                            <?php echo $is_res ? 'REZOLVAT' : 'ACTIV'; ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-400">
+                                        <?php
+                                            $d = new DateTime($res['reported_at'], new DateTimeZone('UTC'));
+                                            $d->setTimezone($tz);
+                                            echo $d->format('d.m.Y H:i');
+                                        ?>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-sm text-gray-500">
+                                        <?php echo htmlspecialchars($res['reported_by_user'] ?? 'Sistem'); ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <div class="p-12 text-center bg-white/5 rounded-2xl border border-white/5">
+                    <p class="text-gray-500">Nu au fost găsite înregistrări pentru perioada selectată.</p>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
     </div>
 </div>
 
