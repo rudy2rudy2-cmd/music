@@ -1,15 +1,15 @@
-# Configurare NGINX pentru Laravel & Filament
+# Configurare NGINX - Marketing Platform
 
-Dacă primești **404 Not Found** pe paginile `/admin`, asigură-te că fișierul de configurare Nginx pentru site-ul tău conține următoarele setări:
+Dacă primești **404 Not Found** sau erori de fișiere care lipsesc, folosește această configurație:
 
-## 1. Setează Root-ul către folderul /public
-Este foarte important ca `root` să puncteze către folderul `public` din interiorul proiectului, nu către folderul rădăcină al proiectului.
+## 1. Configurație Recomandată
+Aceasta este configurația standard care ar trebui să funcționeze indiferent dacă root-ul este în folderul principal sau în cel `/public`.
 
 ```nginx
 server {
     listen 80;
     server_name music.sglprime.com;
-    root /www/wwwroot/music.sglprime.com/public; # <--- ASIGURĂ-TE CĂ ARE /public LA FINAL
+    root /www/wwwroot/music.sglprime.com; # Root-ul proiectului
 
     index index.php index.html index.htm;
 
@@ -30,16 +30,15 @@ server {
 }
 ```
 
-## 2. Permisiuni foldere
-Dacă apar erori după configurare, rulează aceste comenzi în terminalul serverului (în folderul proiectului):
+## 2. Permisiuni obligatorii
+Rulează aceste comenzi pentru a te asigura că platforma poate scrie fișierele necesare:
 
 ```bash
 chmod -R 775 storage bootstrap/cache
-chown -R www-data:www-data . # Sau userul folosit de serverul tău web (ex: www)
+chown -R www:www . # Schimbă 'www' cu userul serverului tău (ex: www-data)
 ```
 
 ## 3. Restart Nginx
-După ce modifici configurația, nu uita să dai restart la Nginx:
 ```bash
 nginx -t
 service nginx restart
