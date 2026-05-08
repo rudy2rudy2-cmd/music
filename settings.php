@@ -1,0 +1,322 @@
+<?php
+require_once __DIR__ . '/includes/db.php';
+session_start();
+
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: index.php");
+    exit();
+}
+
+$error = "";
+$success = "";
+
+// Fetch current settings
+$stmt = $pdo->query("SELECT * FROM settings");
+$settings = [];
+while ($row = $stmt->fetch()) {
+    $settings[$row['setting_key']] = $row['setting_value'];
+}
+
+if (isset($_GET['export_settings'])) {
+    $stmt = $pdo->query("SELECT * FROM settings");
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    header('Content-Type: application/json');
+    header('Content-Disposition: attachment; filename="settings_export_' . date('Y-m-d') . '.json"');
+    echo json_encode($data, JSON_PRETTY_PRINT);
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['save_settings'])) {
+        $keys = ['copyright', 'site_title', 'logo_size', 'report_font_size', 'subtask_font_size', 'report_text_color', 'theme', 'total_rooms', 'default_filter', 'timezone', 'update_url'];
+
+        foreach ($keys as $key) {
+            if (isset($_POST[$key])) {
+                $val = $_POST[$key];
+                $stmt = $pdo->prepare("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES (?, ?)");
+                $stmt->execute([$key, $val]);
+                $settings[$key] = $val;
+            }
+        }
+
+        // Handle Logo Upload
+        if (isset($_FILES['logo']) && $_FILES['logo']['error'] === 0) {
+            $upload_dir = __DIR__ . '/uploads/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+
+            $allowed = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
+            $filename = $_FILES['logo']['name'];
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+            if (in_array($ext, $allowed)) {
+                $new_name = 'logo_' . time() . '.' . $ext;
+                $upload_path = $upload_dir . $new_name;
+
+                if (move_uploaded_file($_FILES['logo']['tmp_name'], $upload_path)) {
+                    if (!empty($settings['logo_path']) && file_exists(__DIR__ . '/' . $settings['logo_path'])) {
+                        @unlink(__DIR__ . '/' . $settings['logo_path']);
+                    }
+
+                    $db_logo_path = 'uploads/' . $new_name;
+                    $stmt = $pdo->prepare("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES ('logo_path', ?)");
+                    $stmt->execute([$db_logo_path]);
+                    $settings['logo_path'] = $db_logo_path;
+                } else {
+                    $error = "Eroare la încărcarea logo-ului. Verificați permisiunile folderului 'uploads/'.";
+                }
+            } else {
+                $error = "Formatul fișierului logo nu este permis.";
+            }
+        }
+
+        if (!$error) {
+            $success = "Toate modificările au fost salvate!";
+        }
+    } elseif (isset($_POST['action']) && $_POST['action'] === 'delete_resolved') {
+        // Delete items that match the "resolved" filter logic:
+        // Fully resolved OR have at least one subtask resolved
+        $stmt = $pdo->prepare("DELETE FROM defects WHERE status = 'rezolvat' OR (resolved_subtasks != '' AND resolved_subtasks != '[]' AND resolved_subtasks IS NOT NULL)");
+        $stmt->execute();
+        $success = "Toate rapoartele din secțiunea 'Rezolvate' au fost șterse!";
+    } elseif (isset($_POST['action']) && $_POST['action'] === 'update_platform') {
+        $url = $settings['update_url'] ?? '';
+        if (empty($url)) {
+            $error = "Vă rugăm să introduceți un URL pentru update în setări.";
+        } else {
+            // Here we would normally implement the update logic (e.g. file_get_contents and unzip)
+            // For now, we will simulate the attempt
+            $success = "S-a inițiat verificarea update-ului de la: " . htmlspecialchars($url) . ". (Funcționalitate în curs de dezvoltare)";
+        }
+    } elseif (isset($_POST['import_settings']) && isset($_FILES['settings_json'])) {
+        if ($_FILES['settings_json']['error'] === 0) {
+            $content = file_get_contents($_FILES['settings_json']['tmp_name']);
+            $data = json_decode($content, true);
+            if (is_array($data)) {
+                $pdo->beginTransaction();
+                try {
+                    foreach ($data as $row) {
+                        if (isset($row['setting_key']) && isset($row['setting_value'])) {
+                            $stmt = $pdo->prepare("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES (?, ?)");
+                            $stmt->execute([$row['setting_key'], $row['setting_value']]);
+                        }
+                    }
+                    $pdo->commit();
+                    $success = "Setările au fost importate cu succes! Reîncărcați pagina.";
+                    header("Refresh: 2; url=settings.php");
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    $error = "Eroare la importul setărilor.";
+                }
+            } else {
+                $error = "Format JSON invalid.";
+            }
+        }
+    }
+}
+
+require_once __DIR__ . '/includes/header.php';
+?>
+
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold">Setări Sistem</h2>
+        <p class="text-gray-400">Personalizare și Configurare Platformă</p>
+    </div>
+
+    <?php if ($success): ?>
+        <div class="bg-green-500/10 border border-green-500/50 text-green-400 p-4 rounded-xl mb-6 flex items-center gap-3">
+            <i class="fas fa-check-circle"></i>
+            <?php echo $success; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($error): ?>
+        <div class="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6 flex items-center gap-3">
+            <i class="fas fa-exclamation-circle"></i>
+            <?php echo $error; ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="flex flex-wrap gap-4 mb-8">
+        <a href="?export_settings=1" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/30 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2">
+            <i class="fas fa-download"></i> Exportă Toate Setările (JSON)
+        </a>
+        <button onclick="document.getElementById('import-modal').classList.remove('hidden')" class="bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-white border border-amber-600/30 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2">
+            <i class="fas fa-upload"></i> Importă Setări (JSON)
+        </button>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Branding Section -->
+        <div class="glass p-8 rounded-2xl space-y-6">
+            <h3 class="text-xl font-bold border-b border-white/5 pb-4">Identitate și Text</h3>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Titlu Platformă</label>
+                <input type="text" name="site_title" value="<?php echo htmlspecialchars($settings['site_title'] ?? 'HotelDefects'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Total Camere</label>
+                    <input type="number" name="total_rooms" value="<?php echo htmlspecialchars($settings['total_rooms'] ?? '100'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Logo Size (px)</label>
+                    <input type="number" name="logo_size" value="<?php echo htmlspecialchars($settings['logo_size'] ?? '32'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Font Rapoarte (px)</label>
+                    <input type="number" name="report_font_size" value="<?php echo htmlspecialchars($settings['report_font_size'] ?? '14'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Font Subtasks (px)</label>
+                    <input type="number" name="subtask_font_size" value="<?php echo htmlspecialchars($settings['subtask_font_size'] ?? '10'); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Culoare Text Rapoarte</label>
+                <select name="report_text_color" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 appearance-none">
+                    <option value="white" <?php echo ($settings['report_text_color'] ?? 'white') == 'white' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Alb</option>
+                    <option value="red" <?php echo ($settings['report_text_color'] ?? 'white') == 'red' ? 'selected' : ''; ?> class="bg-slate-900 text-red-500">Roșu</option>
+                    <option value="green" <?php echo ($settings['report_text_color'] ?? 'white') == 'green' ? 'selected' : ''; ?> class="bg-slate-900 text-green-500">Verde</option>
+                    <option value="orange" <?php echo ($settings['report_text_color'] ?? 'white') == 'orange' ? 'selected' : ''; ?> class="bg-slate-900 text-orange-500">Portocaliu</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Text Copyright</label>
+                <textarea name="copyright" rows="2" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition"><?php echo htmlspecialchars($settings['copyright'] ?? ''); ?></textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">URL Update (Ramură)</label>
+                <input type="text" name="update_url" value="<?php echo htmlspecialchars($settings['update_url'] ?? ''); ?>" placeholder="https://exemplu.com/update.zip" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Logo Nou</label>
+                <input type="file" name="logo" class="text-xs text-gray-500 cursor-pointer">
+            </div>
+        </div>
+
+        <!-- Appearance Section -->
+        <div class="glass p-8 rounded-2xl space-y-6">
+            <h3 class="text-xl font-bold border-b border-white/5 pb-4">Teme și Dashboard</h3>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-4">Selectează Tema</label>
+                <div class="grid grid-cols-1 gap-3">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="theme" value="blue" <?php echo ($settings['theme'] ?? 'blue') == 'blue' ? 'checked' : ''; ?> class="peer hidden">
+                        <div class="p-4 border border-white/10 rounded-xl flex items-center justify-between peer-checked:bg-blue-600 peer-checked:border-blue-600 transition">
+                            <span class="font-bold">Tema Albastră</span>
+                            <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer">
+                        <input type="radio" name="theme" value="black" <?php echo ($settings['theme'] ?? 'blue') == 'black' ? 'checked' : ''; ?> class="peer hidden">
+                        <div class="p-4 border border-white/10 rounded-xl flex items-center justify-between peer-checked:bg-slate-800 peer-checked:border-slate-700 transition">
+                            <span class="font-bold">Tema Neagră</span>
+                            <div class="w-4 h-4 bg-black rounded-full border border-white/20"></div>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer">
+                        <input type="radio" name="theme" value="white" <?php echo ($settings['theme'] ?? 'blue') == 'white' ? 'checked' : ''; ?> class="peer hidden">
+                        <div class="p-4 border border-white/10 rounded-xl flex items-center justify-between peer-checked:bg-slate-100 peer-checked:border-slate-200 peer-checked:text-black transition">
+                            <span class="font-bold">Tema Albă</span>
+                            <div class="w-4 h-4 bg-white rounded-full border border-gray-300"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Filtru Implicit</label>
+                <select name="default_filter" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 appearance-none">
+                    <option value="all" <?php echo ($settings['default_filter'] ?? 'all') == 'all' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Toate</option>
+                    <option value="active" <?php echo ($settings['default_filter'] ?? 'all') == 'active' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Doar Active</option>
+                    <option value="resolved" <?php echo ($settings['default_filter'] ?? 'all') == 'resolved' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Doar Rezolvate</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Fus Orar (Timezone)</label>
+                <select name="timezone" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 appearance-none">
+                    <option value="Europe/Bucharest" <?php echo ($settings['timezone'] ?? 'Europe/Bucharest') == 'Europe/Bucharest' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Europe/Bucharest</option>
+                    <option value="UTC" <?php echo ($settings['timezone'] ?? 'Europe/Bucharest') == 'UTC' ? 'selected' : ''; ?> class="bg-slate-900 text-white">UTC</option>
+                    <option value="Europe/London" <?php echo ($settings['timezone'] ?? 'Europe/Bucharest') == 'Europe/London' ? 'selected' : ''; ?> class="bg-slate-900 text-white">Europe/London</option>
+                </select>
+            </div>
+
+            <div class="pt-4">
+                <button type="submit" name="save_settings" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-blue-600/20">
+                    Salvează Toate Setările
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Update Section -->
+    <div class="mt-12 glass p-8 rounded-2xl border-blue-500/20">
+        <h3 class="text-xl font-bold text-blue-500 mb-4 flex items-center gap-2">
+            <i class="fas fa-sync-alt"></i> Actualizare Platformă
+        </h3>
+        <p class="text-gray-400 mb-6 text-sm">Actualizați platforma la cea mai recentă versiune folosind link-ul configurat în secțiunea "Ramură Update".</p>
+
+        <form method="POST">
+            <input type="hidden" name="action" value="update_platform">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg">
+                <i class="fas fa-cloud-download-alt"></i> Update la Noua Platformă
+            </button>
+        </form>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="mt-8 glass p-8 rounded-2xl border-red-500/20">
+        <h3 class="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
+            <i class="fas fa-exclamation-triangle"></i> Zonă Administrativă Periculoasă
+        </h3>
+        <p class="text-gray-400 mb-6 text-sm">Ștergerea rapoartelor rezolvate va elibera spațiu și va curăța istoricul. Această acțiune este ireversibilă.</p>
+
+        <form method="POST" onsubmit="return confirm('Ești sigur că vrei să ștergi TOATE rapoartele rezolvate? Această acțiune nu poate fi anulată.')">
+            <input type="hidden" name="action" value="delete_resolved">
+            <button type="submit" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/30 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                <i class="fas fa-trash-alt"></i> Șterge Defecțiunile Rezolvate
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div id="import-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="glass max-w-md w-full rounded-3xl p-8 relative shadow-2xl border-white/10">
+        <button onclick="document.getElementById('import-modal').classList.add('hidden')" class="absolute top-6 right-6 text-gray-400 hover:text-white transition text-xl">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <h3 class="text-xl font-bold mb-6">Importă Setări</h3>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            <input type="hidden" name="import_settings" value="1">
+            <div class="space-y-2">
+                <label class="block text-sm text-gray-400">Fișier JSON Exportat</label>
+                <input type="file" name="settings_json" accept=".json" required class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition">
+            </div>
+
+            <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2">
+                <i class="fas fa-file-import"></i> Confirmă Importul
+            </button>
+        </form>
+    </div>
+</div>
+
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
