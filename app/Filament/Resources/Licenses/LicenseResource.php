@@ -8,21 +8,19 @@ use App\Filament\Resources\Licenses\Pages\ListLicenses;
 use App\Filament\Resources\Licenses\Schemas\LicenseForm;
 use App\Filament\Resources\Licenses\Tables\LicensesTable;
 use App\Models\License;
-use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
 
 class LicenseResource extends Resource
 {
     protected static ?string $model = License::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function form(Schema $schema): Schema
+    public static function form(Form $form): Form
     {
-        return LicenseForm::configure($schema);
+        return LicenseForm::configure($form);
     }
 
     public static function table(Table $table): Table

@@ -42,8 +42,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 2. Check for vendor directory
     chdir(__DIR__ . '/..');
-    if (!file_exists('vendor/autoload.php')) {
-        $composer_output = shell_exec('composer install --no-dev 2>&1');
+
+    // Check PHP version
+    if (version_compare(PHP_VERSION, '8.2.0', '<')) {
+        $error = "PHP version 8.2 or higher is required. Current version: " . PHP_VERSION;
+    }
+
+    if (empty($error) && !file_exists('vendor/autoload.php')) {
+        $composer_output = shell_exec('composer install --no-dev --ignore-platform-reqs 2>&1');
         if (!file_exists('vendor/autoload.php')) {
             $error = "Dependencies missing! 'vendor' folder not found and 'composer install' failed. <br> Output: <pre>" . htmlspecialchars($composer_output) . "</pre> Please run 'composer install' manually on the server.";
         }
@@ -95,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <h1 class="text-2xl font-bold text-slate-800">System Installation</h1>
             <p class="text-slate-500">Configure your database to get started</p>
+            <p class="text-xs text-slate-400">PHP Version: <?php echo PHP_VERSION; ?></p>
         </div>
 
         <?php if($error): ?>

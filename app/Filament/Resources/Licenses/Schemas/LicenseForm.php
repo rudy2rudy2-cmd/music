@@ -5,16 +5,15 @@ namespace App\Filament\Resources\Licenses\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Schema;
+use Filament\Forms\Form;
 use Illuminate\Support\Str;
 
 class LicenseForm
 {
-    public static function configure(Schema $schema): Schema
+    public static function configure(Form $form): Form
     {
-        return $schema
-            ->components([
+        return $form
+            ->schema([
                 Select::make('platform_id')
                     ->relationship('platform', 'name')
                     ->required(),

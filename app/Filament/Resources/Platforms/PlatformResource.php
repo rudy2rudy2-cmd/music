@@ -8,21 +8,19 @@ use App\Filament\Resources\Platforms\Pages\ListPlatforms;
 use App\Filament\Resources\Platforms\Schemas\PlatformForm;
 use App\Filament\Resources\Platforms\Tables\PlatformsTable;
 use App\Models\Platform;
-use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
 
 class PlatformResource extends Resource
 {
     protected static ?string $model = Platform::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function form(Schema $schema): Schema
+    public static function form(Form $form): Form
     {
-        return PlatformForm::configure($schema);
+        return PlatformForm::configure($form);
     }
 
     public static function table(Table $table): Table
