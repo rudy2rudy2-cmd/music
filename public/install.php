@@ -22,7 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $env_example_path = __DIR__ . '/../.env.example';
 
     if (!file_exists($env_path)) {
-        copy($env_example_path, $env_path);
+        if (file_exists($env_example_path)) {
+            copy($env_example_path, $env_path);
+        } else {
+            // Create a basic .env if example is missing
+            $basic_env = "APP_NAME=Laravel\nAPP_ENV=local\nAPP_KEY=\nAPP_DEBUG=true\nAPP_URL=http://localhost\n\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=\nDB_USERNAME=\nDB_PASSWORD=\n";
+            file_put_contents($env_path, $basic_env);
+        }
     }
 
     $env_content = file_get_contents($env_path);
@@ -30,35 +36,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $env_content = preg_replace('/DB_DATABASE=.*/', 'DB_DATABASE=' . $db_name, $env_content);
     $env_content = preg_replace('/DB_USERNAME=.*/', 'DB_USERNAME=' . $db_user, $env_content);
     $env_content = preg_replace('/DB_PASSWORD=.*/', 'DB_PASSWORD=' . $db_pass, $env_content);
-    $env_content = preg_replace('/DB_CONNECTION=.*/', 'DB_CONNECTION=mysql', $env_content); // Assuming MySQL as requested by SQL mention
+    $env_content = preg_replace('/DB_CONNECTION=.*/', 'DB_CONNECTION=mysql', $env_content);
 
     file_put_contents($env_path, $env_content);
 
-    // 2. Run Migrations and Create Admin
+    // 2. Check for vendor directory
     chdir(__DIR__ . '/..');
+    if (!file_exists('vendor/autoload.php')) {
+        $composer_output = shell_exec('composer install --no-dev 2>&1');
+        if (!file_exists('vendor/autoload.php')) {
+            $error = "Dependencies missing! 'vendor' folder not found and 'composer install' failed. <br> Output: <pre>" . htmlspecialchars($composer_output) . "</pre> Please run 'composer install' manually on the server.";
+        }
+    }
 
-    // Clear cache first
-    shell_exec('php artisan config:clear');
+    if (empty($error)) {
+        // 3. Run Migrations and Create Admin
+        shell_exec('php artisan key:generate --force');
+        shell_exec('php artisan config:clear');
 
-    $output = shell_exec('php artisan migrate --force 2>&1');
+        $output = shell_exec('php artisan migrate --force 2>&1');
 
-    if (strpos($output, 'Error') !== false || strpos($output, 'Exception') !== false) {
-        $error = "Migration failed: " . nl2br(htmlspecialchars($output));
-    } else {
-        // Create Admin User
-        $admin_email = 'admin@example.com';
-        $admin_pass = 'rudyrudy1989';
-        $admin_name = 'Admin';
+        if (strpos($output, 'Error') !== false || strpos($output, 'Exception') !== false || strpos($output, 'Fatal error') !== false) {
+            $error = "Migration failed: " . nl2br(htmlspecialchars($output));
+        } else {
+            // Create Admin User
+            $admin_email = 'admin@example.com';
+            $admin_pass = 'rudyrudy1989';
+            $admin_name = 'Admin';
 
-        // Use artisan tinker to create user reliably
-        $tinker_cmd = sprintf(
-            'php artisan tinker --execute="\$user = App\Models\User::updateOrCreate([\'email\' => \'%s\'], [\'name\' => \'%s\', \'password\' => Hash::make(\'%s\')]);"',
-            $admin_email, $admin_name, $admin_pass
-        );
-        shell_exec($tinker_cmd);
+            $tinker_cmd = sprintf(
+                'php artisan tinker --execute="\$user = App\Models\User::updateOrCreate([\'email\' => \'%s\'], [\'name\' => \'%s\', \'password\' => Hash::make(\'%s\')]);"',
+                $admin_email, $admin_name, $admin_pass
+            );
+            shell_exec($tinker_cmd);
 
-        file_put_contents($lock_file, date('Y-m-d H:i:s'));
-        $message = "Installation successful! <br> Admin User: admin@example.com <br> Password: rudyrudy1989 <br><br> <a href='/admin' class='text-indigo-600 font-bold'>Go to Admin Panel</a>";
+            file_put_contents($lock_file, date('Y-m-d H:i:s'));
+            $message = "Installation successful! <br> Admin User: admin@example.com <br> Password: rudyrudy1989 <br><br> <a href='/admin' class='text-indigo-600 font-bold'>Go to Admin Panel</a>";
+        }
     }
 }
 
@@ -90,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <?php if($message): ?>
-            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 text-center">
                 <p class="text-green-700 text-sm"><?php echo $message; ?></p>
             </div>
         <?php else: ?>
@@ -117,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="bg-indigo-50 p-4 rounded-xl mb-6 flex items-start">
                     <i class="fas fa-info-circle text-indigo-500 mt-1 mr-3"></i>
                     <p class="text-xs text-indigo-700 leading-relaxed">
-                        By clicking install, we will configure the .env file, run migrations, and create the admin account with the password <strong>rudyrudy1989</strong>.
+                        By clicking install, we will configure the .env file, try to install dependencies if missing, run migrations, and create the admin account with the password <strong>rudyrudy1989</strong>.
                     </p>
                 </div>
 
