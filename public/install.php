@@ -59,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 3. Run Migrations and Create Admin
         shell_exec('php artisan key:generate --force');
         shell_exec('php artisan config:clear');
+        shell_exec('php artisan storage:link');
 
         $output = shell_exec('php artisan migrate --force 2>&1');
 
