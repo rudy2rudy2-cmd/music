@@ -77,21 +77,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
             }
         }
 
-        // 3. Run Commands
-        shell_exec('php artisan key:generate --force');
-        shell_exec('php artisan storage:link');
-        $migrate_output = shell_exec('php artisan migrate --force 2>&1');
-
-        if (strpos($migrate_output, 'Error') !== false || strpos($migrate_output, 'Exception') !== false) {
-             throw new Exception("Migration failed: " . $migrate_output);
+        // 3. Manually delete Laravel's cache files
+        $cache_files = ['config.php', 'routes.php', 'services.php', 'packages.php'];
+        foreach ($cache_files as $file) {
+            $path = __DIR__ . '/bootstrap/cache/' . $file;
+            if (file_exists($path)) { @unlink($path); }
         }
 
-        // 3. Create Admin
-        $tinker_cmd = sprintf(
-            'php artisan tinker --execute="\$user = App\Models\User::updateOrCreate([\'email\' => \'%s\'], [\'name\' => \'Administrator\', \'password\' => Hash::make(\'%s\'), \'role\' => \'admin\']);"',
-            $admin_email, $admin_pass
+        // 4. Bootstrap Laravel and Run Commands internally
+        require __DIR__ . '/vendor/autoload.php';
+        $app = require_once __DIR__ . '/bootstrap/app.php';
+        $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+
+        // Run key generate
+        $kernel->call('key:generate', ['--force' => true]);
+
+        // Run migrations
+        $status = $kernel->call('migrate', ['--force' => true]);
+
+        if ($status !== 0) {
+            throw new Exception("Migration failed with exit code $status.");
+        }
+
+        // 5. Create Admin using Eloquent directly
+        \App\Models\User::updateOrCreate(
+            ['email' => $admin_email],
+            [
+                'name' => 'Administrator',
+                'password' => \Illuminate\Support\Facades\Hash::make($admin_pass),
+                'role' => 'admin'
+            ]
         );
-        shell_exec($tinker_cmd);
 
         file_put_contents($lock_file, date('Y-m-d H:i:s'));
         $message = "Installation completed successfully!";
