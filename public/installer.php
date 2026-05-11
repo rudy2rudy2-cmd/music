@@ -109,15 +109,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
         $_ENV['DB_PASSWORD'] = $_SERVER['DB_PASSWORD'] = $db_pass;
 
         // 5. Bootstrap Laravel correctly
-        require $base_path . '/vendor/autoload.php';
+        require_once $base_path . '/vendor/autoload.php';
         $app = require_once $base_path . '/bootstrap/app.php';
 
         /** @var \Illuminate\Contracts\Console\Kernel $kernel */
         $kernel = $app->make(\Illuminate\Contracts\Console\Kernel::class);
-        $kernel->bootstrap(); // IMPORTANT: This makes 'config' service available
+        $kernel->bootstrap();
 
-        // 6. Hard-force config directly into the container after bootstrap
-        config([
+        // 6. Hard-force config directly into the container using the $app instance
+        $config = $app->make('config');
+        $config->set([
             'database.default' => 'mysql',
             'database.connections.mysql.host' => $db_host,
             'database.connections.mysql.database' => $db_name,
@@ -126,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
         ]);
 
         // Force refresh connection
-        \Illuminate\Support\Facades\DB::purge('mysql');
+        $app->make('db')->purge('mysql');
 
         // 7. Run Artisan Commands Internally
         $kernel->call('config:clear');
@@ -135,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
         $status = $kernel->call('migrate', ['--force' => true]);
 
         if ($status !== 0) {
-            $output = \Illuminate\Support\Facades\Artisan::output();
+            $output = $kernel->output();
             throw new Exception("MIGRATION ERROR! <br><br> Output: <pre>$output</pre>");
         }
 
