@@ -14,6 +14,7 @@ $error = '';
 // Check Requirements
 $requirements = [
     'PHP >= 8.2' => version_compare(PHP_VERSION, '8.2.0', '>='),
+    'PDO MySQL Extension' => extension_loaded('pdo_mysql'),
     'BCMath Extension' => extension_loaded('bcmath'),
     'Ctype Extension' => extension_loaded('ctype'),
     'JSON Extension' => extension_loaded('json'),
@@ -44,9 +45,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
     $admin_pass = $_POST['admin_pass'] ?? 'password';
 
     try {
-        // Test Database Connection
+        // 0. Test Database Connection (Native PDO)
         $dsn = "mysql:host=$db_host;dbname=$db_name;charset=utf8mb4";
-        $pdo = new PDO($dsn, $db_user, $db_pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        try {
+            $pdo = new PDO($dsn, $db_user, $db_pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        } catch (PDOException $e) {
+            throw new Exception("DATABASE CONNECTION FAILED: " . $e->getMessage());
+        }
 
         // 1. Update .env file
         $env_path = __DIR__ . '/.env';
@@ -77,29 +82,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
             }
         }
 
-        // 3. Manually delete Laravel's cache files
+        // 3. Manually delete ALL cache files
         $cache_files = ['config.php', 'routes.php', 'services.php', 'packages.php'];
         foreach ($cache_files as $file) {
             $path = __DIR__ . '/bootstrap/cache/' . $file;
-            if (file_exists($path)) { @unlink($path); }
+            if (file_exists($path)) {
+                if (!@unlink($path)) {
+                    throw new Exception("CRITICAL: Unable to delete cache file $path. Please delete it manually via File Manager/FTP.");
+                }
+            }
         }
 
-        // 4. Bootstrap Laravel and Run Commands internally
+        // 4. Bootstrap Laravel
         require __DIR__ . '/vendor/autoload.php';
+
+        // Load the fresh .env into the current process
+        if (file_exists(__DIR__ . '/.env')) {
+            $dotenv = Dotenv\Dotenv::createMutable(__DIR__);
+            $dotenv->load();
+        }
+
         $app = require_once __DIR__ . '/bootstrap/app.php';
         $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 
-        // Run key generate
+        // 5. TRIPLE-FORCE CREDENTIALS
+        // a) Runtime environment repository override
+        $repository = Illuminate\Support\Env::getRepository();
+        $repository->set('DB_HOST', $db_host);
+        $repository->set('DB_DATABASE', $db_name);
+        $repository->set('DB_USERNAME', $db_user);
+        $repository->set('DB_PASSWORD', $db_pass);
+        $repository->set('DB_CONNECTION', 'mysql');
+
+        // b) Framework config container override
+        config([
+            'database.default' => 'mysql',
+            'database.connections.mysql.host' => $db_host,
+            'database.connections.mysql.database' => $db_name,
+            'database.connections.mysql.username' => $db_user,
+            'database.connections.mysql.password' => $db_pass,
+        ]);
+
+        // c) Connection purging
+        \Illuminate\Support\Facades\DB::purge('mysql');
+
+        // 6. Run Artisan Commands Internally
+        $kernel->call('config:clear');
         $kernel->call('key:generate', ['--force' => true]);
 
-        // Run migrations
+        // Final Migration attempt
         $status = $kernel->call('migrate', ['--force' => true]);
 
         if ($status !== 0) {
-            throw new Exception("Migration failed with exit code $status.");
+            $output = \Illuminate\Support\Facades\Artisan::output();
+            throw new Exception("MIGRATION FAILED! <br><br> The system is still ignoring your credentials. Output: <pre>$output</pre>");
         }
 
-        // 5. Create Admin using Eloquent directly
+        // 7. Create Admin
         \App\Models\User::updateOrCreate(
             ['email' => $admin_email],
             [
@@ -159,8 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
                         <i class="fas fa-list-check mr-2 text-indigo-500"></i> Server Requirements
                     </h3>
                     <ul class="space-y-3">
-                        <?php foreach($requirements as $name => $met): ?>
-                            <?php $is_met = is_bool($met) ? $met : $met(); ?>
+                        <?php foreach($requirements as $name => $is_met): ?>
                             <li class="flex items-center justify-between text-sm">
                                 <span class="<?php echo $is_met ? 'text-slate-600' : 'text-rose-600 font-bold'; ?>"><?php echo $name; ?></span>
                                 <i class="fas <?php echo $is_met ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-rose-500'; ?>"></i>
@@ -180,17 +218,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
                         <div class="bg-amber-50 border border-amber-100 p-6 rounded-2xl">
                             <h4 class="font-bold text-amber-900 mb-2">Attention!</h4>
                             <p class="text-amber-700 text-xs leading-relaxed mb-4">Some server requirements are not met. Please fix them to continue the installation.</p>
-
-                            <?php if(!function_exists('shell_exec')): ?>
-                                <div class="p-3 bg-white/50 rounded-xl border border-amber-200">
-                                    <p class="text-[10px] text-amber-800 font-bold uppercase tracking-tighter mb-1">How to fix shell_exec:</p>
-                                    <p class="text-[10px] text-amber-700 leading-tight">Remove <code>shell_exec</code> from <code>disable_functions</code> in your php.ini or hosting panel (e.g. cPanel/DirectAdmin/CloudPanel).</p>
-                                </div>
-                            <?php endif; ?>
                         </div>
                     <?php else: ?>
-                        <div class="bg-indigo-50 border border-indigo-100 p-6 rounded-2xl text-indigo-700">
-                            <p class="text-xs font-medium leading-relaxed">All requirements met! Fill in your database details below to complete the setup.</p>
+                        <div class="bg-indigo-50 border border-indigo-100 p-6 rounded-2xl text-indigo-700 shadow-sm border-indigo-200">
+                            <p class="text-xs font-medium leading-relaxed italic text-indigo-600">"Everything looks good! Ready to install."</p>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -232,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
                     </div>
 
                     <button type="submit" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 active:scale-95">
-                        Finish Installation
+                        Start Installation
                     </button>
                 </form>
             <?php endif; ?>
