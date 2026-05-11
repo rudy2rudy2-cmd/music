@@ -56,6 +56,7 @@ class LicenseController extends Controller
             'valid' => true,
             'message' => 'License is valid.',
             'platform' => $license->platform->name,
+            'version' => $license->platform->version,
             'expires_at' => $license->expires_at ? $license->expires_at->toDateTimeString() : null,
         ]);
     }

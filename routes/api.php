@@ -8,4 +8,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/license/verify', [LicenseController::class, 'verify']);
+Route::middleware([App\Http\Middleware\ForceJsonMiddleware::class])->group(function () {
+    Route::post('/license/verify', [LicenseController::class, 'verify']);
+    Route::get('/update/check', [App\Http\Controllers\Api\UpdateController::class, 'check']);
+});
