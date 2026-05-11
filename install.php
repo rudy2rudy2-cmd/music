@@ -62,7 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
         $env_content = preg_replace('/DB_CONNECTION=.*/', 'DB_CONNECTION=mysql', $env_content);
         file_put_contents($env_path, $env_content);
 
-        // 2. Run Commands
+        // 2. Check for dependencies
+        if (!file_exists(__DIR__ . '/vendor/autoload.php')) {
+            $composer_output = shell_exec('composer install --no-dev --optimize-autoloader 2>&1');
+            if (!file_exists(__DIR__ . '/vendor/autoload.php')) {
+                throw new Exception("Dependencies missing and 'composer install' failed. Please run 'composer install' manually. <br> Output: <pre>$composer_output</pre>");
+            }
+        }
+
+        // 3. Run Commands
         shell_exec('php artisan key:generate --force');
         shell_exec('php artisan storage:link');
         $migrate_output = shell_exec('php artisan migrate --force 2>&1');
