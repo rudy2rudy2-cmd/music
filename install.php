@@ -23,9 +23,16 @@ $requirements = [
     'Tokenizer Extension' => extension_loaded('tokenizer'),
     'XML Extension' => extension_loaded('xml'),
     'Zip Extension' => extension_loaded('zip'),
+    'Execution Functions (shell_exec)' => function_exists('shell_exec'),
 ];
 
-$all_met = !in_array(false, $requirements);
+$all_met = true;
+foreach ($requirements as $req) {
+    if ($req === false) {
+        $all_met = false;
+        break;
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
     $db_host = $_POST['db_host'] ?? '127.0.0.1';
@@ -137,9 +144,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
                     </h3>
                     <ul class="space-y-3">
                         <?php foreach($requirements as $name => $met): ?>
+                            <?php $is_met = is_bool($met) ? $met : $met(); ?>
                             <li class="flex items-center justify-between text-sm">
-                                <span class="<?php echo $met ? 'text-slate-600' : 'text-rose-600 font-bold'; ?>"><?php echo $name; ?></span>
-                                <i class="fas <?php echo $met ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-rose-500'; ?>"></i>
+                                <span class="<?php echo $is_met ? 'text-slate-600' : 'text-rose-600 font-bold'; ?>"><?php echo $name; ?></span>
+                                <i class="fas <?php echo $is_met ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-rose-500'; ?>"></i>
                             </li>
                         <?php endforeach; ?>
                     </ul>
@@ -155,7 +163,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
                     <?php if(!$all_met): ?>
                         <div class="bg-amber-50 border border-amber-100 p-6 rounded-2xl">
                             <h4 class="font-bold text-amber-900 mb-2">Attention!</h4>
-                            <p class="text-amber-700 text-xs leading-relaxed">Some server requirements are not met. Please fix them to continue the installation.</p>
+                            <p class="text-amber-700 text-xs leading-relaxed mb-4">Some server requirements are not met. Please fix them to continue the installation.</p>
+
+                            <?php if(!function_exists('shell_exec')): ?>
+                                <div class="p-3 bg-white/50 rounded-xl border border-amber-200">
+                                    <p class="text-[10px] text-amber-800 font-bold uppercase tracking-tighter mb-1">How to fix shell_exec:</p>
+                                    <p class="text-[10px] text-amber-700 leading-tight">Remove <code>shell_exec</code> from <code>disable_functions</code> in your php.ini or hosting panel (e.g. cPanel/DirectAdmin/CloudPanel).</p>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     <?php else: ?>
                         <div class="bg-indigo-50 border border-indigo-100 p-6 rounded-2xl text-indigo-700">
