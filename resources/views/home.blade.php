@@ -6,86 +6,124 @@
     <title>{{ $siteName }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
         :root {
             --header-bg: {{ $headerColor }};
             --footer-bg: {{ $footerColor }};
         }
+        .hero-gradient {
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent),
+                        radial-gradient(circle at bottom left, rgba(165, 180, 252, 0.15), transparent);
+        }
     </style>
 </head>
-<body class="bg-gray-50 flex flex-col min-h-screen">
+<body class="bg-white flex flex-col min-h-screen antialiased text-slate-900">
 
     <!-- Header -->
-    <header class="bg-[var(--header-bg)] shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <header class="bg-[var(--header-bg)]/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 @if($logo)
                     <img src="{{ asset('storage/' . $logo) }}" alt="{{ $siteName }}" class="h-10">
                 @else
-                    <span class="text-2xl font-bold text-indigo-600">{{ $siteName }}</span>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                            <i class="fas fa-rocket text-white"></i>
+                        </div>
+                        <span class="text-2xl font-black tracking-tight text-slate-900">{{ $siteName }}</span>
+                    </div>
                 @endif
             </div>
-            <nav class="hidden md:flex space-x-8 text-gray-700 font-medium">
-                <a href="#" class="hover:text-indigo-600">Home</a>
-                <a href="#platforms" class="hover:text-indigo-600">Platforms</a>
-                <a href="#" class="hover:text-indigo-600">About</a>
+            <nav class="hidden md:flex space-x-10 text-slate-600 font-bold text-sm uppercase tracking-widest">
+                <a href="#" class="hover:text-indigo-600 transition-colors">Home</a>
+                <a href="#platforms" class="hover:text-indigo-600 transition-colors">Platforms</a>
+                <a href="#" class="hover:text-indigo-600 transition-colors">About</a>
             </nav>
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-6">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="text-gray-700 font-medium">Dashboard</a>
+                    <a href="{{ route('dashboard') }}" class="font-bold text-slate-900 flex items-center">
+                         <span class="mr-2">Dashboard</span>
+                         <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
                 @else
-                    <a href="/admin/login" class="text-gray-700 font-medium">Login</a>
-                    <a href="#" class="bg-indigo-600 text-white px-5 py-2 rounded-full font-medium hover:bg-indigo-700 transition">Get Started</a>
+                    <a href="/admin/login" class="text-slate-600 font-bold hover:text-slate-900">Login</a>
+                    <a href="/admin/register" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 transition shadow-xl shadow-slate-200">Get Started</a>
                 @endauth
             </div>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="bg-white py-20">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-5xl font-extrabold text-gray-900 mb-6">Build Your Digital Empire Faster</h1>
-            <p class="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">Discover premium, ready-to-deploy platforms and SaaS kits designed for high performance and scalability.</p>
-            <div class="flex justify-center space-x-4">
-                <a href="#platforms" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-indigo-700 transition">Browse Catalog</a>
-                <a href="#" class="bg-gray-100 text-gray-800 px-8 py-3 rounded-lg font-bold hover:bg-gray-200 transition">View Demo</a>
+    <section class="relative overflow-hidden py-32 hero-gradient">
+        <div class="container mx-auto px-6 relative z-10 text-center">
+            <span class="inline-block py-2 px-4 rounded-full bg-indigo-50 text-indigo-600 text-xs font-black uppercase tracking-widest mb-6">Premium Software Marketplace</span>
+            <h1 class="text-6xl md:text-8xl font-black text-slate-900 mb-8 leading-tight tracking-tighter">
+                Deploy Your Next <br> <span class="text-indigo-600">Big Idea</span> Faster.
+            </h1>
+            <p class="text-xl text-slate-500 mb-12 max-w-2xl mx-auto leading-relaxed">
+                Discover premium, ready-to-deploy platforms and SaaS kits designed for high performance, scalability, and beautiful user experience.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <a href="#platforms" class="bg-indigo-600 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-indigo-700 transition shadow-2xl shadow-indigo-200 w-full sm:w-auto">
+                    Browse Catalog
+                </a>
+                <a href="#" class="bg-white text-slate-900 border-2 border-slate-100 px-10 py-5 rounded-2xl font-black text-lg hover:bg-slate-50 transition w-full sm:w-auto">
+                    View Live Demo
+                </a>
             </div>
         </div>
     </section>
 
     <!-- Platforms Section -->
-    <section id="platforms" class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-gray-900 mb-4">Available Platforms</h2>
-                <div class="h-1 w-20 bg-indigo-600 mx-auto rounded"></div>
+    <section id="platforms" class="py-32">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-20">
+                <div class="max-w-2xl">
+                    <h2 class="text-4xl font-black text-slate-900 mb-6">Ready-to-use Solutions</h2>
+                    <p class="text-slate-500 text-lg">Pick the perfect foundation for your next project. All platforms come with full source code and lifetime updates.</p>
+                </div>
+                <div class="mt-8 md:mt-0">
+                     <div class="h-1 w-24 bg-indigo-600 rounded-full"></div>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                 @forelse($platforms as $platform)
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl transition duration-300">
-                        @if($platform->image_path)
-                            <img src="{{ asset('storage/' . $platform->image_path) }}" alt="{{ $platform->name }}" class="w-full h-48 object-cover">
-                        @else
-                            <div class="w-full h-48 bg-indigo-100 flex items-center justify-center">
-                                <i class="fas fa-cubes text-5xl text-indigo-300"></i>
+                    <div class="group bg-white rounded-3xl p-4 border border-slate-100 hover:border-indigo-100 hover:shadow-2xl transition-all duration-500">
+                        <div class="relative rounded-2xl overflow-hidden mb-6 h-64 bg-slate-50">
+                            @if($platform->image_path)
+                                <img src="{{ asset('storage/' . $platform->image_path) }}" alt="{{ $platform->name }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <i class="fas fa-cubes text-6xl text-slate-200"></i>
+                                </div>
+                            @endif
+                            <div class="absolute top-4 left-4">
+                                <span class="bg-white/90 backdrop-blur-md text-slate-900 text-xs font-black px-3 py-1.5 rounded-full shadow-sm">v{{ $platform->version ?? '1.0' }}</span>
                             </div>
-                        @endif
-                        <div class="p-6">
-                            <div class="flex justify-between items-start mb-4">
-                                <h3 class="text-xl font-bold text-gray-900">{{ $platform->name }}</h3>
-                                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded">v{{ $platform->version ?? '1.0' }}</span>
-                            </div>
-                            <p class="text-gray-600 mb-6 h-12 overflow-hidden">{{ $platform->description }}</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-gray-900">${{ number_format($platform->price, 2) }}</span>
-                                <a href="{{ route('checkout', $platform->id) }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition">Buy Now</a>
+                        </div>
+
+                        <div class="px-4 pb-4">
+                            <h3 class="text-2xl font-black text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors">{{ $platform->name }}</h3>
+                            <p class="text-slate-500 mb-8 line-clamp-2 leading-relaxed">{{ $platform->description }}</p>
+
+                            <div class="flex justify-between items-center border-t border-slate-50 pt-6">
+                                <div>
+                                    <span class="text-slate-400 text-xs font-bold uppercase block mb-1">Starting at</span>
+                                    <span class="text-3xl font-black text-slate-900">${{ number_format($platform->price, 2) }}</span>
+                                </div>
+                                <a href="{{ route('checkout', $platform->id) }}" class="bg-slate-900 text-white p-4 rounded-2xl hover:bg-indigo-600 transition shadow-lg active:scale-95">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="col-span-full text-center py-20">
-                        <p class="text-gray-500 text-xl">No platforms available at the moment. Check back soon!</p>
+                    <div class="col-span-full text-center py-32 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                        <i class="fas fa-search text-4xl text-slate-300 mb-4"></i>
+                        <p class="text-slate-500 text-xl font-bold">No platforms available at the moment.</p>
                     </div>
                 @endforelse
             </div>
@@ -93,14 +131,44 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-[var(--footer-bg)] py-12 mt-auto">
-        <div class="container mx-auto px-4 text-center">
-            <div class="flex justify-center space-x-6 mb-8 text-gray-500">
-                <a href="#" class="hover:text-indigo-600"><i class="fab fa-twitter text-xl"></i></a>
-                <a href="#" class="hover:text-indigo-600"><i class="fab fa-github text-xl"></i></a>
-                <a href="#" class="hover:text-indigo-600"><i class="fab fa-linkedin text-xl"></i></a>
+    <footer class="bg-[var(--footer-bg)] py-20 mt-auto border-t border-slate-100">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 text-center md:text-left">
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-2 mb-6 justify-center md:justify-start">
+                        <div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-rocket text-white text-xs"></i>
+                        </div>
+                        <span class="text-xl font-black tracking-tight text-slate-900">{{ $siteName }}</span>
+                    </div>
+                    <p class="text-slate-500 max-w-sm mx-auto md:mx-0 leading-relaxed">
+                        The ultimate marketplace for high-quality software solutions and digital platforms. Empowering creators since {{ date('Y') }}.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-black text-slate-900 mb-6 uppercase text-xs tracking-widest">Resources</h4>
+                    <ul class="space-y-4 text-slate-500 font-medium">
+                        <li><a href="#" class="hover:text-indigo-600">Documentation</a></li>
+                        <li><a href="#" class="hover:text-indigo-600">Help Center</a></li>
+                        <li><a href="#" class="hover:text-indigo-600">License Terms</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-black text-slate-900 mb-6 uppercase text-xs tracking-widest">Connect</h4>
+                    <div class="flex justify-center md:justify-start space-x-4">
+                        <a href="#" class="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-100 transition shadow-sm"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-100 transition shadow-sm"><i class="fab fa-github"></i></a>
+                        <a href="#" class="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-100 transition shadow-sm"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
             </div>
-            <p class="text-gray-600">&copy; {{ date('Y') }} {{ $siteName }}. All rights reserved.</p>
+            <div class="pt-12 border-t border-slate-200/60 text-center flex flex-col md:flex-row justify-between items-center text-sm text-slate-400 font-medium">
+                <p>&copy; {{ date('Y') }} {{ $siteName }}. All rights reserved.</p>
+                <div class="mt-4 md:mt-0 space-x-6">
+                    <a href="#" class="hover:text-slate-600">Privacy Policy</a>
+                    <a href="#" class="hover:text-slate-600">Terms of Service</a>
+                </div>
+            </div>
         </div>
     </footer>
 
