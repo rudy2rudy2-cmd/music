@@ -1,88 +1,159 @@
 <?php
-/**
- * Platform Automated Installer
- */
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Configuration - Change this to your actual platform URL
-define('MAIN_SERVER_URL', 'http://localhost');
-define('VERIFY_API_ENDPOINT', MAIN_SERVER_URL . '/api/license/verify');
-define('DOWNLOAD_ENDPOINT', MAIN_SERVER_URL . '/download/');
+$lock_file = __DIR__ . '/install.lock';
+if (file_exists($lock_file)) {
+    die("Installation already completed. Delete install.lock to restart.");
+}
 
-session_start();
-
-$step = isset($_GET['step']) ? (int)$_GET['step'] : 1;
 $message = '';
 $error = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if ($step === 1) {
-        $license_key = $_POST['license_key'] ?? '';
-        $domain = $_SERVER['HTTP_HOST'];
+$base_path = dirname(__DIR__);
 
-        // Verify license via API
-        $ch = curl_init(VERIFY_API_ENDPOINT);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-            'license_key' => $license_key,
-            'domain' => $domain
-        ]));
+// Check Requirements
+$requirements = [
+    'PHP >= 8.3' => version_compare(PHP_VERSION, '8.3.0', '>='),
+    'PDO MySQL Extension' => extension_loaded('pdo_mysql'),
+    'BCMath Extension' => extension_loaded('bcmath'),
+    'Ctype Extension' => extension_loaded('ctype'),
+    'JSON Extension' => extension_loaded('json'),
+    'Mbstring Extension' => extension_loaded('mbstring'),
+    'OpenSSL Extension' => extension_loaded('openssl'),
+    'PDO Extension' => extension_loaded('pdo'),
+    'Tokenizer Extension' => extension_loaded('tokenizer'),
+    'XML Extension' => extension_loaded('xml'),
+    'Zip Extension' => extension_loaded('zip'),
+    'Execution Functions (shell_exec)' => function_exists('shell_exec'),
+];
 
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        $data = json_decode($response, true);
-
-        if ($http_code === 200 && isset($data['valid']) && $data['valid']) {
-            $_SESSION['license_key'] = $license_key;
-            $_SESSION['platform_name'] = $data['platform'];
-            header('Location: installer.php?step=2');
-            exit;
-        } else {
-            $error = $data['message'] ?? 'License verification failed. Make sure your domain is correct.';
-        }
+$all_met = true;
+foreach ($requirements as $req) {
+    if ($req === false) {
+        $all_met = false;
+        break;
     }
+}
 
-    if ($step === 2) {
-        $license_key = $_SESSION['license_key'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
+    $db_host = $_POST['db_host'] ?? '127.0.0.1';
+    $db_name = $_POST['db_name'] ?? '';
+    $db_user = $_POST['db_user'] ?? '';
+    $db_pass = $_POST['db_pass'] ?? '';
 
-        if (!$license_key) {
-            header('Location: installer.php?step=1');
-            exit;
+    $admin_email = $_POST['admin_email'] ?? 'admin@example.com';
+    $admin_pass = $_POST['admin_pass'] ?? 'password';
+
+    try {
+        // 0. Test Database Connection (Native PDO)
+        $dsn = "mysql:host=$db_host;dbname=$db_name;charset=utf8mb4";
+        try {
+            $pdo = new PDO($dsn, $db_user, $db_pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        } catch (PDOException $e) {
+            throw new Exception("DATABASE CONNECTION FAILED: " . $e->getMessage());
         }
 
-        $download_url = DOWNLOAD_ENDPOINT . $license_key;
-        $zip_file = 'platform_package.zip';
+        // 1. Update .env file
+        $env_path = $base_path . '/.env';
+        $env_example_path = $base_path . '/.env.example';
 
-        // Download the package
-        $file_content = @file_get_contents($download_url);
-
-        if ($file_content === false) {
-            $error = "Could not download the platform package. Please contact support.";
-        } else {
-            if (file_put_contents($zip_file, $file_content)) {
-                // Extract the package
-                $zip = new ZipArchive;
-                if ($zip->open($zip_file) === TRUE) {
-                    if ($zip->extractTo('./')) {
-                        $zip->close();
-                        unlink($zip_file);
-                        $message = "Installation completed successfully! You can now access your platform.";
-                        $step = 3; // Success step
-                    } else {
-                        $error = "Failed to extract the package. Check folder permissions.";
-                    }
-                } else {
-                    $error = "Could not open the ZIP package.";
-                }
+        if (!file_exists($env_path)) {
+            if (file_exists($env_example_path)) {
+                copy($env_example_path, $env_path);
             } else {
-                $error = "Failed to save the package on your server.";
+                $basic_env = "APP_NAME=\"Platform Store\"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://localhost\n\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=\nDB_USERNAME=\nDB_PASSWORD=\n";
+                file_put_contents($env_path, $basic_env);
             }
         }
+
+        $env_content = file_get_contents($env_path);
+        $env_content = preg_replace('/DB_HOST=.*/', 'DB_HOST=' . $db_host, $env_content);
+        $env_content = preg_replace('/DB_DATABASE=.*/', 'DB_DATABASE=' . $db_name, $env_content);
+        $env_content = preg_replace('/DB_USERNAME=.*/', 'DB_USERNAME=' . $db_user, $env_content);
+        $env_content = preg_replace('/DB_PASSWORD=.*/', 'DB_PASSWORD=' . $db_pass, $env_content);
+        $env_content = preg_replace('/DB_CONNECTION=.*/', 'DB_CONNECTION=mysql', $env_content);
+        file_put_contents($env_path, $env_content);
+
+        // 2. Check for dependencies
+        if (!file_exists($base_path . '/vendor/autoload.php')) {
+            $composer_output = shell_exec('composer install --no-dev --optimize-autoloader 2>&1');
+            if (!file_exists($base_path . '/vendor/autoload.php')) {
+                throw new Exception("Dependencies missing and 'composer install' failed. Please run 'composer install' manually. <br> Output: <pre>$composer_output</pre>");
+            }
+        }
+
+        // 3. Manually delete ALL cache files
+        $cache_files = ['config.php', 'routes.php', 'services.php', 'packages.php'];
+        foreach ($cache_files as $file) {
+            $path = $base_path . '/bootstrap/cache/' . $file;
+            if (file_exists($path)) {
+                if (!@unlink($path)) {
+                    throw new Exception("CRITICAL: Unable to delete cache file $path. Please delete it manually via File Manager/FTP.");
+                }
+            }
+        }
+
+        // 4. Force inject into Superglobals BEFORE bootstrapping
+        putenv("DB_CONNECTION=mysql");
+        putenv("DB_HOST=$db_host");
+        putenv("DB_DATABASE=$db_name");
+        putenv("DB_USERNAME=$db_user");
+        putenv("DB_PASSWORD=$db_pass");
+
+        $_ENV['DB_CONNECTION'] = $_SERVER['DB_CONNECTION'] = 'mysql';
+        $_ENV['DB_HOST'] = $_SERVER['DB_HOST'] = $db_host;
+        $_ENV['DB_DATABASE'] = $_SERVER['DB_DATABASE'] = $db_name;
+        $_ENV['DB_USERNAME'] = $_SERVER['DB_USERNAME'] = $db_user;
+        $_ENV['DB_PASSWORD'] = $_SERVER['DB_PASSWORD'] = $db_pass;
+
+        // 5. Bootstrap Laravel correctly
+        require $base_path . '/vendor/autoload.php';
+        $app = require_once $base_path . '/bootstrap/app.php';
+
+        /** @var \Illuminate\Contracts\Console\Kernel $kernel */
+        $kernel = $app->make(\Illuminate\Contracts\Console\Kernel::class);
+        $kernel->bootstrap(); // IMPORTANT: This makes 'config' service available
+
+        // 6. Hard-force config directly into the container after bootstrap
+        config([
+            'database.default' => 'mysql',
+            'database.connections.mysql.host' => $db_host,
+            'database.connections.mysql.database' => $db_name,
+            'database.connections.mysql.username' => $db_user,
+            'database.connections.mysql.password' => $db_pass,
+        ]);
+
+        // Force refresh connection
+        \Illuminate\Support\Facades\DB::purge('mysql');
+
+        // 7. Run Artisan Commands Internally
+        $kernel->call('config:clear');
+        $kernel->call('key:generate', ['--force' => true]);
+
+        $status = $kernel->call('migrate', ['--force' => true]);
+
+        if ($status !== 0) {
+            $output = \Illuminate\Support\Facades\Artisan::output();
+            throw new Exception("MIGRATION ERROR! <br><br> Output: <pre>$output</pre>");
+        }
+
+        // 8. Create Admin
+        \App\Models\User::updateOrCreate(
+            ['email' => $admin_email],
+            [
+                'name' => 'Administrator',
+                'password' => \Illuminate\Support\Facades\Hash::make($admin_pass),
+                'role' => 'admin'
+            ]
+        );
+
+        file_put_contents($lock_file, date('Y-m-d H:i:s'));
+        $message = "Installation completed successfully!";
+
+    } catch (Exception $e) {
+        $error = $e->getMessage();
     }
 }
 
@@ -92,93 +163,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platform Installer</title>
+    <title>Setup - Platform Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
 </head>
-<body class="bg-slate-100 flex items-center justify-center min-h-screen">
+<body class="bg-slate-50 flex items-center justify-center min-h-screen p-6">
 
-    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
-        <div class="text-center mb-8">
-            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-magic text-indigo-600 text-2xl"></i>
+    <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-2xl border border-slate-100">
+        <div class="text-center mb-10">
+            <div class="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-100">
+                <i class="fas fa-magic text-white text-3xl"></i>
             </div>
-            <h1 class="text-2xl font-bold text-slate-800">Platform Installer</h1>
-            <p class="text-slate-500">Step <?php echo min($step, 2); ?> of 2</p>
+            <h1 class="text-3xl font-black text-slate-900">Platform Installer</h1>
+            <p class="text-slate-500 mt-2">Professional software deployment wizard</p>
         </div>
 
-        <?php if($error): ?>
-            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-exclamation-circle text-red-500"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-red-700 text-sm font-medium"><?php echo $error; ?></p>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
-
         <?php if($message): ?>
-            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-check-circle text-green-500"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-green-700 text-sm font-medium"><?php echo $message; ?></p>
-                    </div>
+            <div class="bg-emerald-50 border border-emerald-100 p-8 rounded-3xl text-center">
+                <div class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-check text-white text-2xl"></i>
                 </div>
-            </div>
-        <?php endif; ?>
-
-        <?php if($step === 1): ?>
-            <form method="POST">
-                <div class="mb-6">
-                    <label class="block text-slate-700 text-sm font-bold mb-2">License Key</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                            <i class="fas fa-key"></i>
-                        </span>
-                        <input type="text" name="license_key" required placeholder="ABCD-1234-EFGH-IJKL"
-                            class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                    </div>
-                    <p class="mt-2 text-xs text-slate-400 text-center">Your domain <strong><?php echo $_SERVER['HTTP_HOST']; ?></strong> will be linked to this license.</p>
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">
-                    Verify & Continue
-                </button>
-            </form>
-        <?php endif; ?>
-
-        <?php if($step === 2): ?>
-            <div class="text-center">
-                <div class="p-4 bg-slate-50 rounded-xl mb-8 border border-slate-100">
-                    <div class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Platform to Install</div>
-                    <div class="text-lg font-bold text-slate-800"><?php echo $_SESSION['platform_name'] ?? 'Ready'; ?></div>
-                </div>
-                <form method="POST">
-                    <button type="submit" class="w-full bg-green-600 text-white font-bold py-4 rounded-xl hover:bg-green-700 transition shadow-lg shadow-green-100">
-                        <i class="fas fa-download mr-2"></i> Start Auto-Installation
-                    </button>
-                </form>
-                <a href="installer.php?step=1" class="block mt-4 text-sm text-slate-400 hover:text-slate-600">Back to license</a>
-            </div>
-        <?php endif; ?>
-
-        <?php if($step === 3): ?>
-            <div class="text-center">
-                <div class="mb-8">
-                    <i class="fas fa-rocket text-5xl text-indigo-500 mb-4"></i>
-                    <p class="text-slate-600">The platform is ready. You can now delete this installer file for security.</p>
-                </div>
-                <a href="/" class="block w-full bg-indigo-600 text-white font-bold py-4 rounded-xl hover:bg-indigo-700 transition">
-                    Go to Homepage
+                <h2 class="text-2xl font-bold text-emerald-900 mb-2"><?php echo $message; ?></h2>
+                <p class="text-emerald-700 mb-8">Your platform is ready to go. You can now login to the admin panel.</p>
+                <a href="/admin/login" class="inline-block bg-emerald-600 text-white font-black px-10 py-4 rounded-2xl hover:bg-emerald-700 transition shadow-lg shadow-emerald-100">
+                    Go to Admin Panel
                 </a>
             </div>
-        <?php endif; ?>
+        <?php else: ?>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    <h3 class="font-bold text-slate-900 mb-4 flex items-center">
+                        <i class="fas fa-list-check mr-2 text-indigo-500"></i> Server Requirements
+                    </h3>
+                    <ul class="space-y-3">
+                        <?php foreach($requirements as $name => $is_met): ?>
+                            <li class="flex items-center justify-between text-sm">
+                                <span class="<?php echo $is_met ? 'text-slate-600' : 'text-rose-600 font-bold'; ?>"><?php echo $name; ?></span>
+                                <i class="fas <?php echo $is_met ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-rose-500'; ?>"></i>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+
+                <div class="flex flex-col justify-center">
+                    <?php if($error): ?>
+                        <div class="bg-rose-50 border border-rose-100 p-4 rounded-2xl mb-6">
+                            <p class="text-rose-700 text-xs font-medium"><?php echo $error; ?></p>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if(!$all_met): ?>
+                        <div class="bg-amber-50 border border-amber-100 p-6 rounded-2xl">
+                            <h4 class="font-bold text-amber-900 mb-2">Attention!</h4>
+                            <p class="text-amber-700 text-xs leading-relaxed mb-4">Some server requirements are not met. Please fix them to continue the installation.</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="bg-indigo-50 border border-indigo-100 p-6 rounded-2xl text-indigo-700 shadow-sm border-indigo-200">
+                            <p class="text-xs font-medium leading-relaxed italic text-indigo-600">"Everything looks good! Ready to install."</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <?php if($all_met): ?>
+                <form method="POST" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-slate-700 text-xs font-black uppercase tracking-widest mb-2">DB Host</label>
+                            <input type="text" name="db_host" value="127.0.0.1" required class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 text-xs font-black uppercase tracking-widest mb-2">DB Name</label>
+                            <input type="text" name="db_name" placeholder="database_name" required class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 text-xs font-black uppercase tracking-widest mb-2">DB Username</label>
+                            <input type="text" name="db_user" placeholder="root" required class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 text-xs font-black uppercase tracking-widest mb-2">DB Password</label>
+                            <input type="password" name="db_pass" placeholder="••••••••" class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-100">
+                         <h4 class="font-bold text-slate-900 mb-4">Admin Account</h4>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-slate-700 text-xs font-black uppercase tracking-widest mb-2">Admin Email</label>
+                                <input type="email" name="admin_email" value="admin@example.com" required class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-slate-700 text-xs font-black uppercase tracking-widest mb-2">Admin Password</label>
+                                <input type="password" name="admin_pass" value="password" required class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            </div>
+                         </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 active:scale-95">
+                        Start Installation
+                    </button>
+                </form>
+            <?php endif; ?>
+        <?php endif; ?>
     </div>
 
 </body>

@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 define('LARAVEL_START', microtime(true));
 
 // Auto-redirect to installer if not locked
-if (!file_exists(__DIR__ . '/install.lock') && !str_contains($_SERVER['REQUEST_URI'], 'install.php')) {
-    header('Location: /install.php');
+if (!file_exists(__DIR__ . '/install.lock') && !str_contains($_SERVER['REQUEST_URI'], 'installer.php')) {
+    header('Location: /installer.php');
     exit;
 }
 

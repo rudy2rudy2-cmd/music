@@ -6,16 +6,20 @@ use App\Models\Setting;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Actions\Action;
-use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class ManageSettings extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    use InteractsWithForms;
 
+    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static ?string $navigationGroup = 'Settings';
     protected static string $view = 'filament.pages.manage-settings';
 
     public ?array $data = [];
@@ -23,10 +27,11 @@ class ManageSettings extends Page
     public function mount(): void
     {
         $this->form->fill([
+            'site_name' => Setting::get('site_name', config('app.name')),
             'logo' => Setting::get('logo'),
-            'header_color' => Setting::get('header_color', '#ffffff'),
-            'footer_color' => Setting::get('footer_color', '#f3f4f6'),
-            'site_name' => Setting::get('site_name', 'My Platform Store'),
+            'primary_color' => Setting::get('primary_color', '#4f46e5'),
+            'meta_title' => Setting::get('meta_title', 'My Software Store'),
+            'meta_description' => Setting::get('meta_description', 'Best software platforms for your business.'),
         ]);
     }
 
@@ -34,18 +39,19 @@ class ManageSettings extends Page
     {
         return $form
             ->schema([
-                Section::make('Branding')
+                Section::make('General Settings')
                     ->schema([
                         TextInput::make('site_name')
                             ->required(),
                         FileUpload::make('logo')
                             ->image()
-                            ->directory('settings'),
+                            ->directory('branding'),
+                        ColorPicker::make('primary_color'),
                     ]),
-                Section::make('Colors')
+                Section::make('SEO Settings')
                     ->schema([
-                        ColorPicker::make('header_color'),
-                        ColorPicker::make('footer_color'),
+                        TextInput::make('meta_title'),
+                        Textarea::make('meta_description'),
                     ]),
             ])
             ->statePath('data');
@@ -62,22 +68,15 @@ class ManageSettings extends Page
 
     public function save(): void
     {
-        try {
-            $data = $this->form->getState();
+        $state = $this->form->getState();
 
-            foreach ($data as $key => $value) {
-                Setting::set($key, $value);
-            }
-
-            Notification::make()
-                ->title('Settings saved successfully!')
-                ->success()
-                ->send();
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('Error saving settings')
-                ->danger()
-                ->send();
+        foreach ($state as $key => $value) {
+            Setting::set($key, $value);
         }
+
+        \Filament\Notifications\Notification::make()
+            ->title('Settings saved successfully')
+            ->success()
+            ->send();
     }
 }

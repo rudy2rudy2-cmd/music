@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\License;
 use App\Models\Platform;
 use Illuminate\Http\Request;
 
@@ -11,22 +12,27 @@ class UpdateController extends Controller
     public function check(Request $request)
     {
         $request->validate([
-            'platform_name' => 'required|string',
+            'license_key' => 'required|string',
             'current_version' => 'required|string',
         ]);
 
-        $platform = Platform::where('name', $request->platform_name)->first();
+        $license = License::where('license_key', $request->license_key)->first();
 
-        if (!$platform) {
-            return response()->json(['update_available' => false, 'message' => 'Platform not found.'], 404);
+        if (!$license || $license->status !== 'active') {
+            return response()->json([
+                'update_available' => false,
+                'message' => 'Invalid or inactive license.'
+            ], 403);
         }
+
+        $platform = $license->platform;
 
         $updateAvailable = version_compare($platform->version, $request->current_version, '>');
 
         return response()->json([
             'update_available' => $updateAvailable,
             'latest_version' => $platform->version,
-            'download_url' => $updateAvailable ? route('platform.download', ['license_key' => 'UPDATE_TOKEN']) : null,
+            'download_url' => $updateAvailable ? route('platform.download', ['license_key' => $license->license_key]) : null,
             'changelog' => $platform->description,
         ]);
     }
