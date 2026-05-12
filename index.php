@@ -17,6 +17,20 @@ $is_premium = ($theme === 'premium');
             <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none opacity-20">
                 <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-[120px]"></div>
                 <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full blur-[120px]"></div>
+
+                <!-- Eagle -->
+                <div class="eagle-bg">
+                    <i class="fas fa-crow"></i>
+                </div>
+
+                <!-- Coding Lines -->
+                <div class="code-lines">
+                    <div class="code-line" style="animation-delay: 0s;">const showcase = new App();</div>
+                    <div class="code-line" style="animation-delay: 2s;">showcase.render('Premium');</div>
+                    <div class="code-line" style="animation-delay: 4s;">while(true) { build(); }</div>
+                    <div class="code-line" style="animation-delay: 6s;">optimize(performance);</div>
+                    <div class="code-line" style="animation-delay: 8s;">deploy('Futuristic');</div>
+                </div>
             </div>
         <?php endif; ?>
 

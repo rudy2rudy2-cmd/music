@@ -84,6 +84,49 @@ $theme = $settings['theme'] ?? 'light';
             .premium-btn:hover {
                 box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
             }
+
+            /* Premium Eagle & Code Animations */
+            @keyframes float-eagle {
+                0% { transform: translate(0, 0) rotate(0deg); opacity: 0.1; }
+                50% { transform: translate(30px, -50px) rotate(5deg); opacity: 0.2; }
+                100% { transform: translate(0, 0) rotate(0deg); opacity: 0.1; }
+            }
+            @keyframes scroll-code {
+                0% { transform: translateY(100%); opacity: 0; }
+                10% { opacity: 0.5; }
+                90% { opacity: 0.5; }
+                100% { transform: translateY(-100%); opacity: 0; }
+            }
+            .eagle-bg {
+                position: absolute;
+                top: 10%;
+                right: 5%;
+                font-size: 300px;
+                color: #3b82f6;
+                filter: blur(2px);
+                animation: float-eagle 20s ease-in-out infinite;
+                z-index: 0;
+                pointer-events: none;
+            }
+            .code-lines {
+                position: absolute;
+                top: 0;
+                left: 10%;
+                width: 300px;
+                height: 100%;
+                font-family: 'monospace';
+                font-size: 14px;
+                color: #3b82f6;
+                opacity: 0.15;
+                overflow: hidden;
+                z-index: 0;
+                pointer-events: none;
+            }
+            .code-line {
+                display: block;
+                white-space: nowrap;
+                animation: scroll-code 15s linear infinite;
+            }
         <?php else: ?>
             body { background-color: #f8fafc; color: #1e293b; }
             .card { background-color: #ffffff; }
