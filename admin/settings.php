@@ -125,6 +125,13 @@ while ($row = $stmt->fetch()) {
                                     România
                                 </div>
                             </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="theme" value="premium" class="peer hidden" <?php echo ($settings['theme'] ?? '') === 'premium' ? 'checked' : ''; ?>>
+                                <div class="p-4 border rounded-lg text-center peer-checked:border-blue-600 peer-checked:bg-blue-50">
+                                    <div class="w-full h-10 bg-slate-900 border-2 border-blue-500 mb-2 rounded shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                                    Premium
+                                </div>
+                            </label>
                         </div>
                     </div>
 
