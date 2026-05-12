@@ -29,3 +29,6 @@ CREATE TABLE IF NOT EXISTS settings (
 
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('theme', 'light');
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('site_name', 'Web Platforms Showcase');
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('hero_title', 'Platformele Noastre Web');
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('hero_subtitle', 'Explorați creațiile noastre recente și testați demo-urile interactive.');
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('order_button_text', 'Comandă Acum');

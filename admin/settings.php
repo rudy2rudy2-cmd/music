@@ -8,7 +8,11 @@ $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $updates = [
         'theme' => $_POST['theme'] ?? 'light',
-        'site_name' => $_POST['site_name'] ?? 'Web Showcase'
+        'site_name' => $_POST['site_name'] ?? 'Web Showcase',
+        'hero_title' => $_POST['hero_title'] ?? '',
+        'hero_subtitle' => $_POST['hero_subtitle'] ?? '',
+        'order_button_text' => $_POST['order_button_text'] ?? 'Comandă Acum',
+        'order_url' => $_POST['order_url'] ?? '#'
     ];
 
     foreach ($updates as $key => $value) {
@@ -68,6 +72,28 @@ while ($row = $stmt->fetch()) {
                         <input type="text" name="site_name" value="<?php echo htmlspecialchars($settings['site_name'] ?? ''); ?>" class="mt-1 block w-full p-2 border rounded-md">
                     </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Titlu Principal (Hero)</label>
+                            <input type="text" name="hero_title" value="<?php echo htmlspecialchars($settings['hero_title'] ?? ''); ?>" class="mt-1 block w-full p-2 border rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Subtitlu (Hero)</label>
+                            <input type="text" name="hero_subtitle" value="<?php echo htmlspecialchars($settings['hero_subtitle'] ?? ''); ?>" class="mt-1 block w-full p-2 border rounded-md">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Text Buton Comandă</label>
+                            <input type="text" name="order_button_text" value="<?php echo htmlspecialchars($settings['order_button_text'] ?? 'Comandă Acum'); ?>" class="mt-1 block w-full p-2 border rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">URL Buton Comandă</label>
+                            <input type="text" name="order_url" value="<?php echo htmlspecialchars($settings['order_url'] ?? '#'); ?>" class="mt-1 block w-full p-2 border rounded-md">
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-3">Temă Interfață (Frontend)</label>
                         <div class="grid grid-cols-3 gap-4">
@@ -90,6 +116,13 @@ while ($row = $stmt->fetch()) {
                                 <div class="p-4 border rounded-lg text-center peer-checked:border-blue-600 peer-checked:bg-blue-50">
                                     <div class="w-full h-10 bg-green-500 mb-2 rounded"></div>
                                     Accent
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="theme" value="romania" class="peer hidden" <?php echo ($settings['theme'] ?? '') === 'romania' ? 'checked' : ''; ?>>
+                                <div class="p-4 border rounded-lg text-center peer-checked:border-blue-600 peer-checked:bg-blue-50">
+                                    <div class="w-full h-10 bg-gradient-to-r from-blue-700 via-yellow-400 to-red-600 mb-2 rounded animate-pulse"></div>
+                                    România
                                 </div>
                             </label>
                         </div>

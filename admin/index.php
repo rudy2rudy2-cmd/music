@@ -28,9 +28,27 @@ $theme = $settings['theme'] ?? 'light';
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-100 flex">
+<style>
+    <?php if ($theme === 'romania'): ?>
+    @keyframes romania-bg {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    .admin-body {
+        background: linear-gradient(-45deg, #002b7f, #fcd116, #ce1126);
+        background-size: 400% 400%;
+        animation: romania-bg 15s ease infinite;
+    }
+    .admin-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px); }
+    <?php else: ?>
+    .admin-body { background-color: #f3f4f6; }
+    .admin-card { background-color: #ffffff; }
+    <?php endif; ?>
+</style>
+<body class="admin-body flex min-h-screen">
     <!-- Sidebar -->
-    <div class="w-64 bg-slate-900 text-white min-h-screen p-6">
+    <div class="w-64 bg-slate-900 text-white p-6 sticky top-0 h-screen">
         <h1 class="text-2xl font-bold mb-10 text-blue-400">Admin Panel</h1>
         <nav class="space-y-4">
             <a href="index.php" class="block py-2.5 px-4 rounded transition duration-200 bg-blue-600">
@@ -66,7 +84,7 @@ $theme = $settings['theme'] ?? 'light';
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="admin-card p-6 rounded-xl shadow-sm border border-gray-100">
                 <div class="flex items-center">
                     <div class="p-3 bg-blue-100 rounded-lg">
                         <i class="fas fa-layer-group text-blue-600 text-2xl"></i>
@@ -77,7 +95,7 @@ $theme = $settings['theme'] ?? 'light';
                     </div>
                 </div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="admin-card p-6 rounded-xl shadow-sm border border-gray-100">
                 <div class="flex items-center">
                     <div class="p-3 bg-green-100 rounded-lg">
                         <i class="fas fa-users text-green-600 text-2xl"></i>
@@ -90,7 +108,7 @@ $theme = $settings['theme'] ?? 'light';
             </div>
         </div>
 
-        <div class="mt-10 bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center">
+        <div class="mt-10 admin-card p-8 rounded-xl shadow-sm border border-gray-100 text-center">
             <h3 class="text-xl font-bold mb-4">Bine ați venit în panoul de administrare!</h3>
             <p class="text-gray-600">De aici puteți gestiona platformele prezentate pe site, utilizatorii și setările generale.</p>
             <div class="mt-6">
