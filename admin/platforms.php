@@ -115,6 +115,7 @@ $platforms = $stmt->fetchAll();
             <table class="w-full text-left">
                 <thead class="bg-gray-50 border-b">
                     <tr>
+                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Imagine</th>
                         <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Titlu</th>
                         <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Versiune</th>
                         <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Acțiuni</th>
@@ -123,15 +124,29 @@ $platforms = $stmt->fetchAll();
                 <tbody class="divide-y">
                     <?php foreach ($platforms as $platform): ?>
                     <tr>
+                        <td class="px-6 py-4">
+                            <?php if ($platform['image_url']): ?>
+                                <img src="../<?php echo $platform['image_url']; ?>" class="h-12 w-12 object-cover rounded shadow-sm">
+                            <?php else: ?>
+                                <div class="h-12 w-12 bg-gray-200 rounded flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            <?php endif; ?>
+                        </td>
                         <td class="px-6 py-4 font-medium text-gray-800"><?php echo htmlspecialchars($platform['title']); ?></td>
                         <td class="px-6 py-4 text-gray-600"><?php echo htmlspecialchars($platform['version']); ?></td>
                         <td class="px-6 py-4">
-                            <form method="POST" onsubmit="return confirm('Sigur dorești să ștergi?');">
-                                <input type="hidden" name="delete_id" value="<?php echo $platform['id']; ?>">
-                                <button type="submit" class="text-red-600 hover:text-red-900">
-                                    <i class="fas fa-trash"></i> Șterge
-                                </button>
-                            </form>
+                            <div class="flex items-center space-x-4">
+                                <a href="edit_platform.php?id=<?php echo $platform['id']; ?>" class="text-blue-600 hover:text-blue-900 flex items-center">
+                                    <i class="fas fa-edit mr-1"></i> Edit
+                                </a>
+                                <form method="POST" onsubmit="return confirm('Sigur dorești să ștergi?');" class="inline">
+                                    <input type="hidden" name="delete_id" value="<?php echo $platform['id']; ?>">
+                                    <button type="submit" class="text-red-600 hover:text-red-900 flex items-center">
+                                        <i class="fas fa-trash mr-1"></i> Șterge
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>
