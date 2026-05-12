@@ -19,12 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$username, $first_name, $last_name, $email, $password, $role]);
             $message = "Utilizator adăugat!";
         } catch (PDOException $e) {
-            $message = "Eroare: Utilizatorul există deja.";
+            $message = "Eroare: Utilizatorul sau email-ul există deja.";
         }
     }
 
     if (isset($_POST['delete_id'])) {
-        // Nu permitem ștergerea propriului cont sau a ultimului admin (simplificat aici)
         if ($_POST['delete_id'] != $_SESSION['user_id']) {
             $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
             $stmt->execute([$_POST['delete_id']]);
@@ -37,129 +36,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $stmt = $pdo->query("SELECT id, username, first_name, last_name, email, role, is_active, created_at FROM users");
 $users = $stmt->fetchAll();
-?>
-<!DOCTYPE html>
-<html lang="ro">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestionare Utilizatori</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body class="bg-gray-100 flex">
-    <div class="w-64 bg-slate-900 text-white min-h-screen p-6">
-        <h1 class="text-2xl font-bold mb-10 text-blue-400">Admin Panel</h1>
-        <nav class="space-y-4">
-            <a href="index.php" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-slate-800">
-                <i class="fas fa-home mr-2"></i> Dashboard
-            </a>
-            <a href="platforms.php" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-slate-800">
-                <i class="fas fa-layer-group mr-2"></i> Platforme
-            </a>
-            <a href="users.php" class="block py-2.5 px-4 rounded transition duration-200 bg-blue-600">
-                <i class="fas fa-users mr-2"></i> Utilizatori
-            </a>
-            <a href="settings.php" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-slate-800">
-                <i class="fas fa-cog mr-2"></i> Setări
-            </a>
-        </nav>
-    </div>
 
-    <div class="flex-1 p-10">
-        <h2 class="text-3xl font-bold mb-8">Gestionare Utilizatori</h2>
+$header_title = "Gestionare Utilizatori";
+require_once 'includes/admin_header.php';
+?>
 
         <?php if ($message): ?>
-            <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
-                <?php echo $message; ?>
+            <div class="bg-blue-100 border border-blue-400 text-blue-700 px-6 py-4 rounded-xl mb-8 shadow-sm">
+                <i class="fas fa-info-circle mr-2"></i> <?php echo $message; ?>
             </div>
         <?php endif; ?>
 
-        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 mb-10">
-            <h3 class="text-xl font-bold mb-6">Adaugă Utilizator Nou</h3>
+        <div class="admin-card p-10 shadow-lg mb-12">
+            <h3 class="text-xl font-bold mb-8 flex items-center">
+                <i class="fas fa-user-plus mr-3 text-green-500"></i> Adaugă Utilizator Nou
+            </h3>
             <form method="POST">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Prenume</label>
-                        <input type="text" name="first_name" required class="mt-1 block w-full p-2 border rounded-md">
+                        <label class="block text-sm font-bold opacity-75 mb-2">Prenume</label>
+                        <input type="text" name="first_name" required class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Nume</label>
-                        <input type="text" name="last_name" required class="mt-1 block w-full p-2 border rounded-md">
+                        <label class="block text-sm font-bold opacity-75 mb-2">Nume</label>
+                        <input type="text" name="last_name" required class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="email" name="email" required class="mt-1 block w-full p-2 border rounded-md">
+                        <label class="block text-sm font-bold opacity-75 mb-2">Email</label>
+                        <input type="email" name="email" required class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Utilizator</label>
-                        <input type="text" name="username" required class="mt-1 block w-full p-2 border rounded-md">
+                        <label class="block text-sm font-bold opacity-75 mb-2">Username</label>
+                        <input type="text" name="username" required class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Parolă</label>
-                        <input type="password" name="password" required class="mt-1 block w-full p-2 border rounded-md">
+                        <label class="block text-sm font-bold opacity-75 mb-2">Parolă</label>
+                        <input type="password" name="password" required class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Rol</label>
-                        <select name="role" class="mt-1 block w-full p-2 border rounded-md">
-                            <option value="user">Utilizator (User)</option>
-                            <option value="admin">Administrator (Admin)</option>
+                        <label class="block text-sm font-bold opacity-75 mb-2">Rol Atribuit</label>
+                        <select name="role" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                            <option value="user">Utilizator Standard</option>
+                            <option value="admin">Administrator Sistem</option>
                         </select>
                     </div>
                 </div>
-                <button type="submit" name="add_user" class="mt-6 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">
-                    Adaugă Utilizator
+                <button type="submit" name="add_user" class="mt-8 bg-green-600 text-white px-10 py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg">
+                    <i class="fas fa-check mr-2"></i> Adaugă Utilizator
                 </button>
             </form>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-gray-50 border-b">
-                    <tr>
-                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Utilizator</th>
-                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Nume Complet</th>
-                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Status</th>
-                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Rol</th>
-                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Creat la</th>
-                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Acțiuni</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <?php foreach ($users as $user): ?>
-                    <tr>
-                        <td class="px-6 py-4">
-                            <div class="font-medium text-gray-800"><?php echo htmlspecialchars($user['username']); ?></div>
-                            <div class="text-xs text-gray-500"><?php echo htmlspecialchars($user['email']); ?></div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-700">
-                            <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>
-                        </td>
-                        <td class="px-6 py-4">
-                            <?php if ($user['is_active']): ?>
-                                <span class="text-green-600 font-bold text-xs uppercase">Activ</span>
-                            <?php else: ?>
-                                <span class="text-red-500 font-bold text-xs uppercase">Inactiv</span>
-                            <?php endif; ?>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold <?php echo $user['role'] === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'; ?>">
-                                <?php echo strtoupper($user['role']); ?>
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-gray-500 text-sm"><?php echo $user['created_at']; ?></td>
-                        <td class="px-6 py-4">
-                            <form method="POST" onsubmit="return confirm('Sigur dorești să ștergi?');">
-                                <input type="hidden" name="delete_id" value="<?php echo $user['id']; ?>">
-                                <button type="submit" class="text-red-600 hover:text-red-900">
-                                    <i class="fas fa-trash"></i> Șterge
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div class="admin-card shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="<?php echo $admin_theme === 'neon' ? 'bg-slate-800/50' : 'bg-gray-50'; ?> border-b border-gray-700/30">
+                        <tr>
+                            <th class="px-8 py-5 text-sm font-bold uppercase tracking-wider opacity-60">Identitate</th>
+                            <th class="px-8 py-5 text-sm font-bold uppercase tracking-wider opacity-60">Nume Complet</th>
+                            <th class="px-8 py-5 text-sm font-bold uppercase tracking-wider opacity-60">Status</th>
+                            <th class="px-8 py-5 text-sm font-bold uppercase tracking-wider opacity-60">Rol</th>
+                            <th class="px-8 py-5 text-sm font-bold uppercase tracking-wider opacity-60">Creat la</th>
+                            <th class="px-8 py-5 text-sm font-bold uppercase tracking-wider opacity-60">Acțiuni</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700/20">
+                        <?php foreach ($users as $user): ?>
+                        <tr class="hover:bg-blue-500/5 transition">
+                            <td class="px-8 py-6">
+                                <div class="font-bold <?php echo $admin_theme === 'neon' ? 'text-white' : 'text-gray-800'; ?>"><?php echo htmlspecialchars($user['username']); ?></div>
+                                <div class="text-xs opacity-60"><?php echo htmlspecialchars($user['email']); ?></div>
+                            </td>
+                            <td class="px-8 py-6 text-sm">
+                                <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>
+                            </td>
+                            <td class="px-8 py-6">
+                                <?php if ($user['is_active']): ?>
+                                    <span class="bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest">Activ</span>
+                                <?php else: ?>
+                                    <span class="bg-red-500/10 text-red-500 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest">Inactiv</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest <?php echo $user['role'] === 'admin' ? 'bg-purple-500/10 text-purple-500' : 'bg-gray-500/10 text-gray-400'; ?>">
+                                    <?php echo $user['role']; ?>
+                                </span>
+                            </td>
+                            <td class="px-8 py-6 text-xs opacity-60"><?php echo $user['created_at']; ?></td>
+                            <td class="px-8 py-6">
+                                <form method="POST" onsubmit="return confirm('Sigur dorești să ștergi?');">
+                                    <input type="hidden" name="delete_id" value="<?php echo $user['id']; ?>">
+                                    <button type="submit" class="text-red-500 hover:text-red-400 font-bold flex items-center">
+                                        <i class="fas fa-user-times mr-2"></i> Șterge
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</body>
-</html>
+
+<?php require_once 'includes/admin_footer.php'; ?>

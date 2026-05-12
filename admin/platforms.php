@@ -27,9 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $stmt = $pdo->prepare("INSERT INTO platforms (title, description, version, demo_url, image_url) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $description, $version, $demo_url, $image_url]);
-        $message = "Platformă adăugată cu succes!";
+        if(empty($message)) {
+            $stmt = $pdo->prepare("INSERT INTO platforms (title, description, version, demo_url, image_url) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$title, $description, $version, $demo_url, $image_url]);
+            $message = "Platformă adăugată cu succes!";
+        }
     }
 
     if (isset($_POST['delete_id'])) {
@@ -41,123 +43,111 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $stmt = $pdo->query("SELECT * FROM platforms ORDER BY created_at DESC");
 $platforms = $stmt->fetchAll();
-?>
-<!DOCTYPE html>
-<html lang="ro">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestionare Platforme</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body class="bg-gray-100 flex">
-    <div class="w-64 bg-slate-900 text-white min-h-screen p-6">
-        <h1 class="text-2xl font-bold mb-10 text-blue-400">Admin Panel</h1>
-        <nav class="space-y-4">
-            <a href="index.php" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-slate-800">
-                <i class="fas fa-home mr-2"></i> Dashboard
-            </a>
-            <a href="platforms.php" class="block py-2.5 px-4 rounded transition duration-200 bg-blue-600">
-                <i class="fas fa-layer-group mr-2"></i> Platforme
-            </a>
-            <a href="users.php" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-slate-800">
-                <i class="fas fa-users mr-2"></i> Utilizatori
-            </a>
-            <a href="settings.php" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-slate-800">
-                <i class="fas fa-cog mr-2"></i> Setări
-            </a>
-        </nav>
-    </div>
 
-    <div class="flex-1 p-10">
-        <h2 class="text-3xl font-bold mb-8">Gestionare Platforme Web</h2>
+$header_title = "Gestionare Platforme";
+require_once 'includes/admin_header.php';
+?>
 
         <?php if ($message): ?>
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-                <?php echo $message; ?>
+            <div class="bg-blue-100 border border-blue-400 text-blue-700 px-6 py-4 rounded-xl mb-8 shadow-sm">
+                <i class="fas fa-info-circle mr-2"></i> <?php echo $message; ?>
             </div>
         <?php endif; ?>
 
         <!-- Formular Adăugare -->
-        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 mb-10">
-            <h3 class="text-xl font-bold mb-6">Adaugă Platformă Nouă</h3>
+        <div class="admin-card p-10 shadow-lg mb-12">
+            <h3 class="text-xl font-bold mb-8 flex items-center">
+                <i class="fas fa-plus-circle mr-3 text-blue-500"></i> Adaugă Platformă Nouă
+            </h3>
             <form method="POST" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Titlu</label>
-                        <input type="text" name="title" required class="mt-1 block w-full p-2 border rounded-md">
+                        <label class="block text-sm font-bold opacity-75 mb-2">Titlu</label>
+                        <input type="text" name="title" required class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Versiune</label>
-                        <input type="text" name="version" placeholder="1.0.0" class="mt-1 block w-full p-2 border rounded-md">
+                        <label class="block text-sm font-bold opacity-75 mb-2">Versiune</label>
+                        <input type="text" name="version" placeholder="1.0.0" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Descriere</label>
-                        <textarea name="description" rows="3" class="mt-1 block w-full p-2 border rounded-md"></textarea>
+                        <label class="block text-sm font-bold opacity-75 mb-2">Descriere Detaliată</label>
+                        <textarea name="description" rows="4" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>"></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Rulare Demo (URL)</label>
-                        <input type="url" name="demo_url" placeholder="https://demo.example.com" class="mt-1 block w-full p-2 border rounded-md">
+                        <label class="block text-sm font-bold opacity-75 mb-2">URL Demo</label>
+                        <input type="url" name="demo_url" placeholder="https://demo.example.com" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Imagine Prezentare</label>
-                        <input type="file" name="image" class="mt-1 block w-full p-2 border rounded-md">
+                        <label class="block text-sm font-bold opacity-75 mb-2">Imagine Prezentare</label>
+                        <input type="file" name="image" class="w-full p-2 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                     </div>
                 </div>
-                <button type="submit" name="add_platform" class="mt-6 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">
-                    Adaugă Platformă
+                <button type="submit" name="add_platform" class="mt-8 bg-blue-600 text-white px-10 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg flex items-center">
+                    <i class="fas fa-save mr-2"></i> Adaugă Platformă
                 </button>
             </form>
         </div>
 
         <!-- Tabel Listare -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-gray-50 border-b">
-                    <tr>
-                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Imagine</th>
-                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Titlu</th>
-                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Versiune</th>
-                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Acțiuni</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <?php foreach ($platforms as $platform): ?>
-                    <tr>
-                        <td class="px-6 py-4">
-                            <?php if ($platform['image_url']): ?>
-                                <img src="../<?php echo $platform['image_url']; ?>" class="h-12 w-12 object-cover rounded shadow-sm">
-                            <?php else: ?>
-                                <div class="h-12 w-12 bg-gray-200 rounded flex items-center justify-center text-gray-400">
-                                    <i class="fas fa-image"></i>
+        <div class="admin-card shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="<?php echo $admin_theme === 'neon' ? 'bg-slate-800/50' : 'bg-gray-50'; ?> border-b border-gray-700/30">
+                        <tr>
+                            <th class="px-8 py-5 text-sm font-bold uppercase tracking-wider opacity-60">Previzualizare</th>
+                            <th class="px-8 py-5 text-sm font-bold uppercase tracking-wider opacity-60">Titlu</th>
+                            <th class="px-8 py-5 text-sm font-bold uppercase tracking-wider opacity-60">Versiune</th>
+                            <th class="px-8 py-5 text-sm font-bold uppercase tracking-wider opacity-60">Acțiuni</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700/20">
+                        <?php foreach ($platforms as $platform): ?>
+                        <tr class="hover:bg-blue-500/5 transition">
+                            <td class="px-8 py-6">
+                                <?php if ($platform['image_url']): ?>
+                                    <img src="../<?php echo $platform['image_url']; ?>" class="h-16 w-16 object-cover rounded-xl shadow-lg border border-gray-700/30">
+                                <?php else: ?>
+                                    <div class="h-16 w-16 bg-gray-700/20 rounded-xl flex items-center justify-center text-gray-500">
+                                        <i class="fas fa-image text-xl"></i>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-8 py-6">
+                                <div class="font-bold text-lg <?php echo $admin_theme === 'neon' ? 'text-white' : 'text-gray-800'; ?>">
+                                    <?php echo htmlspecialchars($platform['title']); ?>
                                 </div>
-                            <?php endif; ?>
-                        </td>
-                        <td class="px-6 py-4 font-medium text-gray-800"><?php echo htmlspecialchars($platform['title']); ?></td>
-                        <td class="px-6 py-4 text-gray-600"><?php echo htmlspecialchars($platform['version']); ?></td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center space-x-4">
-                                <a href="edit_platform.php?id=<?php echo $platform['id']; ?>" class="text-blue-600 hover:text-blue-900 flex items-center">
-                                    <i class="fas fa-edit mr-1"></i> Edit
-                                </a>
-                                <form method="POST" onsubmit="return confirm('Sigur dorești să ștergi?');" class="inline">
-                                    <input type="hidden" name="delete_id" value="<?php echo $platform['id']; ?>">
-                                    <button type="submit" class="text-red-600 hover:text-red-900 flex items-center">
-                                        <i class="fas fa-trash mr-1"></i> Șterge
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                    <?php if (empty($platforms)): ?>
-                    <tr>
-                        <td colspan="3" class="px-6 py-8 text-center text-gray-500 italic">Nu există platforme adăugate.</td>
-                    </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-full text-xs font-extrabold uppercase">
+                                    v<?php echo htmlspecialchars($platform['version']); ?>
+                                </span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <div class="flex items-center space-x-6">
+                                    <a href="edit_platform.php?id=<?php echo $platform['id']; ?>" class="text-blue-400 hover:text-blue-300 font-bold flex items-center">
+                                        <i class="fas fa-edit mr-2"></i> Edit
+                                    </a>
+                                    <form method="POST" onsubmit="return confirm('Sigur dorești să ștergi?');" class="inline">
+                                        <input type="hidden" name="delete_id" value="<?php echo $platform['id']; ?>">
+                                        <button type="submit" class="text-red-500 hover:text-red-400 font-bold flex items-center">
+                                            <i class="fas fa-trash-alt mr-2"></i> Șterge
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php if (empty($platforms)): ?>
+                        <tr>
+                            <td colspan="4" class="px-8 py-16 text-center opacity-40 italic">
+                                <i class="fas fa-folder-open text-4xl mb-4 block"></i>
+                                Nu există platforme adăugate.
+                            </td>
+                        </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</body>
-</html>
+
+<?php require_once 'includes/admin_footer.php'; ?>
