@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 define('LARAVEL_START', microtime(true));
 
 // Auto-redirect to installer if not locked
-if (!file_exists(__DIR__ . '/public/install.lock') && !str_contains($_SERVER['REQUEST_URI'], 'install.php')) {
-    header('Location: /install.php');
-    exit;
+if (!file_exists(__DIR__ . '/public/install.lock')) {
+    if (!str_contains($_SERVER['REQUEST_URI'], 'install.php')) {
+        header('Location: /install.php');
+        exit;
+    }
 }
 
 // Determine if the application is in maintenance mode...
