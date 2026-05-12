@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $admin_user = $_POST['admin_user'] ?? '';
     $admin_pass = $_POST['admin_pass'] ?? '';
+    $admin_email = $_POST['admin_email'] ?? '';
 
     try {
         $pdo = new PDO("mysql:host=$db_host", $db_user, $db_pass);
@@ -37,8 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->exec($sql);
 
             $hashed_pass = password_hash($admin_pass, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'admin')");
-            $stmt->execute([$admin_user, $hashed_pass]);
+            $stmt = $pdo->prepare("INSERT INTO users (username, password, email, role, is_active) VALUES (?, ?, ?, 'admin', 1)");
+            $stmt->execute([$admin_user, $hashed_pass, $admin_email]);
 
             $db_host_esc = addslashes($db_host);
             $db_name_esc = addslashes($db_name);
@@ -118,6 +119,10 @@ try {
                     </div>
 
                     <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 pt-4">Administrator</h2>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email Admin</label>
+                        <input type="email" name="admin_email" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2 border">
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Utilizator Admin</label>
                         <input type="text" name="admin_user" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2 border">

@@ -18,6 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
+        if ($user['is_active'] == 0 && $user['role'] !== 'admin') {
+            $error = "Contul nu este activat. Te rugăm să verifici email-ul.";
+            $_SESSION['unactivated_email'] = $user['email'];
+            header("Location: activate.php");
+            exit();
+        }
+
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['role'];

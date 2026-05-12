@@ -8,12 +8,15 @@ $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_user'])) {
         $username = $_POST['username'] ?? '';
+        $first_name = $_POST['first_name'] ?? '';
+        $last_name = $_POST['last_name'] ?? '';
+        $email = $_POST['email'] ?? '';
         $password = password_hash($_POST['password'] ?? '', PASSWORD_DEFAULT);
         $role = $_POST['role'] ?? 'user';
 
         try {
-            $stmt = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
-            $stmt->execute([$username, $password, $role]);
+            $stmt = $pdo->prepare("INSERT INTO users (username, first_name, last_name, email, password, role, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)");
+            $stmt->execute([$username, $first_name, $last_name, $email, $password, $role]);
             $message = "Utilizator adăugat!";
         } catch (PDOException $e) {
             $message = "Eroare: Utilizatorul există deja.";
@@ -32,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$stmt = $pdo->query("SELECT id, username, role, created_at FROM users");
+$stmt = $pdo->query("SELECT id, username, first_name, last_name, email, role, is_active, created_at FROM users");
 $users = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -76,6 +79,18 @@ $users = $stmt->fetchAll();
             <form method="POST">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
+                        <label class="block text-sm font-medium text-gray-700">Prenume</label>
+                        <input type="text" name="first_name" required class="mt-1 block w-full p-2 border rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nume</label>
+                        <input type="text" name="last_name" required class="mt-1 block w-full p-2 border rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" required class="mt-1 block w-full p-2 border rounded-md">
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700">Utilizator</label>
                         <input type="text" name="username" required class="mt-1 block w-full p-2 border rounded-md">
                     </div>
@@ -102,6 +117,8 @@ $users = $stmt->fetchAll();
                 <thead class="bg-gray-50 border-b">
                     <tr>
                         <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Utilizator</th>
+                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Nume Complet</th>
+                        <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Status</th>
                         <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Rol</th>
                         <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Creat la</th>
                         <th class="px-6 py-4 text-sm font-bold text-gray-600 uppercase">Acțiuni</th>
@@ -110,7 +127,20 @@ $users = $stmt->fetchAll();
                 <tbody class="divide-y">
                     <?php foreach ($users as $user): ?>
                     <tr>
-                        <td class="px-6 py-4 font-medium text-gray-800"><?php echo htmlspecialchars($user['username']); ?></td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-800"><?php echo htmlspecialchars($user['username']); ?></div>
+                            <div class="text-xs text-gray-500"><?php echo htmlspecialchars($user['email']); ?></div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700">
+                            <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>
+                        </td>
+                        <td class="px-6 py-4">
+                            <?php if ($user['is_active']): ?>
+                                <span class="text-green-600 font-bold text-xs uppercase">Activ</span>
+                            <?php else: ?>
+                                <span class="text-red-500 font-bold text-xs uppercase">Inactiv</span>
+                            <?php endif; ?>
+                        </td>
                         <td class="px-6 py-4">
                             <span class="px-2 py-1 rounded-full text-xs font-bold <?php echo $user['role'] === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'; ?>">
                                 <?php echo strtoupper($user['role']); ?>
