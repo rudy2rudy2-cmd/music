@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
             throw new Exception("DATABASE CONNECTION FAILED: " . $e->getMessage());
         }
 
-        // 1. Update .env file
+        // 1. Create/Update .env file
         $env_path = $base_path . '/.env';
         $env_example_path = $base_path . '/.env.example';
 
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
             if (file_exists($env_example_path)) {
                 copy($env_example_path, $env_path);
             } else {
-                $basic_env = "APP_NAME=\"Platform Store\"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=false\nAPP_URL=http://localhost\n\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=\nDB_USERNAME=\nDB_PASSWORD=\n";
+                $basic_env = "APP_NAME=\"Platform Store\"\nAPP_ENV=local\nAPP_KEY=\nAPP_DEBUG=true\nAPP_URL=http://localhost\n\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=\nDB_USERNAME=\nDB_PASSWORD=\n";
                 file_put_contents($env_path, $basic_env);
             }
         }
@@ -76,71 +76,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_met) {
         $env_content = preg_replace('/DB_CONNECTION=.*/', 'DB_CONNECTION=mysql', $env_content);
         file_put_contents($env_path, $env_content);
 
-        // 2. Check for dependencies
-        if (!file_exists($base_path . '/vendor/autoload.php')) {
-            $composer_output = shell_exec('composer install --no-dev --optimize-autoloader 2>&1');
-            if (!file_exists($base_path . '/vendor/autoload.php')) {
-                throw new Exception("Dependencies missing and 'composer install' failed. Please run 'composer install' manually. <br> Output: <pre>$composer_output</pre>");
-            }
-        }
-
-        // 3. Manually delete ALL cache files
+        // 2. Clear Caches manually to ensure fresh boot
         $cache_files = ['config.php', 'routes.php', 'services.php', 'packages.php'];
         foreach ($cache_files as $file) {
-            $path = $base_path . '/bootstrap/cache/' . $file;
-            if (file_exists($path)) {
-                if (!@unlink($path)) {
-                    throw new Exception("CRITICAL: Unable to delete cache file $path. Please delete it manually via File Manager/FTP.");
-                }
-            }
+            @unlink($base_path . '/bootstrap/cache/' . $file);
         }
 
-        // 4. Force inject into Superglobals BEFORE bootstrapping
-        putenv("DB_CONNECTION=mysql");
-        putenv("DB_HOST=$db_host");
-        putenv("DB_DATABASE=$db_name");
-        putenv("DB_USERNAME=$db_user");
-        putenv("DB_PASSWORD=$db_pass");
+        // 3. Run Commands via shell_exec for reliability
+        // We use the same PHP binary that is running this script
+        $php = PHP_BINARY;
+        $artisan = $base_path . '/artisan';
 
-        $_ENV['DB_CONNECTION'] = $_SERVER['DB_CONNECTION'] = 'mysql';
-        $_ENV['DB_HOST'] = $_SERVER['DB_HOST'] = $db_host;
-        $_ENV['DB_DATABASE'] = $_SERVER['DB_DATABASE'] = $db_name;
-        $_ENV['DB_USERNAME'] = $_SERVER['DB_USERNAME'] = $db_user;
-        $_ENV['DB_PASSWORD'] = $_SERVER['DB_PASSWORD'] = $db_pass;
+        // Key Generate
+        $output = shell_exec("$php $artisan key:generate --force 2>&1");
 
-        // 5. Bootstrap Laravel correctly
+        // Migrate
+        $output .= shell_exec("$php $artisan migrate --force 2>&1");
+
+        if (str_contains($output, 'error') || str_contains($output, 'Exception')) {
+             throw new Exception("INSTALLATION ERROR! <br><br> Console Output: <pre>$output</pre>");
+        }
+
+        // 4. Create Admin User (Bootstrap just for this small task)
         require_once $base_path . '/vendor/autoload.php';
         $app = require_once $base_path . '/bootstrap/app.php';
-
-        /** @var \Illuminate\Contracts\Console\Kernel $kernel */
-        $kernel = $app->make(\Illuminate\Contracts\Console\Kernel::class);
+        $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
         $kernel->bootstrap();
 
-        // 6. Hard-force config directly into the container using the $app instance
-        $config = $app->make('config');
-        $config->set([
-            'database.default' => 'mysql',
-            'database.connections.mysql.host' => $db_host,
-            'database.connections.mysql.database' => $db_name,
-            'database.connections.mysql.username' => $db_user,
-            'database.connections.mysql.password' => $db_pass,
-        ]);
-
-        // Force refresh connection
-        $app->make('db')->purge('mysql');
-
-        // 7. Run Artisan Commands Internally
-        $kernel->call('config:clear');
-        $kernel->call('key:generate', ['--force' => true]);
-
-        $status = $kernel->call('migrate', ['--force' => true]);
-
-        if ($status !== 0) {
-            $output = $kernel->output();
-            throw new Exception("MIGRATION ERROR! <br><br> Output: <pre>$output</pre>");
-        }
-
-        // 8. Create Admin
         \App\Models\User::updateOrCreate(
             ['email' => $admin_email],
             [
