@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 define('LARAVEL_START', microtime(true));
 
 // Auto-redirect to installer if not locked
-if (!file_exists(__DIR__ . '/install.lock') && !str_contains($_SERVER['REQUEST_URI'], 'install.php')) {
+if (!file_exists(__DIR__ . '/public/install.lock') && !str_contains($_SERVER['REQUEST_URI'], 'install.php')) {
     header('Location: /install.php');
     exit;
 }
@@ -19,8 +19,6 @@ if (file_exists($maintenance = __DIR__.'/storage/framework/maintenance.php')) {
 // Register the Composer autoloader...
 if (file_exists(__DIR__.'/vendor/autoload.php')) {
     require __DIR__.'/vendor/autoload.php';
-} else {
-    die("Dependencies missing! Please run 'composer install' on the server.");
 }
 
 // Bootstrap Laravel and handle the request...
