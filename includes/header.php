@@ -87,9 +87,11 @@ $theme = $settings['theme'] ?? 'light';
 
             /* Premium Eagle & Code Animations */
             @keyframes float-eagle {
-                0% { transform: translate(0, 0) rotate(0deg); opacity: 0.1; }
-                50% { transform: translate(30px, -50px) rotate(5deg); opacity: 0.2; }
-                100% { transform: translate(0, 0) rotate(0deg); opacity: 0.1; }
+                0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.1; }
+                25% { transform: translate(20px, -30px) rotate(2deg) scale(1.05); opacity: 0.15; }
+                50% { transform: translate(-10px, -60px) rotate(-3deg) scale(1.1); opacity: 0.2; }
+                75% { transform: translate(-30px, -20px) rotate(1deg) scale(1.05); opacity: 0.15; }
+                100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.1; }
             }
             @keyframes scroll-code {
                 0% { transform: translateY(100%); opacity: 0; }
@@ -101,12 +103,14 @@ $theme = $settings['theme'] ?? 'light';
                 position: absolute;
                 top: 10%;
                 right: 5%;
-                font-size: 300px;
+                width: 400px;
+                height: 400px;
                 color: #3b82f6;
-                filter: blur(2px);
+                filter: blur(1px) drop-shadow(0 0 10px rgba(59, 130, 246, 0.4));
                 animation: float-eagle 20s ease-in-out infinite;
                 z-index: 0;
                 pointer-events: none;
+                opacity: 0.15;
             }
             .code-lines {
                 position: absolute;

@@ -20,7 +20,10 @@ $is_premium = ($theme === 'premium');
 
                 <!-- Eagle -->
                 <div class="eagle-bg">
-                    <i class="fas fa-crow"></i>
+                    <svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 10 C 60 20, 90 30, 95 45 C 90 40, 70 40, 60 45 C 70 50, 80 65, 75 75 C 70 70, 60 60, 50 65 C 40 60, 30 70, 25 75 C 20 65, 30 50, 40 45 C 30 40, 10 40, 5 45 C 10 30, 40 20, 50 10" />
+                        <path d="M50 15 L 52 25 L 50 22 L 48 25 Z" fill="rgba(255,255,255,0.5)" />
+                    </svg>
                 </div>
 
                 <!-- Coding Lines -->
