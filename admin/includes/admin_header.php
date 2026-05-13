@@ -116,6 +116,7 @@ $site_theme = $admin_settings['theme'] ?? 'light'; // For reference if needed
                 ['index.php', 'fas fa-chart-pie', 'Dashboard'],
                 ['platforms.php', 'fas fa-layer-group', 'Platforme'],
                 ['users.php', 'fas fa-users', 'Utilizatori'],
+                ['messages.php', 'fas fa-envelope', 'Mesaje Chat'],
                 ['payments.php', 'fas fa-credit-card', 'Configurează Plăți'],
                 ['settings.php', 'fas fa-sliders-h', 'Setări Sistem'],
             ];
@@ -157,13 +158,94 @@ $site_theme = $admin_settings['theme'] ?? 'light'; // For reference if needed
             </div>
         </header>
 
-        <?php if (!empty($admin_settings['live_chat_code'])): ?>
-            <!-- Live Chat Widget -->
-            <div class="fixed bottom-6 right-6 z-[9999]">
-                <?php echo $admin_settings['live_chat_code']; ?>
+    <!-- Live Chat Widget -->
+    <div id="live-chat" class="fixed bottom-6 right-6 z-[9999]">
+        <button id="chat-toggle" class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-2xl cursor-pointer hover:scale-110 transition active:scale-95">
+            <i class="fas fa-comments text-2xl"></i>
+        </button>
+
+        <div id="chat-window" class="hidden absolute bottom-20 right-0 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 transform scale-90 opacity-0 origin-bottom-right">
+            <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span class="font-bold text-white">Suport Live (Admin)</span>
+                </div>
+                <button id="chat-close" class="opacity-70 hover:opacity-100 text-white"><i class="fas fa-times"></i></button>
             </div>
-        <?php else: ?>
-            <div class="fixed bottom-6 right-6 z-[9999] w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-2xl cursor-pointer hover:scale-110 transition">
-                <i class="fas fa-headset text-2xl"></i>
+
+            <div id="chat-body" class="p-6">
+                <form id="chat-form" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" name="first_name" placeholder="Prenume" required class="w-full p-2 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white">
+                        <input type="text" name="last_name" placeholder="Nume" required class="w-full p-2 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white">
+                    </div>
+                    <input type="email" name="email" placeholder="Adresa Mail" required class="w-full p-2 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white">
+                    <textarea name="message" rows="3" placeholder="Mesajul tău..." required class="w-full p-2 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white"></textarea>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">Trimite Mesaj</button>
+                </form>
+                <div id="chat-success" class="hidden text-center py-8">
+                    <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check text-2xl"></i>
+                    </div>
+                    <p class="font-bold text-gray-800">Mesaj Trimis!</p>
+                    <button onclick="resetChat()" class="mt-4 text-blue-600 text-xs font-bold hover:underline">Trimite alt mesaj</button>
+                </div>
             </div>
-        <?php endif; ?>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatToggle = document.getElementById('chat-toggle');
+            const chatWindow = document.getElementById('chat-window');
+            const chatClose = document.getElementById('chat-close');
+            const chatForm = document.getElementById('chat-form');
+            const chatSuccess = document.getElementById('chat-success');
+
+            chatToggle.addEventListener('click', () => {
+                chatWindow.classList.toggle('hidden');
+                setTimeout(() => {
+                    chatWindow.classList.toggle('scale-90');
+                    chatWindow.classList.toggle('opacity-0');
+                    chatWindow.classList.toggle('scale-100');
+                    chatWindow.classList.toggle('opacity-100');
+                }, 10);
+            });
+
+            chatClose.addEventListener('click', () => {
+                chatWindow.classList.add('scale-90', 'opacity-0');
+                chatWindow.classList.remove('scale-100', 'opacity-100');
+                setTimeout(() => chatWindow.classList.add('hidden'), 300);
+            });
+
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(chatForm);
+
+                try {
+                    const response = await fetch('../api/chat.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        chatForm.classList.add('hidden');
+                        chatSuccess.classList.remove('hidden');
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    alert('Eroare la trimiterea mesajului.');
+                }
+            });
+        });
+
+        function resetChat() {
+            const chatForm = document.getElementById('chat-form');
+            const chatSuccess = document.getElementById('chat-success');
+            chatForm.reset();
+            chatForm.classList.remove('hidden');
+            chatSuccess.classList.add('hidden');
+        }
+    </script>

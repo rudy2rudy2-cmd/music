@@ -42,3 +42,13 @@ INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('stripe_secret_
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('enable_paypal', '0');
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('enable_stripe', '0');
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('live_chat_code', '');
+
+CREATE TABLE IF NOT EXISTS messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(100),
+    message TEXT,
+    is_read TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
