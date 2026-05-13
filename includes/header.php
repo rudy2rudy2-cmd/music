@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once 'auth.php';
+require_once 'lang_init.php';
 
 // Fetch settings
 $stmt = $pdo->query("SELECT setting_key, setting_value FROM settings");
@@ -148,17 +149,24 @@ $theme = $settings['theme'] ?? 'light';
                 <span class="<?php echo ($theme === 'romania' ? 'text-white' : 'text-blue-600'); ?>"><?php echo htmlspecialchars($settings['site_name'] ?? 'Showcase'); ?></span>
             </a>
             <div class="space-x-6 flex items-center">
-                <a href="index.php" class="font-medium hover:opacity-75 transition <?php echo ($theme === 'premium' ? 'text-blue-400' : ''); ?>">Acasă</a>
+                <a href="index.php" class="font-medium hover:opacity-75 transition <?php echo ($theme === 'premium' ? 'text-blue-400' : ''); ?>"><?php echo __('home'); ?></a>
+                <a href="offers.php" class="font-medium hover:opacity-75 transition"><?php echo __('offers'); ?></a>
+
+                <div class="flex border rounded-lg overflow-hidden border-gray-700/30">
+                    <a href="?lang=ro" class="px-2 py-1 text-xs <?php echo $lang_code === 'ro' ? 'bg-blue-600 text-white' : 'bg-transparent'; ?>">RO</a>
+                    <a href="?lang=en" class="px-2 py-1 text-xs <?php echo $lang_code === 'en' ? 'bg-blue-600 text-white' : 'bg-transparent'; ?>">EN</a>
+                </div>
+
                 <?php if (isLoggedIn()): ?>
                     <?php if (isAdmin()): ?>
-                        <a href="admin/index.php" class="font-medium hover:opacity-75 transition">Admin</a>
+                        <a href="admin/index.php" class="font-medium hover:opacity-75 transition"><?php echo __('admin'); ?></a>
                     <?php else: ?>
-                        <a href="dashboard/index.php" class="font-medium hover:opacity-75 transition">Dashboard</a>
+                        <a href="dashboard/index.php" class="font-medium hover:opacity-75 transition"><?php echo __('dashboard'); ?></a>
                     <?php endif; ?>
-                    <a href="logout.php" class="bg-red-500 text-white px-5 py-2 rounded-lg font-bold hover:bg-red-600 transition shadow-md">Logout</a>
+                    <a href="logout.php" class="bg-red-500 text-white px-5 py-2 rounded-lg font-bold hover:bg-red-600 transition shadow-md"><?php echo __('logout'); ?></a>
                 <?php else: ?>
-                    <a href="register.php" class="font-medium hover:opacity-75 transition">Înregistrare</a>
-                    <a href="login.php" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-md">Login</a>
+                    <a href="register.php" class="font-medium hover:opacity-75 transition"><?php echo __('register'); ?></a>
+                    <a href="login.php" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-md"><?php echo __('login'); ?></a>
                 <?php endif; ?>
             </div>
         </div>

@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS platforms (
     version VARCHAR(20),
     demo_url VARCHAR(255),
     image_url VARCHAR(255),
+    price DECIMAL(10,2) DEFAULT 0.00,
+    discount_price DECIMAL(10,2) DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 

@@ -1,0 +1,20 @@
+<?php
+return [
+    'home' => 'Acasă',
+    'register' => 'Înregistrare',
+    'login' => 'Autentificare',
+    'logout' => 'Deconectare',
+    'dashboard' => 'Dashboard',
+    'admin' => 'Admin',
+    'hero_title_default' => 'Construim experiențe digitale moderne și memorabile.',
+    'hero_subtitle_default' => 'Design futurist, performanță rapidă și animații fluide.',
+    'order_now' => 'Comandă Acum',
+    'run_demo' => 'Rulare Demo',
+    'view_projects' => 'Vezi Proiectele',
+    'contact_us' => 'Contactează-ne',
+    'projects' => 'Proiecte',
+    'offers' => 'Oferte',
+    'price' => 'Preț',
+    'checkout' => 'Finalizare Comandă',
+    'payment_method' => 'Metodă de Plată',
+];

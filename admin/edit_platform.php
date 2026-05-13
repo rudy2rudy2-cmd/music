@@ -26,6 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = $_POST['description'] ?? '';
     $version = $_POST['version'] ?? '';
     $demo_url = $_POST['demo_url'] ?? '';
+    $price = $_POST['price'] ?? 0;
+    $discount_price = $_POST['discount_price'] ?? 0;
 
     $image_url = $platform['image_url'];
     if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
@@ -44,8 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($error)) {
         try {
-            $stmt = $pdo->prepare("UPDATE platforms SET title = ?, description = ?, version = ?, demo_url = ?, image_url = ? WHERE id = ?");
-            $stmt->execute([$title, $description, $version, $demo_url, $image_url, $id]);
+            $stmt = $pdo->prepare("UPDATE platforms SET title = ?, description = ?, version = ?, demo_url = ?, image_url = ?, price = ?, discount_price = ? WHERE id = ?");
+            $stmt->execute([$title, $description, $version, $demo_url, $image_url, $price, $discount_price, $id]);
             $message = "Platformă actualizată cu succes!";
             // Refresh platform data
             $stmt = $pdo->prepare("SELECT * FROM platforms WHERE id = ?");
@@ -97,6 +99,16 @@ require_once 'includes/admin_header.php';
                     <div>
                         <label class="block text-sm font-bold opacity-75 mb-2">Adresă Demo (URL)</label>
                         <input type="url" name="demo_url" value="<?php echo htmlspecialchars($platform['demo_url']); ?>" placeholder="https://demo.example.com" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold opacity-75 mb-2">Preț (EUR)</label>
+                            <input type="number" step="0.01" name="price" value="<?php echo htmlspecialchars($platform['price']); ?>" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold opacity-75 mb-2">Preț Ofertă (EUR)</label>
+                            <input type="number" step="0.01" name="discount_price" value="<?php echo htmlspecialchars($platform['discount_price']); ?>" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-bold opacity-75 mb-2">Schimbă Imaginea</label>

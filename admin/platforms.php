@@ -27,9 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        $price = $_POST['price'] ?? 0;
+        $discount_price = $_POST['discount_price'] ?? 0;
+
         if(empty($message)) {
-            $stmt = $pdo->prepare("INSERT INTO platforms (title, description, version, demo_url, image_url) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$title, $description, $version, $demo_url, $image_url]);
+            $stmt = $pdo->prepare("INSERT INTO platforms (title, description, version, demo_url, image_url, price, discount_price) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$title, $description, $version, $demo_url, $image_url, $price, $discount_price]);
             $message = "Platformă adăugată cu succes!";
         }
     }
@@ -76,6 +79,16 @@ require_once 'includes/admin_header.php';
                     <div>
                         <label class="block text-sm font-bold opacity-75 mb-2">URL Demo</label>
                         <input type="url" name="demo_url" placeholder="https://demo.example.com" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold opacity-75 mb-2">Preț (EUR)</label>
+                            <input type="number" step="0.01" name="price" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold opacity-75 mb-2">Preț Ofertă (EUR)</label>
+                            <input type="number" step="0.01" name="discount_price" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-bold opacity-75 mb-2">Imagine Prezentare</label>
