@@ -41,17 +41,27 @@ $final_price = ($platform['discount_price'] > 0) ? $platform['discount_price'] :
             <div>
                 <h4 class="text-xl font-bold mb-6"><?php echo __('payment_method'); ?></h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <!-- Stripe Placeholder -->
-                    <button class="flex items-center justify-center space-x-3 p-6 border-2 border-indigo-600 rounded-2xl hover:bg-indigo-600 hover:text-white transition group">
-                        <i class="fab fa-stripe text-4xl"></i>
-                        <span class="font-bold text-lg">Plătește cu Card (Stripe)</span>
-                    </button>
+                    <?php if (($settings['enable_stripe'] ?? '0') === '1'): ?>
+                        <!-- Stripe -->
+                        <button class="flex items-center justify-center space-x-3 p-6 border-2 border-indigo-600 rounded-2xl hover:bg-indigo-600 hover:text-white transition group">
+                            <i class="fab fa-stripe text-4xl"></i>
+                            <span class="font-bold text-lg">Plătește cu Card (Stripe)</span>
+                        </button>
+                    <?php endif; ?>
 
-                    <!-- PayPal Placeholder -->
-                    <button class="flex items-center justify-center space-x-3 p-6 border-2 border-yellow-500 rounded-2xl hover:bg-yellow-500 hover:text-white transition group">
-                        <i class="fab fa-paypal text-4xl"></i>
-                        <span class="font-bold text-lg">Plătește cu PayPal</span>
-                    </button>
+                    <?php if (($settings['enable_paypal'] ?? '0') === '1'): ?>
+                        <!-- PayPal -->
+                        <button class="flex items-center justify-center space-x-3 p-6 border-2 border-yellow-500 rounded-2xl hover:bg-yellow-500 hover:text-white transition group">
+                            <i class="fab fa-paypal text-4xl"></i>
+                            <span class="font-bold text-lg">Plătește cu PayPal</span>
+                        </button>
+                    <?php endif; ?>
+
+                    <?php if (($settings['enable_stripe'] ?? '0') !== '1' && ($settings['enable_paypal'] ?? '0') !== '1'): ?>
+                        <div class="col-span-full p-6 bg-red-500/10 border border-red-500/50 rounded-2xl text-center text-red-500 font-bold">
+                            Momentan nu există metode de plată active. Contactați administratorul.
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <p class="text-center text-xs opacity-50 mt-10">Plăți securizate prin procesatori certificați.</p>
             </div>

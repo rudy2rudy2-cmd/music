@@ -54,7 +54,7 @@ $is_premium = ($theme === 'premium');
                 <a href="#projects" class="<?php echo $is_premium ? 'premium-btn text-white px-10 py-4 rounded-full font-bold text-lg transition transform hover:-translate-y-1' : 'bg-yellow-500 text-gray-900 px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition shadow-xl transform hover:-translate-y-1'; ?>">
                     <i class="fas fa-layer-group mr-2"></i> Vezi proiectele
                 </a>
-                <a href="<?php echo htmlspecialchars($settings['order_url'] ?? '#'); ?>" class="<?php echo $is_premium ? 'bg-transparent border border-blue-500/50 text-blue-400 px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-500/10 transition' : 'bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg border-2 border-blue-600 hover:bg-blue-50 transition'; ?>">
+                <a href="<?php echo htmlspecialchars($settings['order_url'] ?? 'offers.php'); ?>" class="<?php echo $is_premium ? 'bg-transparent border border-blue-500/50 text-blue-400 px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-500/10 transition' : 'bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg border-2 border-blue-600 hover:bg-blue-50 transition'; ?>">
                     <i class="fas fa-paper-plane mr-2"></i> Contactează-ne
                 </a>
             </div>
@@ -100,7 +100,7 @@ $is_premium = ($theme === 'premium');
                                 <i class="fas fa-play-circle mr-2"></i> Rulare Demo
                             </a>
                         <?php endif; ?>
-                        <a href="<?php echo htmlspecialchars($settings['order_url'] ?? '#'); ?>" class="block w-full text-center <?php echo $is_premium ? 'premium-btn text-white' : 'border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'; ?> font-bold py-3 rounded-xl transition flex items-center justify-center">
+                        <a href="order.php?id=<?php echo $platform['id']; ?>" class="block w-full text-center border-2 border-blue-600 text-blue-600 font-bold py-3 rounded-xl hover:bg-blue-600 hover:text-white transition flex items-center justify-center">
                              <i class="fas fa-cart-plus mr-2"></i> <?php echo htmlspecialchars($settings['order_button_text'] ?? 'Comandă Acum'); ?>
                         </a>
                     </div>

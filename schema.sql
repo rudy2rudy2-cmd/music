@@ -34,4 +34,10 @@ INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('site_name', 'W
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('hero_title', 'Platformele Noastre Web');
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('hero_subtitle', 'Explorați creațiile noastre recente și testați demo-urile interactive.');
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('order_button_text', 'Comandă Acum');
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('order_url', 'offers.php');
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('admin_theme', 'standard');
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('paypal_email', '');
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('stripe_publishable_key', '');
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('stripe_secret_key', '');
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('enable_paypal', '0');
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('enable_stripe', '0');
