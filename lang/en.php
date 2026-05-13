@@ -1,0 +1,20 @@
+<?php
+return [
+    'home' => 'Home',
+    'register' => 'Register',
+    'login' => 'Login',
+    'logout' => 'Logout',
+    'dashboard' => 'Dashboard',
+    'admin' => 'Admin',
+    'hero_title_default' => 'We build modern and memorable digital experiences.',
+    'hero_subtitle_default' => 'Futuristic design, fast performance, and fluid animations.',
+    'order_now' => 'Order Now',
+    'run_demo' => 'Run Demo',
+    'view_projects' => 'View Projects',
+    'contact_us' => 'Contact Us',
+    'projects' => 'Projects',
+    'offers' => 'Offers',
+    'price' => 'Price',
+    'checkout' => 'Checkout',
+    'payment_method' => 'Payment Method',
+];
