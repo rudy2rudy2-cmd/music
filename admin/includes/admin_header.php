@@ -116,6 +116,7 @@ $site_theme = $admin_settings['theme'] ?? 'light'; // For reference if needed
                 ['index.php', 'fas fa-chart-pie', 'Dashboard'],
                 ['platforms.php', 'fas fa-layer-group', 'Platforme'],
                 ['users.php', 'fas fa-users', 'Utilizatori'],
+                ['payments.php', 'fas fa-credit-card', 'Configurează Plăți'],
                 ['settings.php', 'fas fa-sliders-h', 'Setări Sistem'],
             ];
             foreach ($links as $link):

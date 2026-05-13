@@ -13,12 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'hero_title' => $_POST['hero_title'] ?? '',
         'hero_subtitle' => $_POST['hero_subtitle'] ?? '',
         'order_button_text' => $_POST['order_button_text'] ?? 'Comandă Acum',
-        'order_url' => $_POST['order_url'] ?? 'offers.php',
-        'paypal_email' => $_POST['paypal_email'] ?? '',
-        'stripe_publishable_key' => $_POST['stripe_publishable_key'] ?? '',
-        'stripe_secret_key' => $_POST['stripe_secret_key'] ?? '',
-        'enable_paypal' => isset($_POST['enable_paypal']) ? '1' : '0',
-        'enable_stripe' => isset($_POST['enable_stripe']) ? '1' : '0'
+        'order_url' => $_POST['order_url'] ?? 'offers.php'
     ];
 
     foreach ($updates as $key => $value) {
@@ -72,7 +67,7 @@ require_once 'includes/admin_header.php';
                             </div>
                             <div>
                                 <label class="block text-sm font-bold opacity-75 mb-2">URL Buton Comandă</label>
-                                <input type="text" name="order_url" value="<?php echo htmlspecialchars($admin_settings['order_url'] ?? '#'); ?>" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                                <input type="text" name="order_url" value="<?php echo htmlspecialchars($admin_settings['order_url'] ?? 'offers.php'); ?>" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                             </div>
                         </div>
 
@@ -96,36 +91,6 @@ require_once 'includes/admin_header.php';
                                 </div>
                             </label>
                             <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <div class="pt-6 border-t border-gray-700/30">
-                        <h3 class="text-xl font-bold mb-6 flex items-center text-yellow-500">
-                            <i class="fas fa-credit-card mr-3"></i> Configurare Plăți
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                            <div class="space-y-4">
-                                <label class="flex items-center space-x-3 cursor-pointer">
-                                    <input type="checkbox" name="enable_paypal" value="1" <?php echo ($admin_settings['enable_paypal'] ?? '0') === '1' ? 'checked' : ''; ?> class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                    <span class="font-bold text-lg">Activează PayPal</span>
-                                </label>
-                                <div>
-                                    <label class="block text-sm font-bold opacity-75 mb-2">Email PayPal</label>
-                                    <input type="email" name="paypal_email" value="<?php echo htmlspecialchars($admin_settings['paypal_email'] ?? ''); ?>" placeholder="paypal@exemplu.com" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
-                                </div>
-                            </div>
-                            <div class="space-y-4">
-                                <label class="flex items-center space-x-3 cursor-pointer">
-                                    <input type="checkbox" name="enable_stripe" value="1" <?php echo ($admin_settings['enable_stripe'] ?? '0') === '1' ? 'checked' : ''; ?> class="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                    <span class="font-bold text-lg">Activează Stripe</span>
-                                </label>
-                                <div>
-                                    <label class="block text-sm font-bold opacity-75 mb-2">Stripe Publishable Key</label>
-                                    <input type="text" name="stripe_publishable_key" value="<?php echo htmlspecialchars($admin_settings['stripe_publishable_key'] ?? ''); ?>" placeholder="pk_test_..." class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?> mb-3">
-                                    <label class="block text-sm font-bold opacity-75 mb-2">Stripe Secret Key</label>
-                                    <input type="password" name="stripe_secret_key" value="<?php echo htmlspecialchars($admin_settings['stripe_secret_key'] ?? ''); ?>" placeholder="sk_test_..." class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
-                                </div>
-                            </div>
                         </div>
                     </div>
 
