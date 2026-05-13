@@ -13,7 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'hero_title' => $_POST['hero_title'] ?? '',
         'hero_subtitle' => $_POST['hero_subtitle'] ?? '',
         'order_button_text' => $_POST['order_button_text'] ?? 'Comandă Acum',
-        'order_url' => $_POST['order_url'] ?? 'offers.php'
+        'order_url' => $_POST['order_url'] ?? 'offers.php',
+        'live_chat_code' => $_POST['live_chat_code'] ?? ''
     ];
 
     foreach ($updates as $key => $value) {
@@ -40,10 +41,14 @@ require_once 'includes/admin_header.php';
                         <h3 class="text-xl font-bold mb-6 flex items-center">
                             <i class="fas fa-globe mr-3 text-blue-500"></i> Informații Generale
                         </h3>
-                        <div class="grid grid-cols-1 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-bold opacity-75 mb-2">Nume Site</label>
                                 <input type="text" name="site_name" value="<?php echo htmlspecialchars($admin_settings['site_name'] ?? ''); ?>" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold opacity-75 mb-2">Cod Live Chat (Script)</label>
+                                <textarea name="live_chat_code" rows="1" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>"><?php echo htmlspecialchars($admin_settings['live_chat_code'] ?? ''); ?></textarea>
                             </div>
                         </div>
                     </div>
@@ -79,7 +84,8 @@ require_once 'includes/admin_header.php';
                                 ['dark', 'bg-slate-800', 'Dark'],
                                 ['accent', 'bg-green-500', 'Accent'],
                                 ['romania', 'bg-gradient-to-r from-blue-700 via-yellow-400 to-red-600', 'România'],
-                                ['premium', 'bg-slate-900 border-2 border-blue-500', 'Premium']
+                                ['premium', 'bg-slate-900 border-2 border-blue-500', 'Premium'],
+                                ['monochrome', 'bg-black border border-white', 'Monochrome']
                             ];
                             foreach($frontend_themes as $t):
                             ?>

@@ -85,6 +85,13 @@ $theme = $settings['theme'] ?? 'light';
             .premium-btn:hover {
                 box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
             }
+        <?php elseif ($theme === 'monochrome'): ?>
+            body { background-color: #000000; color: #ffffff; font-family: 'Inter', sans-serif; }
+            .header-bar { background-color: #000000; border-bottom: 1px solid #333; }
+            .card { background-color: #ffffff; color: #000000; border: none; }
+            .premium-btn, .bg-blue-600 { background-color: #ffffff; color: #000000; border: 1px solid #000; }
+            .premium-btn:hover, .bg-blue-600:hover { background-color: #000000; color: #ffffff; border-color: #fff; }
+            .text-blue-600 { color: #ffffff; }
 
             /* Premium Eagle & Code Animations */
             @keyframes float-eagle {
@@ -171,3 +178,15 @@ $theme = $settings['theme'] ?? 'light';
             </div>
         </div>
     </nav>
+
+    <?php if (!empty($settings['live_chat_code'])): ?>
+        <!-- Live Chat Widget -->
+        <div class="fixed bottom-6 right-6 z-[9999]">
+            <?php echo $settings['live_chat_code']; ?>
+        </div>
+    <?php else: ?>
+        <!-- Default Demo Live Chat Icon if no code provided -->
+        <div class="fixed bottom-6 right-6 z-[9999] w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-2xl cursor-pointer hover:scale-110 transition">
+            <i class="fas fa-comments text-2xl"></i>
+        </div>
+    <?php endif; ?>

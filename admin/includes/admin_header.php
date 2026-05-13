@@ -156,3 +156,14 @@ $site_theme = $admin_settings['theme'] ?? 'light'; // For reference if needed
                 </div>
             </div>
         </header>
+
+        <?php if (!empty($admin_settings['live_chat_code'])): ?>
+            <!-- Live Chat Widget -->
+            <div class="fixed bottom-6 right-6 z-[9999]">
+                <?php echo $admin_settings['live_chat_code']; ?>
+            </div>
+        <?php else: ?>
+            <div class="fixed bottom-6 right-6 z-[9999] w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-2xl cursor-pointer hover:scale-110 transition">
+                <i class="fas fa-headset text-2xl"></i>
+            </div>
+        <?php endif; ?>

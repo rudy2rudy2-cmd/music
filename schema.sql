@@ -41,3 +41,4 @@ INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('stripe_publish
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('stripe_secret_key', '');
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('enable_paypal', '0');
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('enable_stripe', '0');
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('live_chat_code', '');
