@@ -13,6 +13,7 @@ class LicenseController extends Controller
         $request->validate([
             'license_key' => 'required|string',
             'domain' => 'nullable|string',
+            'action' => 'nullable|string', // 'activate' or 'verify'
         ]);
 
         $license = License::where('license_key', $request->license_key)->first();
@@ -39,24 +40,45 @@ class LicenseController extends Controller
             ], 403);
         }
 
-        // Auto-assign domain on first activation if not set
-        if (!$license->domain && $request->domain) {
-            $license->update([
-                'domain' => $request->domain,
-                'activated_at' => now(),
-            ]);
-        } elseif ($license->domain && $request->domain && $license->domain !== $request->domain) {
-             return response()->json([
-                'valid' => false,
-                'message' => 'License is already activated on another domain: ' . $license->domain,
-            ], 403);
+        $domain = $this->sanitizeDomain($request->domain);
+
+        if ($request->action === 'activate') {
+            if (!$license->domain) {
+                $license->update([
+                    'domain' => $domain,
+                    'activated_at' => now(),
+                ]);
+            } elseif ($license->domain !== $domain) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'License is already activated on: ' . $license->domain,
+                ], 403);
+            }
+        } else {
+            // Standard verification
+            if ($license->domain && $domain && $license->domain !== $domain) {
+                 return response()->json([
+                    'valid' => false,
+                    'message' => 'Domain mismatch. License bound to: ' . $license->domain,
+                ], 403);
+            }
         }
 
         return response()->json([
             'valid' => true,
-            'message' => 'License is valid.',
+            'message' => 'License verified successfully.',
             'platform' => $license->platform->name,
+            'version' => $license->platform->version,
             'expires_at' => $license->expires_at ? $license->expires_at->toDateTimeString() : null,
         ]);
+    }
+
+    protected function sanitizeDomain($domain)
+    {
+        if (!$domain) return null;
+        $domain = strtolower($domain);
+        $domain = preg_replace('/^https?:\/\//', '', $domain);
+        $domain = preg_replace('/^www\./', '', $domain);
+        return explode('/', $domain)[0];
     }
 }

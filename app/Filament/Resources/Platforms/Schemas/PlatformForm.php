@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Platforms\Schemas;
 
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -19,6 +20,8 @@ class PlatformForm
                     ->maxLength(255),
                 Textarea::make('description')
                     ->maxLength(65535)
+                    ->columnSpanFull(),
+                RichEditor::make('documentation')
                     ->columnSpanFull(),
                 TextInput::make('version')
                     ->maxLength(255),

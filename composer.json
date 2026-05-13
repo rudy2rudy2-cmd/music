@@ -6,10 +6,14 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "filament/filament": "^3.2",
         "laravel/framework": "^11.0",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "pragmarx/google2fa-laravel": "^3.0",
+        "spatie/laravel-backup": "^9.3",
+        "srmklive/paypal": "^3.0",
+        "stripe/stripe-php": "^20.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
