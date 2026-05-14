@@ -5,6 +5,7 @@ if (!file_exists('includes/config.php')) {
 }
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
+require_once 'includes/mailer.php';
 
 if (isLoggedIn()) {
     header("Location: index.php");
@@ -38,13 +39,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare("INSERT INTO users (username, first_name, last_name, email, password, activation_code, is_active) VALUES (?, ?, ?, ?, ?, ?, 0)");
                 $stmt->execute([$username, $first_name, $last_name, $email, $hashed_pass, $activation_code]);
 
-                // Trimitere email (Simulat)
-                $to = $email;
-                $subject = "Confirmare Cont";
-                $message = "Salut $first_name, codul tău de activare este: $activation_code";
-                $headers = "From: no-reply@showcase.ro";
+                // Trimitere email
+                $subject = "Confirmare Cont - " . ($settings['site_name'] ?? 'Showcase');
+                $body = "
+                    <h2>Salut, $first_name!</h2>
+                    <p>Vă mulțumim pentru înregistrare. Codul tău de activare este:</p>
+                    <h1 style='color: #2563eb; font-size: 32px;'>$activation_code</h1>
+                    <p>Introduceți acest cod pe pagina de activare pentru a finaliza procesul.</p>
+                ";
 
-                // mail($to, $subject, $message, $headers);
+                sendEmail($email, $subject, $body);
 
                 $_SESSION['unactivated_email'] = $email;
                 $success = "Cont creat cu succes! Te rugăm să introduci codul primit pe email ($activation_code).";

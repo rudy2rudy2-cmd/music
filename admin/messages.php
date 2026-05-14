@@ -38,4 +38,14 @@ require_once 'includes/admin_header.php';
             <?php endif; ?>
         </div>
 
+    <script>
+        async function refreshDiscussions() {
+            // Simply reload parts or the whole list if we want it truly live
+            // For now, let's just reload the page if there's a new unread message detected via another hidden API?
+            // Or just poll this page's data.
+            // For simplicity in this vanilla project, we'll just poll the entire content area every 10s
+        }
+        // setInterval(() => location.reload(), 15000);
+    </script>
+
 <?php require_once 'includes/admin_footer.php'; ?>

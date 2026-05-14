@@ -65,7 +65,7 @@ require_once 'includes/admin_header.php';
 
         async function fetchMessages() {
             try {
-                const response = await fetch(`../api/chat_v2.php?action=fetch&admin_discussion_id=\${discussionId}`);
+                const response = await fetch(`/api/chat_v2.php?action=fetch&admin_discussion_id=${discussionId}`);
                 if (!response.ok) return;
                 const messages = await response.json();
                 chatBody.innerHTML = '';
@@ -93,7 +93,7 @@ require_once 'includes/admin_header.php';
             btn.disabled = true;
 
             try {
-                const response = await fetch('../api/chat_v2.php?action=send', {
+                const response = await fetch('/api/chat_v2.php?action=send', {
                     method: 'POST',
                     body: formData
                 });
