@@ -55,7 +55,10 @@ $platforms = $stmt->fetchAll();
                         </div>
 
                         <div class="space-y-4">
-                            <a href="order.php?id=<?php echo $platform['id']; ?>" class="block w-full bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-700 transition shadow-xl transform hover:-translate-y-1">
+                            <a href="/product/<?php echo $platform['id']; ?>" class="block w-full bg-gray-800 text-white font-bold py-3 rounded-xl hover:bg-gray-900 transition flex items-center justify-center">
+                                 <i class="fas fa-info-circle mr-2"></i> Detalii Produs
+                            </a>
+                            <a href="/order.php?id=<?php echo $platform['id']; ?>" class="block w-full bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-700 transition shadow-xl transform hover:-translate-y-1">
                                 <i class="fas fa-shopping-cart mr-2"></i> <?php echo __('order_now'); ?>
                             </a>
                             <?php if ($platform['demo_url']): ?>

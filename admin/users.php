@@ -124,12 +124,15 @@ require_once 'includes/admin_header.php';
                             </td>
                             <td class="px-8 py-6 text-xs opacity-60"><?php echo $user['created_at']; ?></td>
                             <td class="px-8 py-6">
-                                <form method="POST" onsubmit="return confirm('Sigur dorești să ștergi?');">
-                                    <input type="hidden" name="delete_id" value="<?php echo $user['id']; ?>">
-                                    <button type="submit" class="text-red-500 hover:text-red-400 font-bold flex items-center">
-                                        <i class="fas fa-user-times mr-2"></i> Șterge
-                                    </button>
-                                </form>
+                                <div class="flex items-center space-x-4">
+                                    <a href="edit_user.php?id=<?php echo $user['id']; ?>" class="text-blue-500 hover:text-blue-400 font-bold">Administrează</a>
+                                    <form method="POST" onsubmit="return confirm('Sigur dorești să ștergi?');">
+                                        <input type="hidden" name="delete_id" value="<?php echo $user['id']; ?>">
+                                        <button type="submit" class="text-red-500 hover:text-red-400 font-bold flex items-center">
+                                            <i class="fas fa-user-times mr-2"></i> Șterge
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>

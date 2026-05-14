@@ -115,6 +115,8 @@ $site_theme = $admin_settings['theme'] ?? 'light'; // For reference if needed
             $links = [
                 ['index.php', 'fas fa-chart-pie', 'Dashboard'],
                 ['platforms.php', 'fas fa-layer-group', 'Platforme'],
+                ['pages.php', 'fas fa-file-alt', 'Pagini'],
+                ['links.php', 'fas fa-link', 'Meniu Link-uri'],
                 ['users.php', 'fas fa-users', 'Utilizatori'],
                 ['messages.php', 'fas fa-envelope', 'Mesaje Chat'],
                 ['payments.php', 'fas fa-credit-card', 'Configurează Plăți'],

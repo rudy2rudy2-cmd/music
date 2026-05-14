@@ -10,13 +10,20 @@ while ($row = $stmt->fetch()) {
     $settings[$row['setting_key']] = $row['setting_value'];
 }
 $theme = $settings['theme'] ?? 'light';
+
+// Fetch Custom Links for Header
+$stmt = $pdo->prepare("SELECT * FROM links WHERE location = 'header' ORDER BY sort_order ASC");
+$stmt->execute();
+$header_links = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($settings['site_name'] ?? 'Showcase'); ?></title>
+    <title><?php echo htmlspecialchars($settings['seo_meta_title'] ?? ($settings['site_name'] ?? 'Showcase')); ?></title>
+    <meta name="description" content="<?php echo htmlspecialchars($settings['seo_meta_description'] ?? ''); ?>">
+    <meta name="keywords" content="<?php echo htmlspecialchars($settings['seo_keywords'] ?? ''); ?>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;600;700&family=Inter:wght@400;600&family=Orbitron:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -149,15 +156,22 @@ $theme = $settings['theme'] ?? 'light';
 <body class="min-h-screen flex flex-col">
     <nav class="header-bar sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.php" class="text-2xl font-bold flex items-center">
-                <?php if($theme === 'romania'): ?>
-                    <span class="text-yellow-400 mr-2"><i class="fas fa-flag"></i></span>
+            <a href="/index.php" class="text-2xl font-bold flex items-center">
+                <?php if(($settings['logo_type'] ?? 'text') === 'image' || ($settings['logo_type'] ?? '') === 'both'): ?>
+                    <img src="/<?php echo $settings['logo_image'] ?? ''; ?>" class="h-10 w-auto mr-3">
                 <?php endif; ?>
-                <span class="<?php echo ($theme === 'romania' ? 'text-white' : 'text-blue-600'); ?>"><?php echo htmlspecialchars($settings['site_name'] ?? 'Showcase'); ?></span>
+                <?php if(($settings['logo_type'] ?? 'text') === 'text' || ($settings['logo_type'] ?? '') === 'both'): ?>
+                    <span class="<?php echo ($theme === 'romania' ? 'text-white' : 'text-blue-600'); ?>"><?php echo htmlspecialchars($settings['site_name'] ?? 'Showcase'); ?></span>
+                <?php endif; ?>
             </a>
             <div class="space-x-6 flex items-center">
-                <a href="index.php" class="font-medium hover:opacity-75 transition <?php echo ($theme === 'premium' ? 'text-blue-400' : ''); ?>"><?php echo __('home'); ?></a>
-                <a href="offers.php" class="font-medium hover:opacity-75 transition"><?php echo __('offers'); ?></a>
+                <a href="/index.php" class="font-medium hover:opacity-75 transition <?php echo ($theme === 'premium' ? 'text-blue-400' : ''); ?>"><?php echo __('home'); ?></a>
+
+                <?php foreach($header_links as $link): ?>
+                    <a href="<?php echo htmlspecialchars($link['url']); ?>" class="font-medium hover:opacity-75 transition"><?php echo htmlspecialchars($link['title']); ?></a>
+                <?php endforeach; ?>
+
+                <a href="/offers.php" class="font-medium hover:opacity-75 transition"><?php echo __('offers'); ?></a>
 
                 <div class="flex border rounded-lg overflow-hidden border-gray-700/30">
                     <a href="?lang=ro" class="px-2 py-1 text-xs <?php echo $lang_code === 'ro' ? 'bg-blue-600 text-white' : 'bg-transparent'; ?>">RO</a>
@@ -194,24 +208,17 @@ $theme = $settings['theme'] ?? 'light';
                 <button id="chat-close" class="opacity-70 hover:opacity-100"><i class="fas fa-times"></i></button>
             </div>
 
-            <div id="chat-body" class="p-6">
-                <form id="chat-form" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-3">
-                        <input type="text" name="first_name" placeholder="Prenume" required class="w-full p-2 border rounded-lg text-sm text-gray-800">
-                        <input type="text" name="last_name" placeholder="Nume" required class="w-full p-2 border rounded-lg text-sm text-gray-800">
-                    </div>
-                    <input type="email" name="email" placeholder="Adresa Mail" required class="w-full p-2 border rounded-lg text-sm text-gray-800">
-                    <textarea name="message" rows="3" placeholder="Mesajul tău..." required class="w-full p-2 border rounded-lg text-sm text-gray-800"></textarea>
-                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">Trimite Mesaj</button>
+            <div id="chat-body" class="p-4 h-80 overflow-y-auto bg-gray-50 flex flex-col space-y-4">
+                <!-- Messages will appear here -->
+            </div>
+
+            <div class="p-4 border-t bg-white">
+                <form id="chat-form-v2" class="flex space-x-2">
+                    <input type="text" id="chat-input" placeholder="Scrie un mesaj..." required class="flex-1 p-2 border rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
                 </form>
-                <div id="chat-success" class="hidden text-center py-8">
-                    <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-check text-2xl"></i>
-                    </div>
-                    <p class="font-bold text-gray-800">Mesaj Trimis!</p>
-                    <p class="text-xs text-gray-500 mt-2">Vă vom contacta în cel mai scurt timp.</p>
-                    <button onclick="resetChat()" class="mt-4 text-blue-600 text-xs font-bold hover:underline">Trimite alt mesaj</button>
-                </div>
             </div>
         </div>
     </div>
@@ -220,8 +227,9 @@ $theme = $settings['theme'] ?? 'light';
         const chatToggle = document.getElementById('chat-toggle');
         const chatWindow = document.getElementById('chat-window');
         const chatClose = document.getElementById('chat-close');
-        const chatForm = document.getElementById('chat-form');
-        const chatSuccess = document.getElementById('chat-success');
+        const chatFormV2 = document.getElementById('chat-form-v2');
+        const chatBody = document.getElementById('chat-body');
+        const chatInput = document.getElementById('chat-input');
 
         chatToggle.addEventListener('click', () => {
             chatWindow.classList.toggle('hidden');
@@ -230,6 +238,7 @@ $theme = $settings['theme'] ?? 'light';
                 chatWindow.classList.toggle('opacity-0');
                 chatWindow.classList.toggle('scale-100');
                 chatWindow.classList.toggle('opacity-100');
+                fetchMessages();
             }, 10);
         });
 
@@ -239,31 +248,35 @@ $theme = $settings['theme'] ?? 'light';
             setTimeout(() => chatWindow.classList.add('hidden'), 300);
         });
 
-        chatForm.addEventListener('submit', async (e) => {
+        async function fetchMessages() {
+            try {
+                const response = await fetch('/api/chat_v2.php?action=fetch');
+                const messages = await response.json();
+                chatBody.innerHTML = '';
+                messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = `max-w-[80%] p-3 rounded-2xl text-sm \${msg.sender === 'user' ? 'bg-blue-600 text-white self-end rounded-br-none' : 'bg-gray-200 text-gray-800 self-start rounded-bl-none'}`;
+                    div.textContent = msg.message;
+                    chatBody.appendChild(div);
+                });
+                chatBody.scrollTop = chatBody.scrollHeight;
+            } catch (e) {}
+        }
+
+        chatFormV2.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(chatForm);
+            const msg = chatInput.value;
+            if(!msg) return;
+
+            const formData = new FormData();
+            formData.append('message', msg);
 
             try {
-                const response = await fetch('api/chat.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    chatForm.classList.add('hidden');
-                    chatSuccess.classList.remove('hidden');
-                } else {
-                    alert(result.message);
-                }
-            } catch (error) {
-                alert('Eroare la trimiterea mesajului.');
-            }
+                await fetch('/api/chat_v2.php?action=send', { method: 'POST', body: formData });
+                chatInput.value = '';
+                fetchMessages();
+            } catch (e) {}
         });
 
-        function resetChat() {
-            chatForm.reset();
-            chatForm.classList.remove('hidden');
-            chatSuccess.classList.add('hidden');
-        }
+        setInterval(fetchMessages, 5000);
     </script>

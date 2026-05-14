@@ -14,8 +14,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'hero_subtitle' => $_POST['hero_subtitle'] ?? '',
         'order_button_text' => $_POST['order_button_text'] ?? 'Comandă Acum',
         'order_url' => $_POST['order_url'] ?? 'offers.php',
-        'live_chat_code' => $_POST['live_chat_code'] ?? ''
+        'live_chat_code' => $_POST['live_chat_code'] ?? '',
+        'logo_type' => $_POST['logo_type'] ?? 'text',
+        'footer_name' => $_POST['footer_name'] ?? '',
+        'seo_meta_title' => $_POST['seo_meta_title'] ?? '',
+        'seo_meta_description' => $_POST['seo_meta_description'] ?? '',
+        'seo_keywords' => $_POST['seo_keywords'] ?? '',
+        'use_smtp' => isset($_POST['use_smtp']) ? '1' : '0',
+        'smtp_host' => $_POST['smtp_host'] ?? '',
+        'smtp_port' => $_POST['smtp_port'] ?? '587',
+        'smtp_user' => $_POST['smtp_user'] ?? '',
+        'smtp_pass' => $_POST['smtp_pass'] ?? '',
+        'smtp_encryption' => $_POST['smtp_encryption'] ?? 'tls'
     ];
+
+    if (isset($_FILES['logo_image']) && $_FILES['logo_image']['error'] === 0) {
+        $ext = pathinfo($_FILES['logo_image']['name'], PATHINFO_EXTENSION);
+        $filename = 'logo_' . time() . '.' . $ext;
+        if (move_uploaded_file($_FILES['logo_image']['tmp_name'], '../uploads/' . $filename)) {
+            $updates['logo_image'] = 'uploads/' . $filename;
+        }
+    }
 
     foreach ($updates as $key => $value) {
         $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
@@ -39,17 +58,76 @@ require_once 'includes/admin_header.php';
                 <div class="space-y-10">
                     <div>
                         <h3 class="text-xl font-bold mb-6 flex items-center">
-                            <i class="fas fa-globe mr-3 text-blue-500"></i> Informații Generale
+                            <i class="fas fa-globe mr-3 text-blue-500"></i> Identitate & Footer
                         </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div>
+                                <label class="block text-sm font-bold opacity-75 mb-2">Nume Site (Header)</label>
+                                <input type="text" name="site_name" value="<?php echo htmlspecialchars($admin_settings['site_name'] ?? ''); ?>" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold opacity-75 mb-2">Nume Footer</label>
+                                <input type="text" name="footer_name" value="<?php echo htmlspecialchars($admin_settings['footer_name'] ?? ''); ?>" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold opacity-75 mb-2">Tip Logo</label>
+                                <select name="logo_type" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                                    <option value="text" <?php echo ($admin_settings['logo_type'] ?? '') === 'text' ? 'selected' : ''; ?>>Doar Text</option>
+                                    <option value="image" <?php echo ($admin_settings['logo_type'] ?? '') === 'image' ? 'selected' : ''; ?>>Doar Imagine</option>
+                                    <option value="both" <?php echo ($admin_settings['logo_type'] ?? '') === 'both' ? 'selected' : ''; ?>>Imagine + Text</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-bold opacity-75 mb-2">Nume Site</label>
-                                <input type="text" name="site_name" value="<?php echo htmlspecialchars($admin_settings['site_name'] ?? ''); ?>" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                                <label class="block text-sm font-bold opacity-75 mb-2">Încărcare Logo</label>
+                                <input type="file" name="logo_image" class="w-full p-2 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                                <?php if(!empty($admin_settings['logo_image'])): ?>
+                                    <img src="/<?php echo $admin_settings['logo_image']; ?>" class="h-8 mt-2">
+                                <?php endif; ?>
                             </div>
                             <div>
                                 <label class="block text-sm font-bold opacity-75 mb-2">Cod Live Chat (Script)</label>
                                 <textarea name="live_chat_code" rows="1" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>"><?php echo htmlspecialchars($admin_settings['live_chat_code'] ?? ''); ?></textarea>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-gray-700/30">
+                        <h3 class="text-xl font-bold mb-6 flex items-center text-green-500">
+                            <i class="fas fa-search mr-3"></i> Configurare SEO
+                        </h3>
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold opacity-75 mb-2">Meta Title</label>
+                                <input type="text" name="seo_meta_title" value="<?php echo htmlspecialchars($admin_settings['seo_meta_title'] ?? ''); ?>" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold opacity-75 mb-2">Meta Description</label>
+                                <textarea name="seo_meta_description" rows="2" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>"><?php echo htmlspecialchars($admin_settings['seo_meta_description'] ?? ''); ?></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold opacity-75 mb-2">Keywords (separate prin virgula)</label>
+                                <input type="text" name="seo_keywords" value="<?php echo htmlspecialchars($admin_settings['seo_keywords'] ?? ''); ?>" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-gray-700/30">
+                        <h3 class="text-xl font-bold mb-6 flex items-center text-orange-500">
+                            <i class="fas fa-paper-plane mr-3"></i> Configurare Email (SMTP)
+                        </h3>
+                        <div class="mb-6">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" name="use_smtp" value="1" <?php echo ($admin_settings['use_smtp'] ?? '0') === '1' ? 'checked' : ''; ?> class="w-5 h-5 rounded border-gray-300">
+                                <span class="font-bold">Folosește SMTP (PHPMailer)</span>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <input type="text" name="smtp_host" value="<?php echo htmlspecialchars($admin_settings['smtp_host'] ?? ''); ?>" placeholder="SMTP Host" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                            <input type="text" name="smtp_port" value="<?php echo htmlspecialchars($admin_settings['smtp_port'] ?? '587'); ?>" placeholder="Port" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                            <input type="text" name="smtp_user" value="<?php echo htmlspecialchars($admin_settings['smtp_user'] ?? ''); ?>" placeholder="Utilizator / Email" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
+                            <input type="password" name="smtp_pass" value="<?php echo htmlspecialchars($admin_settings['smtp_pass'] ?? ''); ?>" placeholder="Parolă" class="w-full p-3 rounded-xl modern-input <?php echo $admin_theme !== 'neon' ? 'border-gray-200 border' : ''; ?>">
                         </div>
                     </div>
 
