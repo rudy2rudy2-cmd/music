@@ -251,6 +251,7 @@ $header_links = $stmt->fetchAll();
         async function fetchMessages() {
             try {
                 const response = await fetch('/api/chat_v2.php?action=fetch');
+                if (!response.ok) return;
                 const messages = await response.json();
                 chatBody.innerHTML = '';
                 messages.forEach(msg => {
@@ -265,17 +266,34 @@ $header_links = $stmt->fetchAll();
 
         chatFormV2.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const msg = chatInput.value;
+            const msg = chatInput.value.trim();
             if(!msg) return;
 
             const formData = new FormData();
             formData.append('message', msg);
 
+            const btn = chatFormV2.querySelector('button');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
             try {
-                await fetch('/api/chat_v2.php?action=send', { method: 'POST', body: formData });
-                chatInput.value = '';
-                fetchMessages();
-            } catch (e) {}
+                const response = await fetch('/api/chat_v2.php?action=send', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if(result.status === 'success') {
+                    chatInput.value = '';
+                    await fetchMessages();
+                } else {
+                    console.error(result.message);
+                }
+            } catch (e) {
+                console.error('Chat error:', e);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
         });
 
         setInterval(fetchMessages, 5000);

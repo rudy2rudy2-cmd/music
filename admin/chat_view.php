@@ -64,10 +64,9 @@ require_once 'includes/admin_header.php';
         const discussionId = <?php echo $id; ?>;
 
         async function fetchMessages() {
-            // Force discussion ID for admin view
             try {
                 const response = await fetch(`../api/chat_v2.php?action=fetch&admin_discussion_id=\${discussionId}`);
-                // Note: I need to update api/chat_v2.php to handle this admin_discussion_id
+                if (!response.ok) return;
                 const messages = await response.json();
                 chatBody.innerHTML = '';
                 messages.forEach(msg => {
@@ -83,18 +82,31 @@ require_once 'includes/admin_header.php';
 
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const msg = chatInput.value;
+            const msg = chatInput.value.trim();
             if(!msg) return;
 
             const formData = new FormData();
             formData.append('message', msg);
             formData.append('admin_discussion_id', discussionId);
 
+            const btn = chatForm.querySelector('button');
+            btn.disabled = true;
+
             try {
-                await fetch('../api/chat_v2.php?action=send', { method: 'POST', body: formData });
-                chatInput.value = '';
-                fetchMessages();
-            } catch (e) {}
+                const response = await fetch('../api/chat_v2.php?action=send', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if(result.status === 'success') {
+                    chatInput.value = '';
+                    await fetchMessages();
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                btn.disabled = false;
+            }
         });
 
         setInterval(fetchMessages, 3000);

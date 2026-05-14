@@ -124,9 +124,19 @@ $site_theme = $admin_settings['theme'] ?? 'light'; // For reference if needed
             ];
             foreach ($links as $link):
                 $active = ($current_page === $link[0]) ? 'active' : '';
+                $badge = '';
+                if ($link[0] === 'messages.php') {
+                    $unread_stmt = $pdo->query("SELECT COUNT(*) FROM chat_messages m JOIN chat_discussions d ON m.discussion_id = d.id WHERE m.sender = 'user' AND d.last_activity > (NOW() - INTERVAL 1 MINUTE)");
+                    $active_chats = $unread_stmt->fetchColumn();
+                    if ($active_chats > 0) {
+                        $badge = '<span class="ml-auto w-2 h-2 bg-red-500 rounded-full animate-ping"></span>';
+                    }
+                }
             ?>
                 <a href="<?php echo $link[0]; ?>" class="nav-link flex items-center py-3 px-5 text-sm font-semibold <?php echo $active; ?>">
-                    <i class="<?php echo $link[1]; ?> mr-4 text-lg"></i> <?php echo $link[2]; ?>
+                    <i class="<?php echo $link[1]; ?> mr-4 text-lg"></i>
+                    <span><?php echo $link[2]; ?></span>
+                    <?php echo $badge; ?>
                 </a>
             <?php endforeach; ?>
         </nav>
