@@ -1,0 +1,6 @@
+/* Themes are handled inline in index.php for simplicity in this PHP-only project as requested */
+/* This file can be used for shared styles if needed */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

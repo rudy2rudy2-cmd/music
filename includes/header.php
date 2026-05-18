@@ -1,0 +1,300 @@
+<?php
+require_once 'config.php';
+require_once 'auth.php';
+require_once 'lang_init.php';
+
+// Fetch settings
+$stmt = $pdo->query("SELECT setting_key, setting_value FROM settings");
+$settings = [];
+while ($row = $stmt->fetch()) {
+    $settings[$row['setting_key']] = $row['setting_value'];
+}
+$theme = $settings['theme'] ?? 'light';
+
+// Fetch Custom Links for Header
+$stmt = $pdo->prepare("SELECT * FROM links WHERE location = 'header' ORDER BY sort_order ASC");
+$stmt->execute();
+$header_links = $stmt->fetchAll();
+?>
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo htmlspecialchars($settings['seo_meta_title'] ?? ($settings['site_name'] ?? 'Showcase')); ?></title>
+    <meta name="description" content="<?php echo htmlspecialchars($settings['seo_meta_description'] ?? ''); ?>">
+    <meta name="keywords" content="<?php echo htmlspecialchars($settings['seo_keywords'] ?? ''); ?>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;600;700&family=Inter:wght@400;600&family=Orbitron:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        <?php if ($theme === 'dark'): ?>
+            body { background-color: #111827; color: #f3f4f6; }
+            .card { background-color: #1f2937; color: #f3f4f6; }
+            .header-bar { background-color: #1f2937; }
+        <?php elseif ($theme === 'accent'): ?>
+            body { background-color: #f0fdf4; color: #166534; }
+            .card { background-color: #ffffff; border-top: 4px solid #22c55e; }
+            .header-bar { background-color: #ffffff; border-bottom: 2px solid #22c55e; }
+        <?php elseif ($theme === 'romania'): ?>
+            @keyframes romania-bg {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+            body {
+                background: linear-gradient(-45deg, #002b7f, #fcd116, #ce1126);
+                background-size: 400% 400%;
+                animation: romania-bg 15s ease infinite;
+                color: #ffffff;
+            }
+            .card { background: rgba(255, 255, 255, 0.9); color: #111827; backdrop-filter: blur(5px); }
+            .header-bar { background: rgba(0, 43, 127, 0.8); backdrop-filter: blur(10px); }
+            .footer-bar { background: rgba(206, 17, 38, 0.8); backdrop-filter: blur(10px); }
+        <?php elseif ($theme === 'premium'): ?>
+            @keyframes premium-bg {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+            body {
+                background: linear-gradient(-45deg, #0f172a, #1e293b, #020617);
+                background-size: 400% 400%;
+                animation: premium-bg 10s ease infinite;
+                color: #f8fafc;
+                font-family: 'Poppins', sans-serif;
+            }
+            .header-bar {
+                background: rgba(15, 23, 42, 0.6);
+                backdrop-filter: blur(12px);
+                border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+                box-shadow: 0 4px 20px -5px rgba(59, 130, 246, 0.2);
+            }
+            .premium-glow { text-shadow: 0 0 10px rgba(59, 130, 246, 0.8); }
+            .card {
+                background: rgba(30, 41, 59, 0.7);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(59, 130, 246, 0.2);
+                color: #f1f5f9;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .card:hover {
+                border-color: rgba(59, 130, 246, 0.6);
+                box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+                transform: translateY(-10px);
+            }
+            .premium-btn {
+                background: linear-gradient(90deg, #3b82f6, #2563eb);
+                box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+                border: none;
+            }
+            .premium-btn:hover {
+                box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
+            }
+        <?php elseif ($theme === 'monochrome'): ?>
+            body { background-color: #000000; color: #ffffff; font-family: 'Inter', sans-serif; }
+            .header-bar { background-color: #000000; border-bottom: 1px solid #333; }
+            .card { background-color: #ffffff; color: #000000; border: none; }
+            .premium-btn, .bg-blue-600 { background-color: #ffffff; color: #000000; border: 1px solid #000; }
+            .premium-btn:hover, .bg-blue-600:hover { background-color: #000000; color: #ffffff; border-color: #fff; }
+            .text-blue-600 { color: #ffffff; }
+
+            /* Premium Eagle & Code Animations */
+            @keyframes float-eagle {
+                0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.1; }
+                25% { transform: translate(20px, -30px) rotate(2deg) scale(1.05); opacity: 0.15; }
+                50% { transform: translate(-10px, -60px) rotate(-3deg) scale(1.1); opacity: 0.2; }
+                75% { transform: translate(-30px, -20px) rotate(1deg) scale(1.05); opacity: 0.15; }
+                100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.1; }
+            }
+            @keyframes scroll-code {
+                0% { transform: translateY(100%); opacity: 0; }
+                10% { opacity: 0.5; }
+                90% { opacity: 0.5; }
+                100% { transform: translateY(-100%); opacity: 0; }
+            }
+            .eagle-bg {
+                position: absolute;
+                top: 10%;
+                right: 5%;
+                width: 400px;
+                height: 400px;
+                color: #3b82f6;
+                filter: blur(1px) drop-shadow(0 0 10px rgba(59, 130, 246, 0.4));
+                animation: float-eagle 20s ease-in-out infinite;
+                z-index: 0;
+                pointer-events: none;
+                opacity: 0.15;
+            }
+            .code-lines {
+                position: absolute;
+                top: 0;
+                left: 10%;
+                width: 300px;
+                height: 100%;
+                font-family: 'monospace';
+                font-size: 14px;
+                color: #3b82f6;
+                opacity: 0.15;
+                overflow: hidden;
+                z-index: 0;
+                pointer-events: none;
+            }
+            .code-line {
+                display: block;
+                white-space: nowrap;
+                animation: scroll-code 15s linear infinite;
+            }
+        <?php else: ?>
+            body { background-color: #f8fafc; color: #1e293b; }
+            .card { background-color: #ffffff; }
+            .header-bar { background-color: #ffffff; border-bottom: 1px solid #e2e8f0; }
+        <?php endif; ?>
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <nav class="header-bar sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/index.php" class="text-2xl font-bold flex items-center">
+                <?php if(($settings['logo_type'] ?? 'text') === 'image' || ($settings['logo_type'] ?? '') === 'both'): ?>
+                    <img src="/<?php echo $settings['logo_image'] ?? ''; ?>" class="h-10 w-auto mr-3">
+                <?php endif; ?>
+                <?php if(($settings['logo_type'] ?? 'text') === 'text' || ($settings['logo_type'] ?? '') === 'both'): ?>
+                    <span class="<?php echo ($theme === 'romania' ? 'text-white' : 'text-blue-600'); ?>"><?php echo htmlspecialchars($settings['site_name'] ?? 'Showcase'); ?></span>
+                <?php endif; ?>
+            </a>
+            <div class="space-x-6 flex items-center">
+                <a href="/index.php" class="font-medium hover:opacity-75 transition <?php echo ($theme === 'premium' ? 'text-blue-400' : ''); ?>"><?php echo __('home'); ?></a>
+
+                <?php foreach($header_links as $link): ?>
+                    <a href="<?php echo htmlspecialchars($link['url']); ?>" class="font-medium hover:opacity-75 transition"><?php echo htmlspecialchars($link['title']); ?></a>
+                <?php endforeach; ?>
+
+                <a href="/offers.php" class="font-medium hover:opacity-75 transition"><?php echo __('offers'); ?></a>
+
+                <div class="flex border rounded-lg overflow-hidden border-gray-700/30">
+                    <a href="?lang=ro" class="px-2 py-1 text-xs <?php echo $lang_code === 'ro' ? 'bg-blue-600 text-white' : 'bg-transparent'; ?>">RO</a>
+                    <a href="?lang=en" class="px-2 py-1 text-xs <?php echo $lang_code === 'en' ? 'bg-blue-600 text-white' : 'bg-transparent'; ?>">EN</a>
+                </div>
+
+                <?php if (isLoggedIn()): ?>
+                    <?php if (isAdmin()): ?>
+                        <a href="admin/index.php" class="font-medium hover:opacity-75 transition"><?php echo __('admin'); ?></a>
+                    <?php else: ?>
+                        <a href="dashboard/index.php" class="font-medium hover:opacity-75 transition"><?php echo __('dashboard'); ?></a>
+                    <?php endif; ?>
+                    <a href="logout.php" class="bg-red-500 text-white px-5 py-2 rounded-lg font-bold hover:bg-red-600 transition shadow-md"><?php echo __('logout'); ?></a>
+                <?php else: ?>
+                    <a href="register.php" class="font-medium hover:opacity-75 transition"><?php echo __('register'); ?></a>
+                    <a href="login.php" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-md"><?php echo __('login'); ?></a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Live Chat Widget -->
+    <div id="live-chat" class="fixed bottom-6 right-6 z-[9999]">
+        <button id="chat-toggle" class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-2xl cursor-pointer hover:scale-110 transition active:scale-95">
+            <i class="fas fa-comments text-2xl"></i>
+        </button>
+
+        <div id="chat-window" class="hidden absolute bottom-20 right-0 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 transform scale-90 opacity-0 origin-bottom-right">
+            <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span class="font-bold">Suport Live</span>
+                </div>
+                <button id="chat-close" class="opacity-70 hover:opacity-100"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div id="chat-body" class="p-4 h-80 overflow-y-auto bg-gray-50 flex flex-col space-y-4">
+                <!-- Messages will appear here -->
+            </div>
+
+            <div class="p-4 border-t bg-white">
+                <form id="chat-form-v2" class="flex space-x-2">
+                    <input type="text" id="chat-input" placeholder="Scrie un mesaj..." required class="flex-1 p-2 border rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatToggle = document.getElementById('chat-toggle');
+        const chatWindow = document.getElementById('chat-window');
+        const chatClose = document.getElementById('chat-close');
+        const chatFormV2 = document.getElementById('chat-form-v2');
+        const chatBody = document.getElementById('chat-body');
+        const chatInput = document.getElementById('chat-input');
+
+        chatToggle.addEventListener('click', () => {
+            chatWindow.classList.toggle('hidden');
+            setTimeout(() => {
+                chatWindow.classList.toggle('scale-90');
+                chatWindow.classList.toggle('opacity-0');
+                chatWindow.classList.toggle('scale-100');
+                chatWindow.classList.toggle('opacity-100');
+                fetchMessages();
+            }, 10);
+        });
+
+        chatClose.addEventListener('click', () => {
+            chatWindow.classList.add('scale-90', 'opacity-0');
+            chatWindow.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => chatWindow.classList.add('hidden'), 300);
+        });
+
+        async function fetchMessages() {
+            try {
+                const response = await fetch('/api/chat_v2.php?action=fetch');
+                if (!response.ok) return;
+                const messages = await response.json();
+                chatBody.innerHTML = '';
+                messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = `max-w-[80%] p-3 rounded-2xl text-sm \${msg.sender === 'user' ? 'bg-blue-600 text-white self-end rounded-br-none' : 'bg-gray-200 text-gray-800 self-start rounded-bl-none'}`;
+                    div.textContent = msg.message;
+                    chatBody.appendChild(div);
+                });
+                chatBody.scrollTop = chatBody.scrollHeight;
+            } catch (e) {}
+        }
+
+        chatFormV2.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = chatInput.value.trim();
+            if(!msg) return;
+
+            const formData = new FormData();
+            formData.append('message', msg);
+
+            const btn = chatFormV2.querySelector('button');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            try {
+                const response = await fetch('/api/chat_v2.php?action=send', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if(result.status === 'success') {
+                    chatInput.value = '';
+                    await fetchMessages();
+                } else {
+                    console.error(result.message);
+                }
+            } catch (e) {
+                console.error('Chat error:', e);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        });
+
+        setInterval(fetchMessages, 5000);
+    </script>
