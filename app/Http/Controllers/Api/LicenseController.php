@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\License;
+use Illuminate\Http\Request;
+
+class LicenseController extends Controller
+{
+    public function verify(Request $request)
+    {
+        $request->validate([
+            'license_key' => 'required|string',
+            'domain' => 'nullable|string',
+        ]);
+
+        $license = License::where('license_key', $request->license_key)->first();
+
+        if (!$license) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Invalid license key.',
+            ], 404);
+        }
+
+        if ($license->status !== 'active') {
+            return response()->json([
+                'valid' => false,
+                'message' => 'License is ' . $license->status . '.',
+            ], 403);
+        }
+
+        if ($license->expires_at && $license->expires_at->isPast()) {
+            $license->update(['status' => 'expired']);
+            return response()->json([
+                'valid' => false,
+                'message' => 'License has expired.',
+            ], 403);
+        }
+
+        // Auto-assign domain on first activation if not set
+        if (!$license->domain && $request->domain) {
+            $license->update([
+                'domain' => $request->domain,
+                'activated_at' => now(),
+            ]);
+        } elseif ($license->domain && $request->domain && $license->domain !== $request->domain) {
+             return response()->json([
+                'valid' => false,
+                'message' => 'License is already activated on another domain: ' . $license->domain,
+            ], 403);
+        }
+
+        return response()->json([
+            'valid' => true,
+            'message' => 'License is valid.',
+            'platform' => $license->platform->name,
+            'expires_at' => $license->expires_at ? $license->expires_at->toDateTimeString() : null,
+        ]);
+    }
+}
